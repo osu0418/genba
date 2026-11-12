@@ -5,6 +5,28 @@
   const pasteBox = document.getElementById("pasteBox");
   const pasteMsg = document.getElementById("pasteMsg");
 
+  const title = document.getElementById("addTitle");
+  const addBtn = document.getElementById("addBtn");
+  const cancelBtn = document.getElementById("cancelEdit");
+
+  // 直す：選んだ現場の内容を入力欄に入れて、「直して保存」にする
+  function setMode(editing) {
+    title.textContent = editing ? "現場を直す" : "現場を追加";
+    addBtn.textContent = editing ? "直して保存" : "追加する";
+    cancelBtn.hidden = !editing;
+  }
+  window.Editor = {
+    start(site) {
+      for (const k of ["id", "name", "code", "inTel", "outTel", "kyUrl"]) form.elements[k].value = site[k] || "";
+      setMode(true);
+      addMsg.textContent = `「${site.name}」を直しています。`;
+      document.getElementById("addPanel").scrollIntoView({ behavior: "smooth" });
+    },
+  };
+  // 隠れた欄（id）は reset で消えないので、手で消す
+  function clearForm() { form.reset(); form.elements.id.value = ""; setMode(false); }
+  cancelBtn.addEventListener("click", () => { clearForm(); addMsg.textContent = ""; });
+
   form.addEventListener("submit", e => {
     e.preventDefault();
     const f = Object.fromEntries(new FormData(form));
@@ -16,8 +38,9 @@
     if (f.kyUrl && !/^https:\/\//.test(f.kyUrl.trim())) {
       addMsg.textContent = "KYのページは https:// から始まるものだけ入れられます。"; return;
     }
-    const r = Store.upsert(f);
-    form.reset();
+    const r = f.id ? "直" : Store.upsert(f);
+    if (f.id) Store.upsert(f);
+    clearForm();
     document.getElementById("photoMsg").textContent = "";
     addMsg.textContent = `「${f.name}」を${r}しました。`;
     List.render();

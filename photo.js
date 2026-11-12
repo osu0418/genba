@@ -17,7 +17,7 @@
     const ky = QR.read(img);
     let nums = { code: "", inTel: "", outTel: "" };
     let ocrFailed = false;
-    try { nums = await OCR.read(img); }
+    try { nums = await OCR.read(img, (n, all) => { msg.textContent = `読み取り中…（${n}/${all}回目。読みにくい写真ほど回数が増えます）`; }); }
     catch { ocrFailed = true; }
 
     if (ky) field("kyUrl").value = ky;
@@ -35,7 +35,9 @@
     msg.textContent = (ocrFailed ? "番号の読み取りができませんでした。電波のある所で試すか、手で入れてください。\n" : "")
       + lines.join("\n")
       + (ok ? "\n看板と番号が合っているか見て、邸名を入れて「追加する」を押してください。"
-            : "\n読めなかった所は手で入れるか、看板に近づいて撮り直してください。");
+            : nums.inTel
+              ? "\n退場が読めませんでした。入場の番号も看板と同じか必ず見てください。看板の正面から撮り直すのがおすすめです。"
+              : "\n読めなかった所は手で入れるか、看板の正面から近づいて撮り直してください。");
     field("name").focus();
   });
 })();

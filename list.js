@@ -36,6 +36,7 @@ const List = (() => {
         ${/^https:\/\//.test(s.kyUrl) ? `<a class="ky" href="${esc(s.kyUrl)}" target="_blank" rel="noopener">KYを開く</a>` : ""}
         <div class="tools">
           <button data-share="${esc(s.id)}">共有の文をコピー</button>
+          <button data-edit="${esc(s.id)}">直す</button>
           <button class="del" data-del="${esc(s.id)}">削除</button>
         </div>
       </section>`).join("");
@@ -51,8 +52,9 @@ const List = (() => {
     const b = e.target.closest("button");
     if (!b) return;
     if (b.dataset.copy) return copy(b, b.dataset.copy, "コピー");
-    const site = Store.load().find(s => s.id === (b.dataset.share || b.dataset.del));
+    const site = Store.load().find(s => s.id === (b.dataset.share || b.dataset.del || b.dataset.edit));
     if (!site) return;
+    if (b.dataset.edit) return Editor.start(site);
     if (b.dataset.share) return copy(b, Share.toText(site), "共有の文をコピー");
     if (b.dataset.del && confirm(`「${site.name}」を削除しますか？\n元に戻せません。`)) {
       Store.remove(site.id);

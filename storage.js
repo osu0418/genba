@@ -20,7 +20,7 @@ const Store = (() => {
       .replace(/[^0-9-]/g, "");
   }
 
-  // 同じ入場番号の現場があれば上書き、なければ追加
+  // 「直す」から来たら同じ現場を上書き。そうでなければ、同じ入場番号の現場があれば上書き、なければ追加
   function upsert(site) {
     const sites = load();
     const s = {
@@ -31,7 +31,8 @@ const Store = (() => {
       outTel: cleanTel(site.outTel),
       kyUrl: String(site.kyUrl || "").trim(),
     };
-    const i = sites.findIndex(x => x.inTel === s.inTel);
+    let i = site.id ? sites.findIndex(x => x.id === site.id) : -1;
+    if (i < 0) i = sites.findIndex(x => x.inTel === s.inTel);
     if (i >= 0) { s.id = sites[i].id; sites[i] = s; } else { sites.push(s); }
     save(sites);
     return i >= 0 ? "上書き" : "追加";
