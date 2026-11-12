@@ -37,6 +37,7 @@ label input { margin-top:4px; }
 .help ul, .help ol { margin:4px 0; padding-left:20px; }
 .help li { margin-bottom:4px; }
 .warn { color:var(--red); }
+.banner { margin-top:8px; background:var(--red); color:#fff; border-radius:10px; padding:10px 12px; font-size:16px; line-height:1.5; }
 .plain { display:block; font-size:14px; color:var(--blue); margin-top:6px; text-align:right; }
 .switch { display:flex; align-items:center; gap:10px; font-size:17px; color:var(--text); }
 .switch input { width:24px; height:24px; margin:0; }

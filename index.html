@@ -13,6 +13,7 @@
 <header>
   <h1>現場入場アプリ</h1>
   <input id="search" type="search" placeholder="邸名で探す（キーボードのマイクで話せます）" autocomplete="off">
+  <div id="exitBanner" class="banner" hidden></div>
 </header>
 
 <details class="panel help" id="help">
@@ -35,6 +36,7 @@
     <li>上の検索欄に邸名を入れると、その現場だけ出ます。キーボードのマイクで話しても入れられます</li>
     <li>「入場に電話」「退場に電話」を押すと電話がかかります。呼び出し音が2回ほど鳴ったら切ってかまいません</li>
     <li>入場のあとは、緑の「KYを開く」からKYを入力します</li>
+    <li>入場の電話を押した日は、退場の電話を押すまで、上に赤い文字で「退場の電話がまだです」と出ます</li>
   </ul>
 
   <h3>3. 直す・消す・仲間に渡す</h3>
@@ -110,5 +112,6 @@
 <script src="photo.js"></script>
 <script src="tel-format.js"></script>
 <script src="help.js"></script>
+<script src="status.js"></script>
 </body>
 </html>
