@@ -36,6 +36,35 @@ const OCR = (() => {
     return out;
   }
 
+  // 現場番号（英字2つ＋数字5つ。例：KB93919）を読む
+  // 看板の小さい日本語が英字にむりやり読まれて同じ形になることがあるので（例：「平日9:00〜18:00」→「H9001800」）、
+  // 文の中の文字は使わず、「その行に番号だけが書いてある」行だけを選ぶ。
+  // 細い字で最後の1文字が欠けることがあるので、その行を横に広めに切り出して、大きくして読み直す
+  const CODE = /[A-Z]{2}\d{5}/;
+  const toLetter = { "8": "B", "0": "O", "5": "S", "1": "I", "2": "Z", "6": "G" };
+  function fixCode(t) {
+    const m = String(t || "").replace(/\s+/g, "").match(/([A-Z0-9]{2})(\d{5})/);
+    if (!m || !/[A-Z]/.test(m[1])) return "";
+    return m[1].replace(/\d/g, d => toLetter[d] || d) + m[2];
+  }
+  async function readCodes(engine, page, data) {
+    const found = [];
+    const lines = [];
+    for (const b of data.blocks || []) for (const p of b.paragraphs || []) for (const l of p.lines || []) lines.push(l);
+    const short = lines.filter(l => /^[A-Z0-9]{2}\d{3,6}$/.test((l.text || "").replace(/\s+/g, "")) && /[A-Z]/.test(l.text));
+    for (const l of short.slice(0, 2)) {
+      const h = l.bbox.y1 - l.bbox.y0;
+      const box = { x0: l.bbox.x0 - h * 1.5, x1: l.bbox.x1 + h * 3, y0: l.bbox.y0, y1: l.bbox.y1 };
+      const exact = fixCode(l.text);
+      if (exact) found.push(exact);
+      for (const height of [120, 170]) {
+        const c = fixCode(await engine.readLine(page, box, height));
+        if (c) found.push(c);
+      }
+    }
+    return found;
+  }
+
   // engine は「写真を回して整える」「全体を読む」「一部を切り出して1行として読む」の3つの道具
   async function readWith(engine, onTry) {
     const codes = [];
@@ -44,7 +73,7 @@ const OCR = (() => {
       if (onTry) onTry(i + 1, TRIES.length);
       const page = await engine.prepare(TRIES[i]);
       const data = await engine.readAll(page);
-      codes.push(...((data.text || "").match(/[A-Z]{2}\d{5}/g) || []));
+      codes.push(...await readCodes(engine, page, data));
 
       const cands = collect(data);
       if (!cands.length) continue;
