@@ -1,5 +1,6 @@
 // 退場まだ：入場の電話ボタンを押した日は、退場の電話ボタンを押すまで、上に赤い文字で知らせる
 // （ボタンを押したかどうかで判断する。本当に電話がつながったかまでは分からない）
+// 赤い字の行を押すと、その現場の退場の番号に電話をかけ、退場ボタンを押したのと同じ扱いにする
 window.Status = (() => {
   const KEY = "genba-today-v1";
   const banner = document.getElementById("exitBanner");
@@ -26,7 +27,9 @@ window.Status = (() => {
       .filter(x => x.site);
     banner.hidden = !items.length;
     banner.innerHTML = items.map(({ site, time }) =>
-      `<div>⚠ <b>${esc(site.name)}</b>の退場の電話がまだです（${esc(time)} 入場）</div>`).join("");
+      `<a class="exitCall" data-exit="${esc(site.id)}" href="tel:${esc(String(site.outTel).replace(/-/g, ""))}">` +
+      `⚠ <b>${esc(site.name)}</b>の退場の電話がまだです（${esc(time)} 入場）` +
+      `<span class="exitGo">📞 ここを押すと退場に電話</span></a>`).join("");
   }
 
   document.getElementById("list").addEventListener("click", e => {
@@ -40,6 +43,16 @@ window.Status = (() => {
     }
     save(s);
     render();
+  });
+
+  // 赤い字の行を押した：電話はリンクでかかる。こちらは退場済みにするだけ
+  banner.addEventListener("click", e => {
+    const a = e.target.closest("a[data-exit]");
+    if (!a) return;
+    const s = load();
+    delete s.open[a.dataset.exit];
+    save(s);
+    setTimeout(render, 0);
   });
 
   // 日付が変わったときや、ほかの画面から戻ったときにも表示を合わせる

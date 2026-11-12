@@ -18,18 +18,11 @@ const List = (() => {
     </div>`;
   }
 
-  // ナビ：iPhoneは「マップ」と「Googleマップ」の2つ、それ以外（Androidなど）は「Googleマップ」だけ
-  const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) ||
-    (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1);
-  // 行き先：地図のピン（緯度・経度）があればそれを、なければ住所の文字を使う
+  // 住所とナビのボタン（ボタンの作り方は nav.js）
   function navRow(s) {
-    const pt = typeof s.lat === "number" && typeof s.lng === "number";
-    if (!pt && !s.addr) return "";
-    const q = encodeURIComponent(pt ? `${s.lat},${s.lng}` : s.addr);
+    if (!Nav.has(s)) return "";
     const where = s.addr ? `住所：${esc(s.addr)}` : "住所：（なし）";
-    const google = `<a class="nav google" href="https://www.google.com/maps/dir/?api=1&amp;destination=${q}"><div class="lbl">ナビ</div>Googleマップ</a>`;
-    const apple = `<a class="nav apple" href="https://maps.apple.com/?daddr=${q}"><div class="lbl">ナビ</div>マップ</a>`;
-    return `<div class="addr">${where}${pt ? "　📍地図の場所あり" : ""}</div><div class="navs">${isIOS ? apple + google : google}</div>`;
+    return `<div class="addr">${where}${Nav.hasPoint(s) ? "　📍地図の場所あり" : ""}</div>${Nav.links(s)}`;
   }
 
   function render() {
