@@ -10,11 +10,16 @@ const List = (() => {
   // 「森田」「もりた邸」などのゆれを吸収するため、空白と「邸」を外して比べる
   const norm = s => String(s || "").replace(/[\s　。、.]/g, "").replace(/邸$/, "");
 
-  function callRow(label, num) {
+  // アラームを使うときは、電話ボタンでショートカットを動かす（入場＝アラームをオン、退場＝オフ）
+  function callRow(label, num, kind) {
+    const tel = "tel:" + esc(num.replace(/-/g, ""));
+    const alarm = !!window.Settings && window.Settings.useAlarm();
+    const href = alarm ? esc(Settings.shortcutUrl(kind, num)) : tel;
+    const note = alarm ? (kind === "in" ? "（アラームをオン）" : "（アラームをオフ）") : "";
     return `<div class="row">
-      <a class="call" href="tel:${esc(num.replace(/-/g, ""))}"><div class="lbl">${label}に電話</div><div class="num">${esc(num)}</div></a>
+      <a class="call" href="${href}"><div class="lbl">${label}に電話${note}</div><div class="num">${esc(num)}</div></a>
       <button class="copy" data-copy="${esc(num)}">コピー</button>
-    </div>`;
+    </div>${alarm ? `<a class="plain" href="${tel}">アラームなしで${label}に電話</a>` : ""}`;
   }
 
   function render() {
@@ -31,8 +36,8 @@ const List = (() => {
       <section class="card">
         <div class="name">${esc(s.name)}</div>
         ${s.code ? `<div class="code">現場番号：${esc(s.code)}</div>` : ""}
-        ${callRow("入場", s.inTel)}
-        ${callRow("退場", s.outTel)}
+        ${callRow("入場", s.inTel, "in")}
+        ${callRow("退場", s.outTel, "out")}
         ${/^https:\/\//.test(s.kyUrl) ? `<a class="ky" href="${esc(s.kyUrl)}" target="_blank" rel="noopener">KYを開く</a>` : ""}
         <div class="tools">
           <button data-share="${esc(s.id)}">共有の文をコピー</button>
