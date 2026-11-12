@@ -20,10 +20,11 @@
     try { nums = await OCR.read(img, (n, all) => { msg.textContent = `読み取り中…（${n}/${all}回目。読みにくい写真ほど回数が増えます）`; }); }
     catch { ocrFailed = true; }
 
-    if (ky) field("kyUrl").value = ky;
-    if (nums.code) field("code").value = nums.code;
-    if (nums.inTel) field("inTel").value = nums.inTel;
-    if (nums.outTel) field("outTel").value = nums.outTel;
+    // 前の写真の結果が残らないよう、読めなかった欄は空にする
+    field("kyUrl").value = ky;
+    field("code").value = nums.code;
+    field("inTel").value = nums.inTel;
+    field("outTel").value = nums.outTel;
 
     const lines = [
       `現場番号：${nums.code || "読めず"}`,
@@ -32,8 +33,10 @@
       `KY：${ky ? "読めた" : "読めず"}`,
     ];
     const ok = nums.inTel && nums.outTel;
+    const areaDiff = ok && nums.inTel.slice(0, 4) !== nums.outTel.slice(0, 4);
     msg.textContent = (ocrFailed ? "番号の読み取りができませんでした。電波のある所で試すか、手で入れてください。\n" : "")
       + lines.join("\n")
+      + (areaDiff ? "\n⚠ 入場と退場で頭の4けたが違います。読み間違いかもしれません。看板と1けたずつ見比べてください。" : "")
       + (ok ? "\n看板と番号が合っているか見て、邸名を入れて「追加する」を押してください。"
             : nums.inTel
               ? "\n退場が読めませんでした。入場の番号も看板と同じか必ず見てください。看板の正面から撮り直すのがおすすめです。"
