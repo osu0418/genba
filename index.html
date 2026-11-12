@@ -54,15 +54,8 @@
   </ul>
   <p>スマホを替えたときや、ブラウザの履歴を消したときは、入れた現場も消えます。共有の文をLINEに残しておくと、貼り直すだけで戻せます。</p>
 
-  <h3>5. 退場の電話を忘れないアラーム（iPhoneだけ）</h3>
-  <p>入場の電話でアラームがオンになり、退場の電話でオフになります。<b>iPhone1台につき1回</b>作れば、どの現場でも動きます。Androidでは使えません。</p>
-  <ol>
-    <li><b>時計アプリ</b>：「アラーム」→「＋」→ 帰りの時刻 → ラベルを <b>退場の電話</b> → 繰り返しは「しない」→「保存」→ スイッチを<b>オフ</b>にしておく</li>
-    <li><b>ショートカットアプリ「現場入場」</b>：「＋」→ アクション「アラームを切り替える」で「退場の電話」を<b>オン</b> → アクション「URL」に <b>tel:</b> と「ショートカットの入力」→ アクション「URLを開く」→ 名前を <b>現場入場</b></li>
-    <li><b>ショートカットアプリ「現場退場」</b>：上と同じで、アラームを<b>オフ</b>、名前を <b>現場退場</b></li>
-    <li>このアプリのいちばん下の「アラームを使う」をオンにする</li>
-  </ol>
-  <p>電話アプリから直接かけたときは、アラームは動きません。いつもこのアプリのボタンからかけてください。</p>
+  <h3>5. 退場の電話を忘れないために</h3>
+  <p>スマホの時計アプリで、帰りの時刻に「退場の電話」というアラームを作っておくと安心です（iPhoneでもAndroidでも使えます）。</p>
 </details>
 
 <div id="status"></div>
@@ -91,12 +84,6 @@
   <div id="pasteMsg" class="msg"></div>
 </section>
 
-<section class="panel">
-  <h2>退場の電話を忘れないアラーム</h2>
-  <label class="switch"><input type="checkbox" id="useAlarm"> アラームを使う</label>
-  <p class="note small">iPhoneのショートカット「現場入場」「現場退場」を作った人だけオンにしてください。オンにすると、入場の電話で時計アプリの「退場の電話」アラームがオンになり、退場の電話でオフになります。</p>
-</section>
-
 <p class="note">入れた現場は、このiPhoneの中にだけ保存されます。ホーム画面に追加して使うと消えにくくなります。</p>
 
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
@@ -105,7 +92,6 @@
 <script src="storage.js"></script>
 <script src="share.js"></script>
 <script src="list.js"></script>
-<script src="settings.js"></script>
 <script src="add.js"></script>
 <script src="qr.js"></script>
 <script src="ocr.js"></script>

@@ -10,17 +10,12 @@ const List = (() => {
   // 「森田」「もりた邸」などのゆれを吸収するため、空白と「邸」を外して比べる
   const norm = s => String(s || "").replace(/[\s　。、.]/g, "").replace(/邸$/, "");
 
-  // アラームを使うときは、電話ボタンでショートカットを動かす（入場＝アラームをオン、退場＝オフ）
   function callRow(label, num, kind, id) {
     const mark = `data-kind="${kind}" data-id="${esc(id)}"`;
-    const tel = "tel:" + esc(num.replace(/-/g, ""));
-    const alarm = !!window.Settings && window.Settings.useAlarm();
-    const href = alarm ? esc(Settings.shortcutUrl(kind, num)) : tel;
-    const note = alarm ? (kind === "in" ? "（アラームをオン）" : "（アラームをオフ）") : "";
     return `<div class="row">
-      <a class="call" ${mark} href="${href}"><div class="lbl">${label}に電話${note}</div><div class="num">${esc(num)}</div></a>
+      <a class="call" ${mark} href="tel:${esc(num.replace(/-/g, ""))}"><div class="lbl">${label}に電話</div><div class="num">${esc(num)}</div></a>
       <button class="copy" data-copy="${esc(num)}">コピー</button>
-    </div>${alarm ? `<a class="plain" ${mark} href="${tel}">アラームなしで${label}に電話</a>` : ""}`;
+    </div>`;
   }
 
   function render() {
