@@ -1,7 +1,7 @@
 // 地図で場所を選ぶ：「地図で場所を選ぶ」から、アプリの中に地図を出してピンを立てる
 // ピンは指で動かして直せる。「今いる場所」で携帯の位置を使える。選んだ点は lat / lng（緯度・経度）に入る
 // 点を選ぶと、住所の欄をその点の住所（国土地理院で調べる。町名・丁目まで）に合わせる
-// 地図の部品（Leaflet）と地図の絵（国土地理院）は、ボタンを押したときだけ読む
+// 地図の部品（Leaflet）と地図の絵（国土地理院の淡色地図・航空写真）は、ボタンを押したときだけ読む
 // 地図の右上の「⛶ 大きく」で画面いっぱいに広げられる。下の「✓ この場所にする」で元の画面に戻る
 // 「現場を追加」の欄と「帰る」の欄（home.js）の両方で使う：MapPick.make({ 欄の部品 }) で1つ作る
 const MapPick = (() => {
@@ -116,10 +116,12 @@ const MapPick = (() => {
       if (!map) {
         // 段階19・20は、段階18の絵を引き伸ばして出す（少しぼやけるが、もっと近づける）
         map = L.map(box, { tap: true, maxZoom: 20 }).setView(START, 11);
-        L.tileLayer("https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png", {
+        // 地図の絵は国土地理院の「淡色地図」（色が薄く道が見やすい）。右上のボタンで「写真」（航空写真）に切り替えられる
+        const tile = (name, ext) => L.tileLayer(`https://cyberjapandata.gsi.go.jp/xyz/${name}/{z}/{x}/{y}.${ext}`, {
           maxZoom: 20, maxNativeZoom: 18,
           attribution: '<a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank" rel="noopener">地理院タイル</a>',
-        }).addTo(map);
+        });
+        const pale = tile("pale", "png").addTo(map), photo = tile("seamlessphoto", "jpg");
         map.on("click", e => setPoint(e.latlng.lat, e.latlng.lng, false, true));
         // 右上の「⛶ 大きく」ボタン
         const Big = L.Control.extend({
@@ -134,6 +136,24 @@ const MapPick = (() => {
           },
         });
         map.addControl(new Big());
+        // 右上の「🛰 写真」「🗺 地図」の切り替えボタン
+        const Kind = L.Control.extend({
+          options: { position: "topright" },
+          onAdd() {
+            const b = L.DomUtil.create("button", "mapBigBtn");
+            b.type = "button";
+            b.textContent = "🛰 写真";
+            L.DomEvent.disableClickPropagation(b);
+            L.DomEvent.on(b, "click", () => {
+              const toPhoto = map.hasLayer(pale);
+              map.removeLayer(toPhoto ? pale : photo);
+              map.addLayer(toPhoto ? photo : pale);
+              b.textContent = toPhoto ? "🗺 地図" : "🛰 写真";
+            });
+            return b;
+          },
+        });
+        map.addControl(new Kind());
       }
       setTimeout(() => {
         map.invalidateSize();

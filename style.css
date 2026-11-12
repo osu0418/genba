@@ -73,4 +73,5 @@ label input { margin-top:4px; }
 .linkbtn { border:none; padding:8px 0 0; font-size:14px; color:var(--blue); text-decoration:underline; background:transparent; }
 .back { display:block; margin:12px; border:none; padding:8px 4px; font-size:17px; font-weight:bold; color:var(--blue); background:transparent; }
 .flash { margin:8px 12px 0; padding:10px 12px; border-radius:10px; background:var(--green); color:#fff; font-size:15px; white-space:pre-wrap; }
-.mapFull .mapBigBtn { display:none; }
+.mapFull .mapBigBtn:first-child { display:none; }
+.leaflet-top.leaflet-right .mapBigBtn + .mapBigBtn { margin-top:8px; }
