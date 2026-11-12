@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="現場入場">
+<title>現場入場アプリ</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <h1>現場入場アプリ</h1>
+  <input id="search" type="search" placeholder="邸名で探す（キーボードのマイクで話せます）" autocomplete="off">
+</header>
+
+<div id="status"></div>
+<main id="list"></main>
+
+<section class="panel">
+  <h2>現場を追加</h2>
+  <form id="addForm">
+    <label>邸名<input name="name" required placeholder="例：○○邸"></label>
+    <label>現場番号（なくてもよい）<input name="code" placeholder="例：AB12345"></label>
+    <label>入場の電話番号<input name="inTel" required inputmode="tel" placeholder="例：0766-00-0000"></label>
+    <label>退場の電話番号<input name="outTel" required inputmode="tel" placeholder="例：0766-00-0000"></label>
+    <label>KYのページ（QRの写真から読めます）<input name="kyUrl" placeholder="https://..."></label>
+    <label class="filebtn">看板の写真を選んでQRを読む<input id="qrFile" type="file" accept="image/*" hidden></label>
+    <div id="qrMsg" class="msg"></div>
+    <button type="submit" class="main">追加する</button>
+  </form>
+</section>
+
+<section class="panel">
+  <h2>共有の文を貼り付けて追加</h2>
+  <textarea id="pasteBox" rows="6" placeholder="LINEなどで受け取った【現場】から始まる文を、ここに貼り付けます"></textarea>
+  <button id="pasteBtn" class="main">貼り付けた現場を追加する</button>
+  <div id="pasteMsg" class="msg"></div>
+</section>
+
+<p class="note">入れた現場は、このiPhoneの中にだけ保存されます。ホーム画面に追加して使うと消えにくくなります。</p>
+
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+<script src="storage.js"></script>
+<script src="share.js"></script>
+<script src="list.js"></script>
+<script src="add.js"></script>
+<script src="qr.js"></script>
+</body>
+</html>
