@@ -5,7 +5,6 @@ const Home = (() => {
   const KINDS = [["souko", "倉庫"], ["jitaku", "自宅"]];
   const bar = document.getElementById("homeBar");
   const navEl = document.getElementById("homeNav");
-  const edit = document.getElementById("homeEdit");
   const forms = document.getElementById("homeForms");
   let open = "";
 
@@ -63,7 +62,7 @@ const Home = (() => {
     data[k] = { addr: v("addr").trim(), lat: num(v("lat"), 90), lng: num(v("lng"), 180) };
     const ok = save(data);
     box.querySelector('[data-m="saved"]').textContent = !ok ? "保存できませんでした。"
-      : Nav.has(data[k]) ? `${label}の住所を保存しました。上の「${label}へ」でナビが出ます。` : `${label}の住所を空にしました。`;
+      : Nav.has(data[k]) ? `${label}の住所を保存しました。「← 一覧に戻る」を押し、「${label}へ」でナビが出ます。` : `${label}の住所を空にしました。`;
     open = "";
     render();
   });
@@ -73,10 +72,11 @@ const Home = (() => {
     if (!b) return;
     const k = b.dataset.go, label = KINDS.find(x => x[0] === k)[1];
     const h = load()[k];
-    if (!Nav.has(h)) {
-      edit.open = true;
-      navEl.innerHTML = `<div class="msg warn">${label}の住所がまだ入っていません。下の「倉庫・自宅の住所を入れる・直す」から入れてください。</div>`;
+    if (!Nav.has(h)) { // まだ住所がない：入力の画面を開いて案内する
       open = "";
+      render();
+      View.show("home");
+      forms.querySelector(`[data-kind="${k}"] [data-m="saved"]`).textContent = `${label}の住所がまだ入っていません。ここで入れて「保存」を押してください。`;
       return;
     }
     if (!Nav.isIOS) { // Androidなど：ボタンが1つなので、すぐGoogleマップを開く

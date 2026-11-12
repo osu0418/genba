@@ -21,7 +21,7 @@
       if (typeof MapPick !== "undefined") MapPick.sync();
       setMode(true);
       addMsg.textContent = `「${site.name}」を直しています。`;
-      document.getElementById("addPanel").scrollIntoView({ behavior: "smooth" });
+      View.show("add");
     },
   };
   // 隠れた欄（id）は reset で消えないので、手で消す
@@ -31,7 +31,9 @@
     setMode(false);
     if (typeof MapPick !== "undefined") MapPick.sync();
   }
-  cancelBtn.addEventListener("click", () => { clearForm(); addMsg.textContent = ""; });
+  cancelBtn.addEventListener("click", () => { clearForm(); addMsg.textContent = ""; View.show("list"); });
+  // 「← 一覧に戻る」：直している途中なら、直すのをやめる（新しく入れている途中の字は残す）
+  View.onBack(cur => { if (cur === "add" && form.elements.id.value) { clearForm(); addMsg.textContent = ""; } });
 
   form.addEventListener("submit", e => {
     e.preventDefault();
@@ -48,9 +50,8 @@
     if (f.id) Store.upsert(f);
     clearForm();
     document.getElementById("photoMsg").textContent = "";
-    addMsg.textContent = `「${f.name}」を${r}しました。`;
-    List.render();
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    addMsg.textContent = "";
+    View.show("list", `「${f.name}」を${r}しました。`);
   });
 
   function addFromPaste() {
@@ -60,9 +61,9 @@
       return;
     }
     const done = sites.map(s => `「${s.name}」を${Store.upsert(s)}`);
-    pasteMsg.textContent = done.join("\n") + "しました。";
+    pasteMsg.textContent = "";
     pasteBox.value = "";
-    List.render();
+    View.show("list", done.join("\n") + "しました。");
   }
 
   // 貼り付けたら、少し待ってから自動で登録する（手で打った途中では登録しない）

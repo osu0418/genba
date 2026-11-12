@@ -53,11 +53,15 @@ label input { margin-top:4px; }
 .homeRow { display:flex; align-items:center; gap:8px; }
 .homeTitle { font-weight:bold; font-size:16px; white-space:nowrap; }
 .homeRow button { flex:1; padding:10px 6px; font-size:16px; font-weight:bold; }
-#homeEdit { margin-top:8px; }
-#homeEdit summary { font-size:14px; color:var(--sub); cursor:pointer; }
 .homeForm { border-top:1px solid var(--line); margin-top:10px; padding-top:6px; }
 .homeForm h3 { font-size:16px; margin:6px 0; }
 .note0 { color:var(--sub); font-size:13px; margin:6px 0; }
 .exitCall { display:block; color:#fff; text-decoration:none; padding:4px 0; }
 .exitCall + .exitCall { border-top:1px solid rgba(255,255,255,.4); margin-top:4px; padding-top:8px; }
 .exitGo { display:block; font-weight:bold; text-decoration:underline; }
+/* 「＋ 現場を追加」：画面の右下に浮かせる。一覧の一番下はボタンに隠れないよう余白をあける */
+.fab { position:fixed; right:16px; bottom:calc(20px + env(safe-area-inset-bottom)); z-index:5; border:none; border-radius:28px; padding:14px 20px; background:#e07b00; color:#fff; font-size:18px; font-weight:bold; box-shadow:0 3px 10px rgba(0,0,0,.3); }
+#listScreen { padding-bottom:80px; }
+.linkbtn { border:none; padding:8px 0 0; font-size:14px; color:var(--blue); text-decoration:underline; background:transparent; }
+.back { display:block; margin:12px; border:none; padding:8px 4px; font-size:17px; font-weight:bold; color:var(--blue); background:transparent; }
+.flash { margin:8px 12px 0; padding:10px 12px; border-radius:10px; background:var(--green); color:#fff; font-size:15px; white-space:pre-wrap; }

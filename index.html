@@ -6,10 +6,11 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="apple-mobile-web-app-title" content="現場入場">
 <title>現場入場アプリ</title>
-<link rel="stylesheet" href="style.css?v=4">
-<script src="line-escape.js?v=4"></script>
+<link rel="stylesheet" href="style.css?v=5">
+<script src="line-escape.js?v=5"></script>
 </head>
 <body>
+<div id="listScreen">
 <header>
   <h1>現場入場アプリ</h1>
   <input id="search" type="search" placeholder="邸名で探す（キーボードのマイクで話せます）" autocomplete="off">
@@ -23,11 +24,7 @@
     <button type="button" data-go="jitaku">自宅へ</button>
   </div>
   <div id="homeNav"></div>
-  <details id="homeEdit">
-    <summary>倉庫・自宅の住所を入れる・直す</summary>
-    <p class="note0">この携帯の中にだけ保存します。共有の文には入りません。</p>
-    <div id="homeForms"></div>
-  </details>
+  <button type="button" class="linkbtn" id="openHome">倉庫・自宅の住所を入れる・直す</button>
 </section>
 
 <details class="panel help" id="help">
@@ -35,6 +32,7 @@
   <p>現場の入場・退場の電話とKYを、ボタン1つで開けます。現場は<b>自分のスマホにだけ</b>保存されます。</p>
 
   <h3>① 現場を入れる</h3>
+  <p>「＋ 現場を追加」を押すと、入力だけの画面になります。</p>
   <ul>
     <li>📷 看板の写真を撮る（番号が自動で入る）</li>
     <li>仲間から届いた【現場】の文を貼る</li>
@@ -56,11 +54,18 @@
   </ul>
 
   <h3>🏠 帰るとき</h3>
-  <p>上の「倉庫へ」「自宅へ」でナビが出ます。最初に「倉庫・自宅の住所を入れる・直す」から住所を入れてください。</p>
+  <p>上の「倉庫へ」「自宅へ」でナビが出ます。最初に、その下の「倉庫・自宅の住所を入れる・直す」から住所を入れてください。</p>
 </details>
 
+<button type="button" class="fab" id="openAdd">＋ 現場を追加</button>
+<div id="flash" class="flash" hidden></div>
 <div id="status"></div>
 <main id="list"></main>
+<p class="note">入れた現場は、このスマホの中にだけ保存されます。LINEのお知らせのURLから開いてください（LINEの中ではなくSafariなどで開きます）。</p>
+</div>
+
+<div id="addScreen" hidden>
+<button type="button" class="back" data-back>← 一覧に戻る</button>
 
 <section class="panel" id="addPanel">
   <h2 id="addTitle">現場を追加</h2>
@@ -94,7 +99,16 @@
   <div id="pasteMsg" class="msg"></div>
 </section>
 
-<p class="note">入れた現場は、このスマホの中にだけ保存されます。LINEのお知らせのURLから開いてください（LINEの中ではなくSafariなどで開きます）。</p>
+</div>
+
+<div id="homeScreen" hidden>
+<button type="button" class="back" data-back>← 一覧に戻る</button>
+<section class="panel">
+  <h2>倉庫・自宅の住所</h2>
+  <p class="note0">この携帯の中にだけ保存します。共有の文には入りません。</p>
+  <div id="homeForms"></div>
+</section>
+</div>
 
 <div id="diag"></div>
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
@@ -104,9 +118,10 @@
 <script src="share.js?v=3"></script>
 <script src="nav.js?v=4"></script>
 <script src="list.js?v=4"></script>
-<script src="add.js?v=3"></script>
+<script src="view.js?v=5"></script>
+<script src="add.js?v=5"></script>
 <script src="mappick.js?v=4"></script>
-<script src="home.js?v=4"></script>
+<script src="home.js?v=5"></script>
 <script src="qr.js"></script>
 <script src="ocr.js"></script>
 <script src="photo.js"></script>
