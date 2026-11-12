@@ -3,7 +3,7 @@
 // 2回目（付いているのにまだLINEの中）：同じ所を回らないよう開き直さず、赤い字で知らせる
 // 原因を調べる間だけ：画面の下に「版」と「開き方」を小さく出す（直ったら消す）
 (() => {
-  const VERSION = "5";
+  const VERSION = "6";
   const ua = navigator.userAgent;
   const isLine = /\bLine\//i.test(ua);
 

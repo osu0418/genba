@@ -29,6 +29,14 @@ button { font-size:16px; border-radius:10px; padding:12px; border:1px solid var(
 .mapTools { display:flex; gap:8px; margin:-2px 0 8px; }
 .mapTools button { flex:1; font-size:15px; padding:10px 6px; }
 #mapBox, .mapBox { height:300px; border-radius:10px; margin-bottom:8px; z-index:0; }
+/* 地図を画面いっぱいに広げたとき（下の帯の分だけ地図の下をあける） */
+#mapBox.mapFull, .mapBox.mapFull { position:fixed !important; top:0; left:0; right:0; bottom:calc(118px + env(safe-area-inset-bottom)); height:auto; margin:0; border-radius:0; z-index:1000; }
+.mapFullBar { position:fixed; left:0; right:0; bottom:0; height:calc(118px + env(safe-area-inset-bottom)); padding:6px 12px calc(8px + env(safe-area-inset-bottom)); background:var(--card); z-index:1001; box-shadow:0 -1px 4px rgba(0,0,0,.2); }
+.mapFullBar .msg { margin:0 0 6px; font-size:14px; min-height:36px; max-height:40px; overflow:hidden; }
+.mapFullBar .mapTools { margin:0; }
+.mapFullBar .main { margin-top:0; font-size:16px; }
+.mapBigBtn { background:#fff; color:#1a1a1a; border:2px solid rgba(0,0,0,.3); font-size:16px; font-weight:bold; padding:8px 10px; }
+body.noScroll { overflow:hidden; }
 .tools { display:flex; gap:8px; margin-top:12px; }
 .tools button { flex:1; font-size:15px; }
 .del { color:var(--red); border-color:var(--red); }
@@ -65,3 +73,4 @@ label input { margin-top:4px; }
 .linkbtn { border:none; padding:8px 0 0; font-size:14px; color:var(--blue); text-decoration:underline; background:transparent; }
 .back { display:block; margin:12px; border:none; padding:8px 4px; font-size:17px; font-weight:bold; color:var(--blue); background:transparent; }
 .flash { margin:8px 12px 0; padding:10px 12px; border-radius:10px; background:var(--green); color:#fff; font-size:15px; white-space:pre-wrap; }
+.mapFull .mapBigBtn { display:none; }

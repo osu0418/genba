@@ -2,6 +2,7 @@
 // ピンは指で動かして直せる。「今いる場所」で携帯の位置を使える。選んだ点は lat / lng（緯度・経度）に入る
 // 点を選ぶと、住所の欄をその点の住所（国土地理院で調べる。町名・丁目まで）に合わせる
 // 地図の部品（Leaflet）と地図の絵（国土地理院）は、ボタンを押したときだけ読む
+// 地図の右上の「⛶ 大きく」で画面いっぱいに広げられる。下の「✓ この場所にする」で元の画面に戻る
 // 「現場を追加」の欄と「帰る」の欄（home.js）の両方で使う：MapPick.make({ 欄の部品 }) で1つ作る
 const MapPick = (() => {
   const START = [36.70, 137.21]; // 何も選んでいないときの真ん中（富山のあたり）
@@ -38,21 +39,42 @@ const MapPick = (() => {
 
   function make(el) {
     const { box, openBtn, hereBtn, clearBtn, msg } = el;
-    let map = null, pin = null, asked = 0;
+    let map = null, pin = null, asked = 0, full = false;
+
+    // 画面いっぱいのときに下に出す帯（今いる場所・この場所にする・お知らせの文）
+    const bar = document.createElement("div");
+    bar.className = "mapFullBar";
+    bar.hidden = true;
+    bar.innerHTML = `<div class="msg"></div><div class="mapTools"><button type="button" data-f="here">📍 今いる場所</button><button type="button" data-f="done" class="main">✓ この場所にする</button></div>`;
+    document.body.appendChild(bar);
+    const barMsg = bar.querySelector(".msg");
+
+    // お知らせの文は、入力画面の欄と画面いっぱいの帯の両方に出す
+    function say(t) { msg.textContent = t; barMsg.textContent = t; }
+
+    function setFull(on) {
+      if (full === on) return;
+      full = on;
+      box.classList.toggle("mapFull", on);
+      bar.hidden = !on;
+      document.body.classList.toggle("noScroll", on);
+      if (map) setTimeout(() => map.invalidateSize(), 50);
+      if (!on) box.scrollIntoView({ block: "center" });
+    }
 
     const lat = () => parseFloat(el.lat.value);
     const lng = () => parseFloat(el.lng.value);
     const has = () => isFinite(lat()) && isFinite(lng());
 
     function showMsg() {
-      msg.textContent = has() ? "📍 場所を選んであります（ピンを指で動かすと直せます）" : (box.hidden ? "" : "地図を押すと、その場所にピンが立ちます。");
+      say(has() ? "📍 場所を選んであります（ピンを指で動かすと直せます）" : (box.hidden ? "" : "地図を押すと、その場所にピンが立ちます。"));
       clearBtn.hidden = !has();
     }
 
     // 点から住所を調べて、住所の欄に入れる（押し直したら、後のほうだけ使う）
     async function fillAddr(la, ln) {
       const my = ++asked;
-      msg.textContent = "📍 場所を選びました。住所を調べています…";
+      say("📍 場所を選びました。住所を調べています…");
       try {
         const [res, m] = await Promise.all([
           fetch(`https://mreversegeocoder.gsi.go.jp/reverse-geocoder/LonLatToAddress?lat=${la}&lon=${ln}`).then(r => r.json()),
@@ -63,10 +85,10 @@ const MapPick = (() => {
         const city = r && m[String(r.muniCd).padStart(5, "0")];
         if (!city) throw new Error("none");
         el.addr.value = city + (r.lv01Nm && r.lv01Nm !== "－" ? r.lv01Nm : "");
-        msg.textContent = "📍 住所を地図の点に合わせました（番地までは出ません）。ピンを動かすと住所も変わります。";
+        say("📍 住所を地図の点に合わせました（番地までは出ません）。ピンを動かすと住所も変わります。");
       } catch {
         if (my !== asked) return;
-        msg.textContent = "📍 場所は選べましたが、住所を調べられませんでした。ナビはピンの場所へ向かいます。";
+        say("📍 場所は選べましたが、住所を調べられませんでした。ナビはピンの場所へ向かいます。");
       }
     }
 
@@ -88,16 +110,30 @@ const MapPick = (() => {
       box.hidden = false;
       openBtn.hidden = true;
       hereBtn.hidden = false;
-      msg.textContent = "地図を読み込んでいます…";
+      say("地図を読み込んでいます…");
       try { await load(); }
-      catch { msg.textContent = "地図を読み込めませんでした（電波を確かめてください）。住所は手で入れられます。"; return; }
+      catch { say("地図を読み込めませんでした（電波を確かめてください）。住所は手で入れられます。"); return; }
       if (!map) {
-        map = L.map(box, { tap: true }).setView(START, 11);
+        // 段階19・20は、段階18の絵を引き伸ばして出す（少しぼやけるが、もっと近づける）
+        map = L.map(box, { tap: true, maxZoom: 20 }).setView(START, 11);
         L.tileLayer("https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png", {
-          maxZoom: 18,
+          maxZoom: 20, maxNativeZoom: 18,
           attribution: '<a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank" rel="noopener">地理院タイル</a>',
         }).addTo(map);
         map.on("click", e => setPoint(e.latlng.lat, e.latlng.lng, false, true));
+        // 右上の「⛶ 大きく」ボタン
+        const Big = L.Control.extend({
+          options: { position: "topright" },
+          onAdd() {
+            const b = L.DomUtil.create("button", "mapBigBtn");
+            b.type = "button";
+            b.textContent = "⛶ 大きく";
+            L.DomEvent.disableClickPropagation(b);
+            L.DomEvent.on(b, "click", () => setFull(true));
+            return b;
+          },
+        });
+        map.addControl(new Big());
       }
       setTimeout(() => {
         map.invalidateSize();
@@ -107,14 +143,17 @@ const MapPick = (() => {
     }
 
     function here() {
-      if (!navigator.geolocation) { msg.textContent = "この携帯では今いる場所を使えません。"; return; }
-      msg.textContent = "今いる場所を調べています…";
+      if (!navigator.geolocation) { say("この携帯では今いる場所を使えません。"); return; }
+      say("今いる場所を調べています…");
       navigator.geolocation.getCurrentPosition(
         p => setPoint(p.coords.latitude, p.coords.longitude, true, true),
-        () => { msg.textContent = "今いる場所を使えませんでした（位置情報の許可を確かめてください）。地図を押して選べます。"; },
+        () => { say("今いる場所を使えませんでした（位置情報の許可を確かめてください）。地図を押して選べます。"); },
         { enableHighAccuracy: true, timeout: 15000 }
       );
     }
+
+    bar.querySelector('[data-f="here"]').addEventListener("click", here);
+    bar.querySelector('[data-f="done"]').addEventListener("click", () => setFull(false));
 
     function clear() {
       asked++;
@@ -127,6 +166,7 @@ const MapPick = (() => {
     // 入力欄を空にしたとき・「直す」で現場を開いたときに、地図を入力欄に合わせる
     function sync() {
       asked++;
+      setFull(false);
       if (pin) { pin.remove(); pin = null; }
       if (has()) {
         if (map && !box.hidden) setPoint(lat(), lng(), true);
