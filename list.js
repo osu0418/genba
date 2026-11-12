@@ -18,6 +18,20 @@ const List = (() => {
     </div>`;
   }
 
+  // ナビ：iPhoneは「マップ」と「Googleマップ」の2つ、それ以外（Androidなど）は「Googleマップ」だけ
+  const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) ||
+    (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1);
+  // 行き先：地図のピン（緯度・経度）があればそれを、なければ住所の文字を使う
+  function navRow(s) {
+    const pt = typeof s.lat === "number" && typeof s.lng === "number";
+    if (!pt && !s.addr) return "";
+    const q = encodeURIComponent(pt ? `${s.lat},${s.lng}` : s.addr);
+    const where = s.addr ? `住所：${esc(s.addr)}` : "住所：（なし）";
+    const google = `<a class="nav google" href="https://www.google.com/maps/dir/?api=1&amp;destination=${q}"><div class="lbl">ナビ</div>Googleマップ</a>`;
+    const apple = `<a class="nav apple" href="https://maps.apple.com/?daddr=${q}"><div class="lbl">ナビ</div>マップ</a>`;
+    return `<div class="addr">${where}${pt ? "　📍地図の場所あり" : ""}</div><div class="navs">${isIOS ? apple + google : google}</div>`;
+  }
+
   function render() {
     const all = Store.load();
     const q = norm(searchEl.value);
@@ -34,6 +48,7 @@ const List = (() => {
         ${s.code ? `<div class="code">現場番号：${esc(s.code)}</div>` : ""}
         ${callRow("入場", s.inTel, "in", s.id)}
         ${callRow("退場", s.outTel, "out", s.id)}
+        ${navRow(s)}
         ${/^https:\/\//.test(s.kyUrl) ? `<a class="ky" href="${esc(s.kyUrl)}" target="_blank" rel="noopener">KYを開く</a>` : ""}
         <div class="tools">
           <button data-share="${esc(s.id)}">共有の文をコピー</button>

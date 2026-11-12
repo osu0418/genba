@@ -20,6 +20,12 @@ const Store = (() => {
       .replace(/[^0-9-]/g, "");
   }
 
+  // 緯度・経度：数字で、ありえる範囲のときだけ残す（なければ空）
+  function num(v, max) {
+    const n = parseFloat(v);
+    return isFinite(n) && Math.abs(n) <= max ? n : "";
+  }
+
   // 「直す」から来たら同じ現場を上書き。そうでなければ、同じ入場番号の現場があれば上書き、なければ追加
   function upsert(site) {
     const sites = load();
@@ -30,6 +36,9 @@ const Store = (() => {
       inTel: cleanTel(site.inTel),
       outTel: cleanTel(site.outTel),
       kyUrl: String(site.kyUrl || "").trim(),
+      addr: String(site.addr || "").trim(),
+      lat: num(site.lat, 90),
+      lng: num(site.lng, 180),
     };
     let i = site.id ? sites.findIndex(x => x.id === site.id) : -1;
     if (i < 0) i = sites.findIndex(x => x.inTel === s.inTel);

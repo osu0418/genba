@@ -7,6 +7,8 @@ const Share = (() => {
       "入場：" + s.inTel,
       "退場：" + s.outTel,
       s.kyUrl ? "KY：" + s.kyUrl : "",
+      s.addr ? "住所：" + s.addr : "",
+      s.lat !== "" && s.lat != null && s.lng !== "" && s.lng != null ? "位置：" + s.lat + "," + s.lng : "",
     ].filter(Boolean).join("\n");
   }
 
@@ -23,6 +25,9 @@ const Share = (() => {
       inTel: pick(b, "入場"),
       outTel: pick(b, "退場"),
       kyUrl: (pick(b, "KY").match(/https:\/\/\S+/) || [""])[0],
+      addr: pick(b, "住所"),
+      lat: (pick(b, "位置").split(/[,，]/)[0] || "").trim(),
+      lng: (pick(b, "位置").split(/[,，]/)[1] || "").trim(),
     })).filter(s => s.name && s.inTel && s.outTel);
   }
 

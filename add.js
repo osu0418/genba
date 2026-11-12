@@ -17,14 +17,20 @@
   }
   window.Editor = {
     start(site) {
-      for (const k of ["id", "name", "code", "inTel", "outTel", "kyUrl"]) form.elements[k].value = site[k] || "";
+      for (const k of ["id", "name", "code", "inTel", "outTel", "kyUrl", "addr", "lat", "lng"]) form.elements[k].value = site[k] ?? "";
+      if (typeof MapPick !== "undefined") MapPick.sync();
       setMode(true);
       addMsg.textContent = `「${site.name}」を直しています。`;
       document.getElementById("addPanel").scrollIntoView({ behavior: "smooth" });
     },
   };
   // 隠れた欄（id）は reset で消えないので、手で消す
-  function clearForm() { form.reset(); form.elements.id.value = ""; setMode(false); }
+  function clearForm() {
+    form.reset();
+    for (const k of ["id", "lat", "lng"]) form.elements[k].value = "";
+    setMode(false);
+    if (typeof MapPick !== "undefined") MapPick.sync();
+  }
   cancelBtn.addEventListener("click", () => { clearForm(); addMsg.textContent = ""; });
 
   form.addEventListener("submit", e => {

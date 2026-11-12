@@ -20,6 +20,15 @@ input, textarea { width:100%; font-size:17px; padding:10px; border:1px solid var
 button { font-size:16px; border-radius:10px; padding:12px; border:1px solid var(--sub); background:transparent; color:var(--text); }
 .copy { min-width:64px; }
 .ky { display:block; text-align:center; text-decoration:none; color:#fff; background:var(--green); border-radius:10px; padding:14px; font-size:18px; font-weight:bold; margin-top:12px; }
+.addr { color:var(--sub); font-size:14px; margin-top:12px; }
+.navs { display:flex; gap:8px; margin-top:6px; }
+.nav { flex:1; display:block; text-align:center; text-decoration:none; color:#fff; border-radius:10px; padding:10px 8px; font-size:18px; font-weight:bold; white-space:nowrap; }
+.nav .lbl { font-size:13px; font-weight:normal; opacity:.9; }
+.nav.apple { background:#555; }
+.nav.google { background:#1a73e8; }
+.mapTools { display:flex; gap:8px; margin:-2px 0 8px; }
+.mapTools button { flex:1; font-size:15px; padding:10px 6px; }
+#mapBox { height:300px; border-radius:10px; margin-bottom:8px; z-index:0; }
 .tools { display:flex; gap:8px; margin-top:12px; }
 .tools button { flex:1; font-size:15px; }
 .del { color:var(--red); border-color:var(--red); }

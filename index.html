@@ -6,8 +6,8 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="apple-mobile-web-app-title" content="現場入場">
 <title>現場入場アプリ</title>
-<link rel="stylesheet" href="style.css">
-<script src="line-escape.js?v=2"></script>
+<link rel="stylesheet" href="style.css?v=3">
+<script src="line-escape.js?v=3"></script>
 </head>
 <body>
 <header>
@@ -27,6 +27,7 @@
     <li>手で打つ</li>
   </ul>
   <p class="warn">⚠ 写真のあとは、看板と番号を見比べてください。</p>
+  <p>住所を入れるか、「地図で場所を選ぶ」でピンを立てると（住所も自動で入ります）、地図アプリで道案内（ナビ）を始めるボタンが出ます。</p>
 
   <h3>② 退場の電話がまだのとき</h3>
   <p>入場の電話を押した日は、退場の電話を押すまで上に赤い字が出ます。</p>
@@ -55,6 +56,15 @@
     <label>入場の電話番号<input name="inTel" required inputmode="tel" placeholder="例：0766-00-0000"></label>
     <label>退場の電話番号<input name="outTel" required inputmode="tel" placeholder="例：0766-00-0000"></label>
     <label>KYのページ<input name="kyUrl" placeholder="https://..."></label>
+    <label>住所（入れると「ナビ」のボタンが出ます。地図で選ぶと自動で入ります。なくてもよい）<input name="addr" placeholder="例：富山県〇〇市〇〇町1-2" autocomplete="off"></label>
+    <input type="hidden" name="lat"><input type="hidden" name="lng">
+    <div class="mapTools">
+      <button type="button" id="mapOpen">🗺 地図で場所を選ぶ</button>
+      <button type="button" id="mapHere" hidden>📍 今いる場所</button>
+      <button type="button" id="mapClear" class="del" hidden>場所を消す</button>
+    </div>
+    <div id="mapBox" hidden></div>
+    <div id="mapMsg" class="msg"></div>
     <div id="addMsg" class="msg"></div>
     <button type="submit" class="main" id="addBtn">追加する</button>
     <button type="button" id="cancelEdit" hidden>直すのをやめる</button>
@@ -73,10 +83,11 @@
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/libphonenumber-js@1.13.16/bundle/libphonenumber-min.js"></script>
-<script src="storage.js"></script>
-<script src="share.js"></script>
-<script src="list.js"></script>
-<script src="add.js"></script>
+<script src="storage.js?v=3"></script>
+<script src="share.js?v=3"></script>
+<script src="list.js?v=3"></script>
+<script src="add.js?v=3"></script>
+<script src="mappick.js?v=3"></script>
 <script src="qr.js"></script>
 <script src="ocr.js"></script>
 <script src="photo.js"></script>
