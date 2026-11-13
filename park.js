@@ -42,12 +42,21 @@ const Park = (() => {
     hereBtn.textContent = hasPlace() ? "📍 今いる場所で登録し直す" : "📍 今いる場所を、この駐車場にする";
   }
 
+  // 保存していない直しがあるか見るため、画面を開いた・保存したときの中身を覚えておく
+  let saved = "";
+  const snap = () => {
+    const o = Object.fromEntries(new FormData(form));
+    for (const k of ["lat", "lng"]) o[k] = o[k] === "" ? "" : String(+o[k]); // 「34.7712」と「34.771200」を同じとみなす
+    return JSON.stringify(o);
+  };
+
   function clearForm() {
     form.reset();
     for (const k of ["id", "lat", "lng", "checked"]) form.elements[k].value = "";
     pasteBox.value = "";
     saveBtn.textContent = "この駐車場を保存";
     cancelBtn.hidden = true;
+    saved = snap();
     readNo++;
     mark("name", false); mark("price", false);
     photoMsg.textContent = "";
@@ -103,6 +112,7 @@ const Park = (() => {
       cancelBtn.hidden = false;
       picker.sync();
       showPlace();
+      saved = snap();
       msg.textContent = `「${p.name || "名前なし"}」を直しています。`;
       form.scrollIntoView({ behavior: "smooth" });
     } else if (confirm(`「${p.name || "名前なし"}」を削除しますか？\n元に戻せません。`)) {
@@ -115,7 +125,10 @@ const Park = (() => {
   hereBtn.addEventListener("click", () => {
     if (!navigator.geolocation) { placeMsg.textContent = "この携帯では今いる場所を使えません。"; return; }
     placeMsg.textContent = "今いる場所を調べています…";
+    const before = form.elements.lat.value + "," + form.elements.lng.value;
     navigator.geolocation.getCurrentPosition(pos => {
+      // 調べている間に地図でピンを動かしていたら、手で選んだ場所を残す（遅れた返事で上書きしない）
+      if (form.elements.lat.value + "," + form.elements.lng.value !== before) { showPlace(); return; }
       form.elements.lat.value = pos.coords.latitude.toFixed(6);
       form.elements.lng.value = pos.coords.longitude.toFixed(6);
       const m = Math.round(pos.coords.accuracy || 0);
@@ -205,8 +218,7 @@ const Park = (() => {
   pasteBox.addEventListener("paste", () => setTimeout(fromPaste, 50));
   pasteBox.addEventListener("blur", fromPaste);
 
-  form.addEventListener("submit", e => {
-    e.preventDefault();
+  function save() {
     if (!hasPlace()) { msg.textContent = "場所がまだです。駐車場の中で📍のボタンを押してください。"; return; }
     const f = Object.fromEntries(new FormData(form));
     f.checked = Store.today(); // 保存した日を「確認日」にする（直したときも新しくする）
@@ -216,10 +228,17 @@ const Park = (() => {
     renderList();
     msg.textContent = `「${f.name || "名前なし"}」を${editing ? "直" : "保存"}しました。`;
     window.scrollTo(0, 0);
-  });
+  }
+  form.addEventListener("submit", e => { e.preventDefault(); save(); });
 
   cancelBtn.addEventListener("click", () => { clearForm(); msg.textContent = ""; });
-  View.onBack(cur => { if (cur === "park") clearForm(); });
+  // 「← 一覧に戻る」：保存していない直し（場所を動かした・字を打った）があれば、保存するか聞く
+  View.onBack(cur => {
+    if (cur !== "park") return;
+    if (hasPlace() && snap() !== saved &&
+        confirm("保存していない直しがあります。保存しますか？\n（「キャンセル」を押すと、直しは捨てます）")) save();
+    clearForm();
+  });
 
   return { open };
 })();
