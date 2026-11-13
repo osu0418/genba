@@ -107,7 +107,8 @@ const MapPick = (() => {
         if (move) map.setView([la, ln], Math.max(map.getZoom(), 17));
       }
       showMsg();
-      if (el.onChange) el.onChange(); // 使う側（駐車場の画面など）に「場所が変わった」と知らせる
+      // 使う側（駐車場の画面など）に「場所が変わった」と知らせる。fill が true＝人が地図を押した・ピンを動かした
+      if (el.onChange) el.onChange(!!fill);
       if (fill) fillAddr(la, ln);
     }
 
@@ -202,7 +203,7 @@ const MapPick = (() => {
       el.lng.value = "";
       if (pin) { pin.remove(); pin = null; }
       showMsg();
-      if (el.onChange) el.onChange();
+      if (el.onChange) el.onChange(false);
     }
 
     // 入力欄を空にしたとき・「直す」で現場を開いたときに、地図を入力欄に合わせる

@@ -16,15 +16,18 @@ const Park = (() => {
   // 地図でピンを直す：現場の地図と同じ仕組み（mappick.js）を使う。ピンを動かすと場所と住所が変わる
   // 「今いる場所」は上の📍ボタンがあるので、地図の中のボタンは画面に出さない（作るだけ）
   const mapOpen = document.getElementById("parkMapOpen");
+  const mapSave = document.getElementById("parkMapSave");
   const picker = MapPick.make({
     box: document.getElementById("parkMapBox"), openBtn: mapOpen,
     hereBtn: document.createElement("button"), clearBtn: document.createElement("button"),
     msg: document.getElementById("parkMapMsg"),
     lat: form.elements.lat, lng: form.elements.lng, addr: form.elements.addr,
-    onChange: () => showPlace(),
+    // ピンを人が動かしたら、地図のすぐ下に「✓ この場所で保存」を出す（下の保存ボタンまで探さなくてよいように）
+    onChange: manual => { showPlace(); if (manual) mapSave.hidden = false; },
   });
   // 地図を閉じた形に戻す（別の駐車場を入れるとき・直すとき）
   function resetMap() {
+    mapSave.hidden = true;
     document.getElementById("parkMapBox").hidden = true;
     mapOpen.hidden = false;
     picker.sync();
@@ -230,6 +233,7 @@ const Park = (() => {
     window.scrollTo(0, 0);
   }
   form.addEventListener("submit", e => { e.preventDefault(); save(); });
+  mapSave.addEventListener("click", save);
 
   cancelBtn.addEventListener("click", () => { clearForm(); msg.textContent = ""; });
   // 「← 一覧に戻る」：保存していない直し（場所を動かした・字を打った）があれば、保存するか聞く
