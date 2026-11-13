@@ -166,23 +166,38 @@ const Park = (() => {
   form.addEventListener("input", e => { if (e.target.value && e.target.closest("label.need")) mark(e.target.name, false); });
 
   photoInput.addEventListener("change", async () => {
-    const file = photoInput.files[0];
+    const files = [...photoInput.files];
     photoInput.value = "";
-    if (!file) return;
+    if (!files.length) return;
     const my = ++readNo;
     photoMsg.textContent = "読み取り中…（初めては日本語の準備で30秒ほどかかります）";
-    let img, got;
-    try { img = await createImageBitmap(file); }
-    catch { photoMsg.textContent = "写真を開けませんでした。"; return; }
-    try { got = await ParkOCR.read(img, (n, all) => { if (my === readNo) photoMsg.textContent = `読み取り中…（${n}/${all}回目）`; }); }
-    catch { if (my === readNo) photoMsg.textContent = "読み取りができませんでした。電波のある所で試すか、手で入れてください。"; return; }
-    finally { img.close && img.close(); } // 写真をメモリから外す（iPhoneが重くならないように）
-    if (my !== readNo) return; // 読んでいる間に別の駐車場に移った・次の写真を選んだ
+    const results = [];
+    let failed = 0;
+    // 1枚ずつ読む（まとめて開くとiPhoneのメモリが足りなくなるため）
+    for (const [i, file] of files.entries()) {
+      let img;
+      try { img = await createImageBitmap(file); }
+      catch { failed++; continue; }
+      try {
+        results.push(await ParkOCR.read(img, (n, all) => {
+          if (my === readNo) photoMsg.textContent = `読み取り中…（${i + 1}/${files.length}枚目 ${n}/${all}回目）`;
+        }));
+      } catch { failed++; }
+      finally { img.close && img.close(); } // 写真をメモリから外す（iPhoneが重くならないように）
+      if (my !== readNo) return; // 読んでいる間に別の駐車場に移った・次の写真を選んだ
+    }
+    if (!results.length) {
+      photoMsg.textContent = "読み取りができませんでした。電波のある所で試すか、手で入れてください。";
+      return;
+    }
+    const got = ParkOCR.merge(results);
+    // 料金：前の写真で「看板で確かめる」つきになっていて、今回は時間つきで読めたら入れ替える
+    if (got.price && /確かめる/.test(form.elements.price.value) && !/確かめる/.test(got.price)) form.elements.price.value = "";
     fill(got, true, true);
     const read = Object.keys(NAMES).filter(k => got[k]);
     mark("name", !got.name);
     mark("price", !got.price);
-    photoMsg.textContent = (read.length ? "読めた所：" + read.map(k => NAMES[k]).join("・") : "読めた所はありませんでした。")
+    photoMsg.textContent = (failed ? `${failed}枚は読めませんでした。\n` : "") + (read.length ? "読めた所：" + read.map(k => NAMES[k]).join("・") : "読めた所はありませんでした。")
       + "\n⚠ 読み違いがあります。看板と見比べて、違う所は直してください。"
       + (hasPlace() ? "" : "\n場所がまだです。駐車場の中なら📍を押してください。");
   });
