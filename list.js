@@ -25,6 +25,23 @@ const List = (() => {
     return `<div class="addr">${where}${Nav.hasPoint(s) ? "　📍地図の場所あり" : ""}</div>${Nav.links(s)}`;
   }
 
+  // 駐車場：ふだんはたたんでおき（カードを短くするため）、押すと料金・決まり・ナビが出る
+  function parkRow(s) {
+    const parks = s.parks || [];
+    const btn = `<button type="button" class="parkBtn" data-park="${esc(s.id)}">🅿 駐車場を${parks.length ? "足す・直す" : "登録"}</button>`;
+    if (!parks.length) return btn;
+    const line = (label, v) => v ? `<div>${label}：${esc(v)}</div>` : "";
+    const items = parks.map(p => `<div class="parkCard">
+        <div class="parkName">🅿 ${esc(p.name || "名前なし")}</div>
+        ${line("料金", p.price)}${line("最大料金の決まり", p.rule)}${line("車の大きさ", p.size)}
+        ${line("形", p.kind)}${line("予約制", p.reserve)}${line("連絡先", p.tel)}${line("メモ", p.memo)}
+        <div class="note0">確認日：${esc(p.checked)}</div>
+        ${Nav.links(p)}
+      </div>`).join("");
+    const first = parks[0];
+    return `<details class="parks"><summary>🅿 駐車場 ${parks.length}か所${first.price ? "（" + esc(first.price) + (parks.length > 1 ? " ほか" : "") + "）" : ""}</summary>${items}${btn}</details>`;
+  }
+
   function render() {
     const all = Store.load();
     const q = norm(searchEl.value);
@@ -43,6 +60,7 @@ const List = (() => {
         ${callRow("退場", s.outTel, "out", s.id)}
         ${navRow(s)}
         ${/^https:\/\//.test(s.kyUrl) ? `<a class="ky" href="${esc(s.kyUrl)}" target="_blank" rel="noopener">KYを開く</a>` : ""}
+        ${parkRow(s)}
         <div class="tools">
           <button data-share="${esc(s.id)}">共有の文をコピー</button>
           <button data-edit="${esc(s.id)}">直す</button>
@@ -62,8 +80,9 @@ const List = (() => {
     const b = e.target.closest("button");
     if (!b) return;
     if (b.dataset.copy) return copy(b, b.dataset.copy, "コピー");
-    const site = Store.load().find(s => s.id === (b.dataset.share || b.dataset.del || b.dataset.edit));
+    const site = Store.load().find(s => s.id === (b.dataset.share || b.dataset.del || b.dataset.edit || b.dataset.park));
     if (!site) return;
+    if (b.dataset.park) return Park.open(site.id);
     if (b.dataset.edit) return Editor.start(site);
     if (b.dataset.share) return copy(b, Share.toText(site), "共有の文をコピー");
     if (b.dataset.del && confirm(`「${site.name}」を削除しますか？\n元に戻せません。`)) {

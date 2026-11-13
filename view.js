@@ -5,6 +5,7 @@ const View = (() => {
     list: document.getElementById("listScreen"),
     add: document.getElementById("addScreen"),
     home: document.getElementById("homeScreen"),
+    park: document.getElementById("parkScreen"),
   };
   const flash = document.getElementById("flash");
   const backFns = [];

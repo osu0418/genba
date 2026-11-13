@@ -9,7 +9,9 @@ const Share = (() => {
       s.kyUrl ? "KY：" + s.kyUrl : "",
       s.addr ? "住所：" + s.addr : "",
       s.lat !== "" && s.lat != null && s.lng !== "" && s.lng != null ? "位置：" + s.lat + "," + s.lng : "",
-    ].filter(Boolean).join("\n");
+    ].filter(Boolean)
+      .concat((s.parks || []).map(p => ParkText.toText(p))) // 駐車場は【駐車場】ごとに後ろへ付ける
+      .join("\n");
   }
 
   // 【現場】ごとに区切って読む。複数の現場を一度に貼ってもよい
@@ -19,7 +21,9 @@ const Share = (() => {
       const m = b.match(new RegExp("^\\s*" + label + "\\s*[：:]\\s*(.+)$", "m"));
       return m ? m[1].trim() : "";
     };
-    return blocks.map(b => ({
+    // 現場の欄は【駐車場】より前だけから読む（駐車場の住所・位置と取り違えないため）
+    return blocks.map(all => ({ b: all.split(/【駐車場】/)[0], all })).map(({ b, all }) => ({
+      parks: ParkText.parse(all),
       name: b.split("\n")[0].trim(),
       code: pick(b, "番号"),
       inTel: pick(b, "入場"),
