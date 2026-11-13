@@ -11,6 +11,24 @@ const Park = (() => {
   const cancelBtn = document.getElementById("parkCancel");
   const hereBtn = document.getElementById("parkHere");
   let siteId = "";
+  let readNo = 0; // 写真の読み取りの番号。画面を片付けたり次の写真を選んだら増やし、古い結果は使わない
+
+  // 地図でピンを直す：現場の地図と同じ仕組み（mappick.js）を使う。ピンを動かすと場所と住所が変わる
+  // 「今いる場所」は上の📍ボタンがあるので、地図の中のボタンは画面に出さない（作るだけ）
+  const mapOpen = document.getElementById("parkMapOpen");
+  const picker = MapPick.make({
+    box: document.getElementById("parkMapBox"), openBtn: mapOpen,
+    hereBtn: document.createElement("button"), clearBtn: document.createElement("button"),
+    msg: document.getElementById("parkMapMsg"),
+    lat: form.elements.lat, lng: form.elements.lng, addr: form.elements.addr,
+    onChange: () => showPlace(),
+  });
+  // 地図を閉じた形に戻す（別の駐車場を入れるとき・直すとき）
+  function resetMap() {
+    document.getElementById("parkMapBox").hidden = true;
+    mapOpen.hidden = false;
+    picker.sync();
+  }
 
   const esc = s => String(s ?? "").replace(/[&<>"']/g, c =>
     ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -19,7 +37,7 @@ const Park = (() => {
 
   function showPlace(extra) {
     placeMsg.textContent = hasPlace()
-      ? "✅ 場所は登録ずみ" + (extra || "") + "（ずれていたら、駐車場の中でもう一度押す）"
+      ? "✅ 場所は登録ずみ" + (extra || "") + "（ずれていたら「🗺 地図でピンを直す」でピンを動かす）"
       : "まだ場所がありません。駐車場の中で上のボタンを押してください。";
     hereBtn.textContent = hasPlace() ? "📍 今いる場所で登録し直す" : "📍 今いる場所を、この駐車場にする";
   }
@@ -30,6 +48,10 @@ const Park = (() => {
     pasteBox.value = "";
     saveBtn.textContent = "この駐車場を保存";
     cancelBtn.hidden = true;
+    readNo++;
+    mark("name", false); mark("price", false);
+    photoMsg.textContent = "";
+    resetMap();
     showPlace();
   }
 
@@ -58,9 +80,11 @@ const Park = (() => {
   }
 
   // onlyFilled：貼った文にある欄だけ入れる（先に手で打った欄を消さないため）
-  function fill(p, onlyFilled) {
+  // onlyEmpty：空の欄にだけ入れる（写真の読み違いで、手で打った正しい字を消さないため）
+  function fill(p, onlyFilled, onlyEmpty) {
     for (const [, k] of ParkText.LABELS) {
       if (onlyFilled && !p[k]) continue;
+      if (onlyEmpty && form.elements[k].value.trim()) continue;
       form.elements[k].value = p[k] ?? "";
     }
   }
@@ -77,6 +101,7 @@ const Park = (() => {
       for (const k of ["id", "lat", "lng", "checked"]) form.elements[k].value = p[k] ?? "";
       saveBtn.textContent = "直して保存";
       cancelBtn.hidden = false;
+      picker.sync();
       showPlace();
       msg.textContent = `「${p.name || "名前なし"}」を直しています。`;
       form.scrollIntoView({ behavior: "smooth" });
@@ -95,6 +120,7 @@ const Park = (() => {
       form.elements.lng.value = pos.coords.longitude.toFixed(6);
       const m = Math.round(pos.coords.accuracy || 0);
       msg.textContent = msg.textContent.replace(/\n?⚠ 場所がまだ.*$/, ""); // 古い「場所がまだ」を消す
+      picker.sync(); // 地図を開いていれば、ピンを今いる場所へ動かす
       showPlace(m ?`（ずれ 約${m}m${m > 100 ? "。大きいので外の開けた所で押し直すのがおすすめ" : ""}）` : "");
     }, () => {
       placeMsg.textContent = "今いる場所を使えませんでした。位置情報の許可を確かめて、もう一度押してください。";
@@ -109,17 +135,58 @@ const Park = (() => {
       return;
     }
     fill(p, true);
+    for (const k of ["name", "price"]) if (form.elements[k].value.trim()) mark(k, false);
     // 文の「位置」は、正しい数のときだけ使う（📍がまだのときだけ）
     const la = parseFloat(p.lat), ln = parseFloat(p.lng);
     if (!hasPlace() && isFinite(la) && isFinite(ln) && Math.abs(la) <= 90 && Math.abs(ln) <= 180) {
       form.elements.lat.value = p.lat;
       form.elements.lng.value = p.lng;
+      picker.sync();
     }
     pasteBox.value = "";
     showPlace();
     msg.textContent = "文から読み取りました。中身を確かめて「保存」を押してください。"
       + (hasPlace() ? "" : "\n⚠ 場所がまだです。駐車場の中で📍を押してください。");
   }
+  // 看板の写真で入れる：読めた欄だけ入れ、読めなかった大事な欄（名前・料金）は赤枠で知らせる
+  const photoInput = document.getElementById("parkPhoto");
+  const photoMsg = document.getElementById("parkPhotoMsg");
+  const NAMES = { name: "名前", price: "料金", rule: "最大料金の決まり", size: "車の大きさ", kind: "形", reserve: "予約制", tel: "連絡先" };
+  function mark(k, on) {
+    const label = form.elements[k].closest("label");
+    label.classList.toggle("need", on);
+    label.querySelector(".needNote")?.remove();
+    if (on) {
+      const note = document.createElement("span");
+      note.className = "needNote";
+      note.textContent = "↓ 読めませんでした。看板を見て手で入れてください";
+      label.insertBefore(note, form.elements[k]);
+    }
+  }
+  form.addEventListener("input", e => { if (e.target.value && e.target.closest("label.need")) mark(e.target.name, false); });
+
+  photoInput.addEventListener("change", async () => {
+    const file = photoInput.files[0];
+    photoInput.value = "";
+    if (!file) return;
+    const my = ++readNo;
+    photoMsg.textContent = "読み取り中…（初めては日本語の準備で30秒ほどかかります）";
+    let img, got;
+    try { img = await createImageBitmap(file); }
+    catch { photoMsg.textContent = "写真を開けませんでした。"; return; }
+    try { got = await ParkOCR.read(img, (n, all) => { if (my === readNo) photoMsg.textContent = `読み取り中…（${n}/${all}回目）`; }); }
+    catch { if (my === readNo) photoMsg.textContent = "読み取りができませんでした。電波のある所で試すか、手で入れてください。"; return; }
+    finally { img.close && img.close(); } // 写真をメモリから外す（iPhoneが重くならないように）
+    if (my !== readNo) return; // 読んでいる間に別の駐車場に移った・次の写真を選んだ
+    fill(got, true, true);
+    const read = Object.keys(NAMES).filter(k => got[k]);
+    mark("name", !got.name);
+    mark("price", !got.price);
+    photoMsg.textContent = (read.length ? "読めた所：" + read.map(k => NAMES[k]).join("・") : "読めた所はありませんでした。")
+      + "\n⚠ 読み違いがあります。看板と見比べて、違う所は直してください。"
+      + (hasPlace() ? "" : "\n場所がまだです。駐車場の中なら📍を押してください。");
+  });
+
   pasteBox.addEventListener("paste", () => setTimeout(fromPaste, 50));
   pasteBox.addEventListener("blur", fromPaste);
 

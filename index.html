@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-title" content="現場入場">
 <title>現場入場アプリ</title>
 <link rel="stylesheet" href="style.css?v=11">
-<script src="line-escape.js?v=10"></script>
+<script src="line-escape.js?v=11"></script>
 </head>
 <body>
 <div id="listScreen">
@@ -57,7 +57,8 @@
   <p>現場のカードの「🅿 駐車場を登録」から、その現場の駐車場を入れられます。</p>
   <ul>
     <li><b>駐車場の中で</b>「📍 今いる場所を、この駐車場にする」を押す（場所は必須）</li>
-    <li>料金などは、看板の写真をClaudeに送って出てきた【駐車場】の文を貼るか、手で打つ（空でもよい）</li>
+    <li>場所がずれていたら「🗺 地図でピンを直す」でピンを動かす</li>
+    <li>料金などは「📷 看板の写真で入れる」で読み取る（読み違いがあるので看板と見比べる）。Claudeに看板の写真を送って出てきた【駐車場】の文を貼る・手で打つ、でもよい（空でもよい）</li>
     <li>入れた駐車場は「共有の文」にもいっしょに入ります</li>
   </ul>
   <p class="warn">⚠ 料金は変わることがあります。確認日が古いときは、現地の看板で確かめてください。</p>
@@ -134,6 +135,11 @@
     <input type="hidden" name="id"><input type="hidden" name="lat"><input type="hidden" name="lng"><input type="hidden" name="checked">
     <button type="button" class="main" id="parkHere">📍 今いる場所を、この駐車場にする</button>
     <div id="parkPlaceMsg" class="msg"></div>
+    <div class="mapTools"><button type="button" id="parkMapOpen">🗺 地図でピンを直す</button></div>
+    <div id="parkMapBox" class="mapBox" hidden></div>
+    <div id="parkMapMsg" class="msg"></div>
+    <label class="filebtn photo">📷 看板の写真で入れる<input id="parkPhoto" type="file" accept="image/*" hidden></label>
+    <div id="parkPhotoMsg" class="msg"></div>
     <label>Claudeの【駐車場】の文を貼る（看板の写真をClaudeに送ると出ます）<textarea id="parkPaste" rows="3" placeholder="【駐車場】から始まる文をここに貼ると、下の欄に入ります"></textarea></label>
     <label>名前<input name="name" placeholder="例：稲葉町チケット式24時間駐車場"></label>
     <label>料金<input name="price" placeholder="例：24時間500円"></label>
@@ -162,9 +168,10 @@
 <script src="list.js?v=6"></script>
 <script src="view.js?v=6"></script>
 <script src="add.js?v=5"></script>
-<script src="park.js?v=10"></script>
-<script src="mappick.js?v=9"></script>
+<script src="mappick.js?v=10"></script>
 <script src="home.js?v=7"></script>
+<script src="parkocr.js?v=11"></script>
+<script src="park.js?v=12"></script>
 <script src="qr.js"></script>
 <script src="ocr.js"></script>
 <script src="photo.js?v=9"></script>

@@ -4,7 +4,7 @@
 // 地図の部品（Leaflet）と地図の絵（国土地理院の淡色地図・航空写真）は、ボタンを押したときだけ読む
 // 地図を開くと、今いる場所のあたりを出す（まだ場所を選んでいないとき）
 // 地図の右上の「⛶ 大きく」で画面いっぱいに広げられる。下の「✓ この場所にする」で元の画面に戻る
-// 「現場を追加」の欄と「帰る」の欄（home.js）の両方で使う：MapPick.make({ 欄の部品 }) で1つ作る
+// 「現場を追加」の欄・「帰る」の欄（home.js）・駐車場の画面（park.js）で使う：MapPick.make({ 欄の部品 }) で1つ作る
 const MapPick = (() => {
   const START = [36.70, 137.21]; // 何も選んでいないときの真ん中（富山のあたり）
   let loading = null, muni = null;
@@ -107,6 +107,7 @@ const MapPick = (() => {
         if (move) map.setView([la, ln], Math.max(map.getZoom(), 17));
       }
       showMsg();
+      if (el.onChange) el.onChange(); // 使う側（駐車場の画面など）に「場所が変わった」と知らせる
       if (fill) fillAddr(la, ln);
     }
 
@@ -201,6 +202,7 @@ const MapPick = (() => {
       el.lng.value = "";
       if (pin) { pin.remove(); pin = null; }
       showMsg();
+      if (el.onChange) el.onChange();
     }
 
     // 入力欄を空にしたとき・「直す」で現場を開いたときに、地図を入力欄に合わせる
