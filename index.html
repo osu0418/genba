@@ -6,8 +6,8 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="apple-mobile-web-app-title" content="現場入場">
 <title>現場入場アプリ</title>
-<link rel="stylesheet" href="style.css?v=6">
-<script src="line-escape.js?v=8"></script>
+<link rel="stylesheet" href="style.css?v=9">
+<script src="line-escape.js?v=9"></script>
 </head>
 <body>
 <div id="listScreen">
@@ -71,6 +71,9 @@
   <h2 id="addTitle">現場を追加</h2>
   <label class="filebtn photo">📷 看板の写真で登録<input id="photoFile" type="file" accept="image/*" hidden></label>
   <div id="photoMsg" class="msg"></div>
+  <div id="photoHere" class="askBox" hidden>📍 今いる場所を、この現場の住所にしますか？
+    <div class="mapTools"><button type="button" class="main" id="photoHereYes">はい</button><button type="button" id="photoHereNo">いいえ</button></div>
+  </div>
   <form id="addForm">
     <input type="hidden" name="id">
     <label>邸名（空なら現場番号を名前にします）<input name="name" placeholder="邸名がまだ入っていません"></label>
@@ -120,11 +123,11 @@
 <script src="list.js?v=4"></script>
 <script src="view.js?v=5"></script>
 <script src="add.js?v=5"></script>
-<script src="mappick.js?v=8"></script>
+<script src="mappick.js?v=9"></script>
 <script src="home.js?v=7"></script>
 <script src="qr.js"></script>
 <script src="ocr.js"></script>
-<script src="photo.js"></script>
+<script src="photo.js?v=9"></script>
 <script src="tel-format.js"></script>
 <script src="help.js"></script>
 <script src="status.js?v=4"></script>

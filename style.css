@@ -37,6 +37,10 @@ button { font-size:16px; border-radius:10px; padding:12px; border:1px solid var(
 .mapFullBar .main { margin-top:0; font-size:16px; }
 .mapBigBtn { background:#fff; color:#1a1a1a; border:2px solid rgba(0,0,0,.3); font-size:16px; font-weight:bold; padding:8px 10px; }
 body.noScroll { overflow:hidden; }
+/* 写真で登録したときに「今いる場所を住所にしますか？」と聞く枠 */
+.askBox { margin-top:10px; padding:12px; border:2px solid #e07b00; border-radius:12px; font-size:16px; font-weight:bold; }
+.askBox .mapTools { margin:10px 0 0; }
+.askBox .main { margin-top:0; }
 .tools { display:flex; gap:8px; margin-top:12px; }
 .tools button { flex:1; font-size:15px; }
 .del { color:var(--red); border-color:var(--red); }

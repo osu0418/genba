@@ -215,18 +215,24 @@ const MapPick = (() => {
       showMsg();
     }
 
+    // 地図を開いて（開いていなければ）、今いる場所にピンを立てる。写真で登録したときの「はい」から使う
+    async function openHere() {
+      if (box.hidden) await open();
+      if (window.L) here();
+    }
+
     openBtn.addEventListener("click", open);
     hereBtn.addEventListener("click", here);
     clearBtn.addEventListener("click", clear);
-    return { sync };
+    return { sync, openHere };
   }
 
-  // 「現場を追加」の欄の地図（add.js から MapPick.sync() で使う）
+  // 「現場を追加」の欄の地図（add.js から MapPick.sync()、photo.js から MapPick.openHere() で使う）
   const f = document.getElementById("addForm").elements;
   const add = make({
     box: document.getElementById("mapBox"), openBtn: document.getElementById("mapOpen"),
     hereBtn: document.getElementById("mapHere"), clearBtn: document.getElementById("mapClear"),
     msg: document.getElementById("mapMsg"), lat: f.lat, lng: f.lng, addr: f.addr,
   });
-  return { sync: add.sync, make };
+  return { sync: add.sync, openHere: add.openHere, make };
 })();

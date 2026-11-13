@@ -4,12 +4,18 @@
   const msg = document.getElementById("photoMsg");
   const form = document.getElementById("addForm");
   const field = n => form.querySelector(`[name="${n}"]`);
+  // 「今いる場所を、この現場の住所にしますか？」の枠（住所も地図の場所もまだ空のときだけ出す）
+  const ask = document.getElementById("photoHere");
+  document.getElementById("photoHereYes").addEventListener("click", () => { ask.hidden = true; MapPick.openHere(); });
+  document.getElementById("photoHereNo").addEventListener("click", () => { ask.hidden = true; });
+  form.addEventListener("reset", () => { ask.hidden = true; });
 
   input.addEventListener("change", async () => {
     const file = input.files[0];
     input.value = "";
     if (!file) return;
     msg.textContent = "読み取り中…（初めては10秒ほどかかります）";
+    ask.hidden = !!(field("addr").value.trim() || field("lat").value);
     let img;
     try { img = await createImageBitmap(file); }
     catch { msg.textContent = "写真を開けませんでした。"; return; }
