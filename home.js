@@ -61,10 +61,13 @@ const Home = (() => {
     const data = load();
     data[k] = { addr: v("addr").trim(), lat: num(v("lat"), 90), lng: num(v("lng"), 180) };
     const ok = save(data);
-    box.querySelector('[data-m="saved"]').textContent = !ok ? "保存できませんでした。"
-      : Nav.has(data[k]) ? `${label}の住所を保存しました。「← 一覧に戻る」を押し、「${label}へ」でナビが出ます。` : `${label}の住所を空にしました。`;
+    // 保存できなかったときだけ、この画面に残って知らせる
+    if (!ok) { box.querySelector('[data-m="saved"]').textContent = "保存できませんでした。"; return; }
+    // 保存できたら一覧に戻り、上に一言出す（押しても何も起きないように見えて心配にならないように）
+    forms.querySelectorAll('[data-m="saved"]').forEach(m => { m.textContent = ""; });
     open = "";
     render();
+    View.show("list", Nav.has(data[k]) ? `${label}の住所を保存しました。「${label}へ」でナビが出ます。` : `${label}の住所を空にしました。`);
   });
 
   bar.addEventListener("click", e => {
