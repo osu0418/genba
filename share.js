@@ -46,31 +46,12 @@ const Share = (() => {
     })).filter(s => s.name && s.inTel && s.outTel);
   }
 
-  // LINEに送る文：上は人が読む案内（地図のリンクつき）、下はアプリに貼る用の今の共有の文
-  // 上の段には【】を使わない（アプリが貼った文を読むとき、上の段を現場や駐車場と取り違えないため）
-  const hasPos = p => p.lat !== "" && p.lat != null && p.lng !== "" && p.lng != null;
-  const mapUrl = p => "https://www.google.com/maps/search/?api=1&query=" + p.lat + "," + p.lng;
-  function parkLines(p) {
-    return [
-      "🅿 " + (p.name || "名前なし"),
-      p.price ? "料金：" + p.price : "",
-      p.rule ? "最大料金の決まり：" + p.rule : "",
-      p.size ? "車の大きさ：" + p.size : "",
-      hasPos(p) ? "地図：" + mapUrl(p) : "",
-    ].filter(Boolean);
-  }
+  // LINEに送る文（版30）：見える字は邸名だけ。電話番号・KY・住所・駐車場・注意事項は、すべてリンクの中に入れる（情報がもれないように）
   // park を渡したとき：その駐車場を足した知らせ。渡さないとき：現場の情報の知らせ
   function notice(s, park) {
-    const notes = noteLines(s).map(l => "⚠ " + l);
-    const head = park
-      ? [s.name + "に駐車場を足しました"].concat(parkLines(park))
-      : [s.name + "の現場の情報です"].concat(...(s.parks || []).map(p => [""].concat(parkLines(p))));
-    // 一番上に「押すとアプリに入る」リンク（版28。携帯が苦手な人は押して「はい」だけ）
-    // 版29：下の「アプリに貼る用」の文（電話番号などが読める形）はやめた。リンクの中に同じ中身が入っていて、
-    // 「📥 仲間から届いた現場を入れる」も「現場を追加」の貼る欄も、リンクから読めるため
-    const body = head.concat(notes.length ? ["", "⚠ この現場の注意"].concat(notes) : []);
-    if (typeof Receive === "undefined") return body.concat(["", toText(s)]).join("\n");
-    return ["📲 押すとアプリに入ります（現場・駐車場・注意）", Receive.link(toText(s)), ""].concat(body).join("\n");
+    const head = park ? `📲 ${s.name}に駐車場を足しました` : `📲 ${s.name}の現場の情報`;
+    if (typeof Receive === "undefined") return [head, toText(s)].join("\n");
+    return [head + "（押すとアプリに入ります）", Receive.link(toText(s))].join("\n");
   }
 
   // 文をコピーする（それぞれが邸名ごとのLINEのトークに貼る）。うまくいけば true
