@@ -48,10 +48,16 @@ const Share = (() => {
 
   // LINEに送る文（版30）：見える字は邸名だけ。電話番号・KY・住所・駐車場・注意事項は、すべてリンクの中に入れる（情報がもれないように）
   // park を渡したとき：その駐車場を足した知らせ。渡さないとき：現場の情報の知らせ
+  // 注意事項のうち、LINEの字でも見せてよい行（版31）：入場の時刻・駐車のこと・騒音の時間など、現場の決まり
+  // 近隣トラブル・苦情などの行は、決まりの言葉が入っていても見せない（広がると困るため）。見せない行もリンクの中には入る
+  const OPEN = /入場|入退場|駐車|駐禁|車は|台まで|騒音|時以降|時から|時まで/;
+  const SECRET = /近隣|トラブル|苦情|クレーム|揉め|もめ|怒/;
+  const openNotes = s => noteLines(s).filter(l => OPEN.test(l) && !SECRET.test(l));
   function notice(s, park) {
     const head = park ? `📲 ${s.name}に駐車場を足しました` : `📲 ${s.name}の現場の情報`;
-    if (typeof Receive === "undefined") return [head, toText(s)].join("\n");
-    return [head + "（押すとアプリに入ります）", Receive.link(toText(s))].join("\n");
+    const notes = openNotes(s).map(l => "⚠ " + l);
+    if (typeof Receive === "undefined") return [head].concat(notes, [toText(s)]).join("\n");
+    return [head + "（押すとアプリに入ります）", Receive.link(toText(s))].concat(notes.length ? [""].concat(notes) : []).join("\n");
   }
 
   // 文をコピーする（それぞれが邸名ごとのLINEのトークに貼る）。うまくいけば true
@@ -60,5 +66,5 @@ const Share = (() => {
     catch { return false; }
   }
 
-  return { toText, parse, notice, copy };
+  return { toText, parse, notice, copy, openNotes };
 })();

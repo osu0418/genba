@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-title" content="現場入場">
 <title>現場入場アプリ</title>
 <link rel="stylesheet" href="style.css?v=21">
-<script src="line-escape.js?v=30"></script>
+<script src="line-escape.js?v=31"></script>
 </head>
 <body>
 <div id="listScreen">
@@ -43,7 +43,7 @@
   <p>住所を入れるか、「地図で場所を選ぶ」でピンを立てると（住所も自動で入ります）、地図アプリで道案内（ナビ）を始めるボタンが出ます。</p>
 
   <h3>⚠ 注意事項</h3>
-  <p>「現場を追加」「直す」の「⚠ 注意事項」に、入場の時刻や近隣のことを書けます。カードの邸名のすぐ下（入場の電話より上）に黄色で出て、貼る文にも入ります。「入場は8時以降」と書くと、8時より前に入場の電話を押したときに知らせます。</p>
+  <p>「現場を追加」「直す」の「⚠ 注意事項」に、入場の時刻や近隣のことを書けます。カードの邸名のすぐ下（入場の電話より上）に黄色で出ます。LINEに貼る文には、入場の時刻・駐車・騒音の時間などの決まりだけが字で出ます（近隣トラブルなどは出ません）。「入場は8時以降」と書くと、8時より前に入場の電話を押したときに知らせます。</p>
 
   <h3>② 退場の電話がまだのとき</h3>
   <p>入場の電話を押した日は、退場の電話を押すまで上に赤い字が出ます。赤い字を押しても、その現場の退場に電話できます。</p>
@@ -111,7 +111,7 @@
         <button type="button" data-note="車は〇台まで">車は〇台まで</button>
       </div>
       <textarea name="notes" id="notesText" rows="3" placeholder="押すと上の言葉が入ります。〇は数字に直してください。1行に1つ"></textarea>
-      <div class="note0">「入場は8時以降」と書くと、8時より前に入場の電話を押したときに知らせます。人の名前は書かないでください（LINEに貼るため）。</div>
+      <div class="note0">「入場は8時以降」と書くと、8時より前に入場の電話を押したときに知らせます。人の名前は書かないでください。<br>LINEの文に字で出るのは、入場の時刻・駐車・騒音の時間などの決まりだけです。近隣トラブルなどはLINEには出ず、リンクからアプリに入った人だけが見られます。</div>
     </details>
     <label>住所（入れると「ナビ」のボタンが出ます。地図で選ぶと自動で入ります。なくてもよい）<input name="addr" placeholder="例：富山県〇〇市〇〇町1-2" autocomplete="off"></label>
     <input type="hidden" name="lat"><input type="hidden" name="lng">
@@ -201,7 +201,7 @@
 <script src="https://cdn.jsdelivr.net/npm/libphonenumber-js@1.13.16/bundle/libphonenumber-min.js"></script>
 <script src="storage.js?v=7"></script>
 <script src="parktext.js?v=10"></script>
-<script src="share.js?v=10"></script>
+<script src="share.js?v=11"></script>
 <script src="nav.js?v=8"></script>
 <script src="list.js?v=14"></script>
 <script src="view.js?v=6"></script>
