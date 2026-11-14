@@ -4,7 +4,7 @@
 // 地図の部品（Leaflet）と地図の絵（国土地理院の淡色地図・航空写真）は、ボタンを押したときだけ読む
 // 地図を開くと、ピンがあればピン、無くて住所があれば住所の場所、どちらも無ければ今いる場所のあたりを出す
 // 地図の右上の「⛶ 大きく」で画面いっぱいに広げられる。下の「✓ この場所にする」で元の画面に戻る
-// 「現場を追加」の欄では、住所の欄を打ち替えるとピンがその住所へ動く（版20）
+// 「現場を追加」の欄では、住所の欄を打ち替えるとピンがその住所へ動く（版20）。郵便番号や「日本」を外し、見つからなければ短くして探す（版25）
 // 「現場を追加」の欄・「帰る」の欄（home.js）・駐車場の画面（park.js）で使う：MapPick.make({ 欄の部品 }) で1つ作る
 const MapPick = (() => {
   const START = [36.70, 137.21]; // 何も選んでいないときの真ん中（富山のあたり）
@@ -20,6 +20,32 @@ const MapPick = (() => {
     }
     if (!Object.keys(m).length) throw new Error("muni");
     return (muni = m);
+  }
+
+  // 住所の字を、国土地理院の住所検索で見つかりやすい形にそろえる（版25）
+  // 地図アプリからコピーした住所の「〒460-0008」「日本」、全角の数字や「−」、改行、建物の名前などで見つからないことがあるため
+  function cleanAddr(t) {
+    return String(t || "").normalize("NFKC")
+      .replace(/〒?\s*\d{3}-?\d{4}/g, " ")          // 郵便番号
+      .replace(/日本[、,]?|Japan/gi, " ")
+      .replace(/[−‐‑–—―ー－](?=\d)/g, "-")          // 数字の前の横棒はハイフンに
+      .replace(/[\r\n,、]+/g, " ")
+      .replace(/\s+/g, " ").trim();
+  }
+  // 見つからなければ、うしろから少しずつ短くして探す（番地→丁目→町の順に、近い所まで）
+  function addrTries(t) {
+    const out = [];
+    const push = v => { v = v.trim(); if (v && !out.includes(v)) out.push(v); };
+    let a = cleanAddr(t);
+    push(a);
+    push(a.replace(/\s.*$/, ""));                              // 空白のあと（建物の名前など）を外す
+    a = a.replace(/\s.*$/, "");
+    push(a.replace(/^(.*?\d+(?:-\d+){0,2}).*$/, "$1"));          // 番地のあとの字を外す
+    let b = a;
+    for (let i = 0; i < 3 && /-\d+$/.test(b); i++) push(b = b.replace(/-\d+$/, ""));  // 「12-5」→「12」
+    push(a.replace(/^(.*?丁目).*$/, "$1"));                      // 丁目まで
+    push(a.replace(/^(.*?[^\d])\d.*$/, "$1"));                    // 数字の前（町の名前）まで
+    return [out[0], ...out.slice(1).sort((x, y) => y.length - x.length)].slice(0, 6); // 長い（細かい）方から
   }
 
   function load() {
@@ -188,11 +214,12 @@ const MapPick = (() => {
         else if (el.addr && el.addr.value.trim()) fromAddr(showHere);
         else showHere();
       }, 50);
-      showMsg();
+      if (has() || !(el.addr && el.addr.value.trim())) showMsg();
     }
 
     // 地図を開いたとき、まだ場所を選んでいなければ、今いる場所のあたりを出す（ピンは立てない。青い点で今いる場所を出す）
-    function showHere() {
+    function showHere(keepMsg) {
+      if (!keepMsg) showMsg();
       if (!navigator.geolocation) return;
       const my = manual;
       navigator.geolocation.getCurrentPosition(p => {
@@ -219,30 +246,40 @@ const MapPick = (() => {
     // 番地まで分かった住所（例「霞が関一丁目３番」）はその場所に、町名までしか分からない住所は町のあたりに置く
     // 地図の点から自動で入れた住所では動かない（自動で入れたときは「change」が起きないため）
     // fallback：探せなかったときに代わりにすること（地図を開いたときは「今いる場所のあたりを出す」）
+    // 返り値：ピンを置けたら true（駐車場の「保存」で、場所がまだなら住所から探してから保存するのに使う）
     async function fromAddr(fallback) {
       const q = el.addr.value.trim();
-      if (!q) return;
+      if (!q) return false;
       const my = ++manual;
       asked++; // 前のピンの住所調べが遅れて届いても、打った住所を上書きしないため
       say("住所から場所を探しています…");
-      try {
-        const r = await (await fetch(`https://msearch.gsi.go.jp/address-search/AddressSearch?q=${encodeURIComponent(q)}`)).json();
-        if (my !== manual) return;
-        const hit = r && r[0];
-        const c = hit && hit.geometry && hit.geometry.coordinates;
-        if (!c || !isFinite(c[0]) || !isFinite(c[1])) throw new Error("none");
-        const title = String(hit.properties && hit.properties.title || "");
-        const exact = /番|[0-9０-９]$/.test(title);
-        setPoint(c[1], c[0], true, false);
-        if (map && !exact) map.setView([c[1], c[0]], 16);
-        say(exact
-          ? `📍 住所の場所（${title}）にピンを動かしました。ずれていたらピンを動かしてください。`
-          : `📍 「${title}」のあたりにピンを置きました。番地までは分からないので、正しい場所へピンを動かしてください。`);
-      } catch {
-        if (my !== manual) return;
-        if (typeof fallback === "function") { showMsg(); return fallback(); }
-        say("住所から場所を探せませんでした（前のピンのままです）。地図でピンを動かしてください。");
+      let hit = null, netNg = false, tries = addrTries(q), n = 0;
+      for (const t of tries) {
+        n++;
+        try {
+          const r = await (await fetch(`https://msearch.gsi.go.jp/address-search/AddressSearch?q=${encodeURIComponent(t)}`)).json();
+          const h = r && r[0], c = h && h.geometry && h.geometry.coordinates;
+          if (c && isFinite(c[0]) && isFinite(c[1])) { hit = h; break; }
+        } catch { netNg = true; break; }
+        if (my !== manual) return false;
       }
+      if (my !== manual) return false;
+      if (!hit) {
+        say(netNg
+          ? "⚠ 住所を調べられませんでした（電波を確かめてください）。地図を押してピンを置いてください。"
+          : "⚠ この住所が見つかりませんでした。地図を押してピンを置いてください。");
+        if (typeof fallback === "function") fallback(true);
+        return false;
+      }
+      const c = hit.geometry.coordinates;
+      const title = String(hit.properties && hit.properties.title || "");
+      const exact = n === 1 && /番|[0-9０-９]$/.test(title);
+      setPoint(c[1], c[0], true, false);
+      if (map && !exact) map.setView([c[1], c[0]], 16);
+      say(exact
+        ? `📍 住所の場所（${title}）にピンを置きました。ずれていたらピンを動かしてください。`
+        : `📍 「${title}」のあたりにピンを置きました。番地までは分からないので、地図で正しい場所へピンを動かしてください。`);
+      return true;
     }
     if (el.searchAddr) el.addr.addEventListener("change", () => fromAddr());
 
@@ -295,7 +332,7 @@ const MapPick = (() => {
     openBtn.addEventListener("click", open);
     hereBtn.addEventListener("click", here);
     clearBtn.addEventListener("click", clear);
-    return { sync, openHere, fillAddr };
+    return { sync, openHere, fillAddr, fromAddr };
   }
 
   // 「現場を追加」の欄の地図（add.js から MapPick.sync()、photo.js から MapPick.openHere() で使う）

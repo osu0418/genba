@@ -268,8 +268,14 @@ const Park = (() => {
   pasteBox.addEventListener("paste", () => setTimeout(fromPaste, 50));
   pasteBox.addEventListener("blur", fromPaste);
 
-  function save() {
-    if (!hasPlace()) { msg.textContent = "場所がまだです。駐車場の中で📍のボタンを押すか、住所を打ってください。"; return; }
+  async function save() {
+    // 場所がまだで住所が書いてあれば、住所から場所を探してから保存する（版25。「完了」を押さずに保存を押したとき）
+    if (!hasPlace() && form.elements.addr.value.trim()) {
+      msg.textContent = "住所から場所を探しています…";
+      await picker.fromAddr();
+      if (hasPlace()) msg.textContent = "";
+    }
+    if (!hasPlace()) { msg.textContent = "場所がまだです。駐車場の中で📍のボタンを押すか、住所を打ってください。（住所が見つからないときは「🗺 地図でピンを直す」で地図を押してください）"; return; }
     const f = Object.fromEntries(new FormData(form));
     f.checked = Store.today(); // 保存した日を「確認日」にする（直したときも新しくする）
     const editing = !!f.id;
