@@ -32,6 +32,9 @@ const Store = (() => {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
   };
   const str = v => String(v ?? "").trim();
+  // 比べるときだけ使う形：現場番号は空白を外して大文字に、邸名は空白と最後の「邸」を外す
+  const normCode = v => String(v ?? "").replace(/[\s　]/g, "").toUpperCase();
+  const normName = v => String(v ?? "").replace(/[\s　。、.]/g, "").replace(/邸$/, "");
   // 注意事項：【】は〔〕に変える（共有の文の区切りの【現場】【駐車場】と取り違えないため）。空の行は詰める
   const cleanNotes = v => String(v ?? "").replace(/【/g, "〔").replace(/】/g, "〕")
     .split(/\r?\n/).map(l => l.trim()).filter(Boolean).join("\n");
@@ -75,13 +78,19 @@ const Store = (() => {
       lat: num(site.lat, 90),
       lng: num(site.lng, 180),
     };
+    // どの現場と同じかを決める：①「直す」から来たら同じid ②現場番号（契約番号）が同じ
+    // ③入場の番号が同じ（ただし、両方に現場番号があって違うときは別の現場。番号は使い回されることがあるため）
     let i = site.id ? sites.findIndex(x => x.id === site.id) : -1;
-    if (i < 0) i = sites.findIndex(x => x.inTel === s.inTel);
-    s.parks = mergeParks(i >= 0 ? sites[i].parks : [], site.parks);
+    if (i < 0 && s.code) i = sites.findIndex(x => normCode(x.code) === normCode(s.code));
+    if (i < 0) i = sites.findIndex(x => x.inTel === s.inTel && !(s.code && x.code && normCode(x.code) !== normCode(s.code)));
+    // 同じ現場か：id・現場番号・邸名（空白や「邸」の有る無しは見ない）のどれかが合う
+    // 合わなければ、入場の番号だけが同じ別の現場（使い回し）。前の駐車場・注意事項は引き継がない
+    const same = i >= 0 && (!!site.id || (s.code && normCode(sites[i].code) === normCode(s.code)) || normName(sites[i].name) === normName(s.name));
+    const replaced = i >= 0 && !same ? sites[i].name : "";
+    s.parks = mergeParks(same ? sites[i].parks : [], site.parks);
     // 注意事項：入ってきた方に注意事項の欄がなければ（古い共有の文など）、前の注意事項を残す
     // 中身が変わったら確認日を今日にする（貼った文に確認日があればそれを使う）
-    // 入場の番号だけで一致して名前が違う（別の現場）ときは、前の注意事項を引き継がない
-    const old = i >= 0 && (site.id || sites[i].name === s.name) ? sites[i] : {};
+    const old = same ? sites[i] : {};
     if (site.notes === undefined) { s.notes = old.notes || ""; s.notesChecked = old.notesChecked || ""; }
     else {
       s.notes = cleanNotes(site.notes);
@@ -89,6 +98,7 @@ const Store = (() => {
     }
     if (i >= 0) { s.id = sites[i].id; sites[i] = s; } else { sites.push(s); }
     save(sites);
+    if (replaced) return `上書き（入場の番号が同じ「${replaced}」と入れ替え）`;
     return i >= 0 ? "上書き" : "追加";
   }
 
