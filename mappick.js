@@ -4,6 +4,7 @@
 // 地図の部品（Leaflet）と地図の絵（国土地理院の淡色地図・航空写真）は、ボタンを押したときだけ読む
 // 地図を開くと、今いる場所のあたりを出す（まだ場所を選んでいないとき）
 // 地図の右上の「⛶ 大きく」で画面いっぱいに広げられる。下の「✓ この場所にする」で元の画面に戻る
+// 「現場を追加」の欄では、住所の欄を打ち替えるとピンがその住所へ動く（版20）
 // 「現場を追加」の欄・「帰る」の欄（home.js）・駐車場の画面（park.js）で使う：MapPick.make({ 欄の部品 }) で1つ作る
 const MapPick = (() => {
   const START = [36.70, 137.21]; // 何も選んでいないときの真ん中（富山のあたり）
@@ -193,6 +194,35 @@ const MapPick = (() => {
       );
     }
 
+    // 住所の欄を人が打ち替えたら、その住所の場所へピンを動かす（国土地理院の住所検索）
+    // 番地まで分かった住所（例「霞が関一丁目３番」）はその場所に、町名までしか分からない住所は町のあたりに置く
+    // 地図の点から自動で入れた住所では動かない（自動で入れたときは「change」が起きないため）
+    async function fromAddr() {
+      const q = el.addr.value.trim();
+      if (!q) return;
+      const my = ++manual;
+      asked++; // 前のピンの住所調べが遅れて届いても、打った住所を上書きしないため
+      say("住所から場所を探しています…");
+      try {
+        const r = await (await fetch(`https://msearch.gsi.go.jp/address-search/AddressSearch?q=${encodeURIComponent(q)}`)).json();
+        if (my !== manual) return;
+        const hit = r && r[0];
+        const c = hit && hit.geometry && hit.geometry.coordinates;
+        if (!c || !isFinite(c[0]) || !isFinite(c[1])) throw new Error("none");
+        const title = String(hit.properties && hit.properties.title || "");
+        const exact = /番|[0-9０-９]$/.test(title);
+        setPoint(c[1], c[0], true, false);
+        if (map && !exact) map.setView([c[1], c[0]], 16);
+        say(exact
+          ? `📍 住所の場所（${title}）にピンを動かしました。ずれていたらピンを動かしてください。`
+          : `📍 「${title}」のあたりにピンを置きました。番地までは分からないので、現場の所へピンを動かしてください。`);
+      } catch {
+        if (my !== manual) return;
+        say("住所から場所を探せませんでした（前のピンのままです）。地図でピンを動かしてください。");
+      }
+    }
+    if (el.searchAddr) el.addr.addEventListener("change", fromAddr);
+
     bar.querySelector('[data-f="here"]').addEventListener("click", here);
     bar.querySelector('[data-f="done"]').addEventListener("click", () => setFull(false));
 
@@ -236,6 +266,7 @@ const MapPick = (() => {
     box: document.getElementById("mapBox"), openBtn: document.getElementById("mapOpen"),
     hereBtn: document.getElementById("mapHere"), clearBtn: document.getElementById("mapClear"),
     msg: document.getElementById("mapMsg"), lat: f.lat, lng: f.lng, addr: f.addr,
+    searchAddr: true, // 住所を打ち替えたらピンを動かす（版20）
   });
   return { sync: add.sync, openHere: add.openHere, make };
 })();
