@@ -56,13 +56,14 @@ const List = (() => {
       <section class="card">
         <div class="name">${esc(s.name)}</div>
         ${s.code ? `<div class="code">現場番号：${esc(s.code)}</div>` : ""}
+        ${s.notes ? `<div class="notice">⚠ ${esc(s.notes).replace(/\n/g, "<br>⚠ ")}${s.notesChecked ? `<div class="note0">確認日：${esc(s.notesChecked)}</div>` : ""}</div>` : ""}
         ${callRow("入場", s.inTel, "in", s.id)}
         ${callRow("退場", s.outTel, "out", s.id)}
         ${navRow(s)}
         ${/^https:\/\//.test(s.kyUrl) ? `<a class="ky" href="${esc(s.kyUrl)}" target="_blank" rel="noopener">KYを開く</a>` : ""}
         ${parkRow(s)}
         <div class="tools">
-          <button data-share="${esc(s.id)}">共有の文をコピー</button>
+          <button data-share="${esc(s.id)}">📋 貼る文をコピー</button>
           <button data-edit="${esc(s.id)}">直す</button>
           <button class="del" data-del="${esc(s.id)}">削除</button>
         </div>
@@ -76,6 +77,44 @@ const List = (() => {
     setTimeout(() => btn.textContent = label, 1500);
   }
 
+  // 貼る文をコピー：邸名ごとのLINEのトークに貼ってもらう
+  async function shareSite(btn, site) {
+    btn.textContent = await Share.copy(Share.notice(site)) ? "コピーしました。トークに貼ってください" : "コピーできません。もう一度押してください";
+    setTimeout(() => btn.textContent = "📋 貼る文をコピー", 2500);
+  }
+
+  // 注意事項から入場の時刻を読む：「入場」と書いた行の「8時以降」「7:30以降」「8時半から」など。なければ null
+  function entryTime(notes) {
+    for (const line of String(notes || "").split("\n")) {
+      const l = line.replace(/[０-９：]/g, c => c === "：" ? ":" : String.fromCharCode(c.charCodeAt(0) - 0xFEE0));
+      const k = l.search(/入(?:退)?場/);
+      if (k < 0) continue;
+      const rest = l.slice(k).split(/[。．]/)[0]; // 「入場」より後ろの、同じ文の中だけを見る（別の時刻を取り違えないため）
+      const m = rest.match(/(午後)?\s*(\d{1,2})\s*(?::\s*(\d{1,2})|時\s*(半|(\d{1,2})\s*分)?)\s*(?:以降|から|過ぎ|より後)/);
+      if (!m) continue;
+      const h = +m[2] + (m[1] && +m[2] < 12 ? 12 : 0), mi = m[3] ? +m[3] : m[4] === "半" ? 30 : m[5] ? +m[5] : 0;
+      if (h <= 23 && mi <= 59) return { h, mi };
+    }
+    return null;
+  }
+  const hm = (h, mi) => `${h}:${String(mi).padStart(2, "0")}`;
+
+  // 入場の電話：注意事項の時刻より前なら、かける前に一度だけ聞く（「キャンセル」なら電話も入場の記録もしない）
+  // この見張りは status.js（入場の記録）より先に動く（list.js の方が先に読み込まれるため）
+  listEl.addEventListener("click", e => {
+    const a = e.target.closest('a[data-kind="in"]');
+    if (!a) return;
+    const site = Store.load().find(s => s.id === a.dataset.id);
+    const t = site && entryTime(site.notes);
+    if (!t) return;
+    const now = new Date();
+    if (now.getHours() * 60 + now.getMinutes() >= t.h * 60 + t.mi) return;
+    if (!confirm(`この現場は ${hm(t.h, t.mi)} 以降の入場です（注意事項）。\nいまは ${hm(now.getHours(), now.getMinutes())} です。\n\nそれでも入場の電話をかけますか？`)) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+    }
+  });
+
   listEl.addEventListener("click", e => {
     const b = e.target.closest("button");
     if (!b) return;
@@ -84,7 +123,7 @@ const List = (() => {
     if (!site) return;
     if (b.dataset.park) return Park.open(site.id);
     if (b.dataset.edit) return Editor.start(site);
-    if (b.dataset.share) return copy(b, Share.toText(site), "共有の文をコピー");
+    if (b.dataset.share) return shareSite(b, site);
     if (b.dataset.del && confirm(`「${site.name}」を削除しますか？\n元に戻せません。`)) {
       Store.remove(site.id);
       render();

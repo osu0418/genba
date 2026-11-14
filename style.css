@@ -89,3 +89,14 @@ label input { margin-top:4px; }
 .parkCard { padding: 8px 0; border-bottom: 1px solid #ccc8; font-size: 15px; }
 .parkName { font-weight: bold; margin-bottom: 2px; }
 .parkBtn { width: 100%; margin-top: 10px; }
+
+/* 駐車場を保存した直後の「LINEで知らせる」 */
+.notify { margin:0 0 12px; padding:10px; border:2px solid #06c755; border-radius:10px; background:#f0fff4; }
+.notify .main { width:100%; margin:8px 0 6px; }
+/* 注意事項：カードの名前のすぐ下に黄色で出す */
+.notice { margin-top:10px; padding:10px 12px; background:#fff4c2; color:#5a4300; border:2px solid #e0b000; border-radius:10px; font-size:16px; font-weight:bold; line-height:1.5; }
+.notice .note0 { font-weight:normal; color:#7a6420; }
+.notesBox { margin-bottom:10px; border:1px solid var(--line); border-radius:10px; padding:10px; }
+.notesBox summary { font-size:15px; font-weight:bold; color:#a07800; }
+.chips { display:flex; flex-wrap:wrap; gap:6px; margin:8px 0; }
+.chips button { font-size:14px; padding:8px 10px; }

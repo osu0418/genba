@@ -11,6 +11,12 @@ const Park = (() => {
   const cancelBtn = document.getElementById("parkCancel");
   const hereBtn = document.getElementById("parkHere");
   let siteId = "";
+  // 保存した直後の「知らせる文をコピー」：別の駐車場を入れ始めたら・画面を出たら消す（コピーしたあとも、もう一度押せるよう残す）
+  const notifyBox = document.getElementById("parkNotify");
+  const notifyMsg = document.getElementById("parkNotifyMsg");
+  const notifyBtn = document.getElementById("parkNotifyBtn");
+  let lastParkId = "";
+  const hideNotify = () => { notifyBox.hidden = true; lastParkId = ""; };
   let readNo = 0; // 写真の読み取りの番号。画面を片付けたり次の写真を選んだら増やし、古い結果は使わない
 
   // 地図でピンを直す：現場の地図と同じ仕組み（mappick.js）を使う。ピンを動かすと場所と住所が変わる
@@ -87,6 +93,7 @@ const Park = (() => {
     if (!site()) return;
     clearForm();
     msg.textContent = "";
+    hideNotify();
     renderList();
     View.show("park");
   }
@@ -108,6 +115,7 @@ const Park = (() => {
     const p = (s.parks || []).find(x => x.id === (b.dataset.pedit || b.dataset.pdel));
     if (!p) return;
     if (b.dataset.pedit) {
+      hideNotify();
       clearForm();
       fill(p);
       for (const k of ["id", "lat", "lng", "checked"]) form.elements[k].value = p[k] ?? "";
@@ -226,13 +234,27 @@ const Park = (() => {
     const f = Object.fromEntries(new FormData(form));
     f.checked = Store.today(); // 保存した日を「確認日」にする（直したときも新しくする）
     const editing = !!f.id;
-    if (!Store.savePark(siteId, f)) { msg.textContent = "保存できませんでした。"; return; }
+    const pid = Store.savePark(siteId, f);
+    if (!pid) { msg.textContent = "保存できませんでした。"; return; }
     clearForm();
     renderList();
-    msg.textContent = `「${f.name || "名前なし"}」を${editing ? "直" : "保存"}しました。`;
+    msg.textContent = "";
+    lastParkId = pid;
+    notifyMsg.textContent = `✅ 「${f.name || "名前なし"}」を${editing ? "直" : "保存"}しました。仲間に知らせますか？`;
+    notifyBtn.textContent = "📋 知らせる文をコピー";
+    notifyBox.hidden = false;
     window.scrollTo(0, 0);
   }
   form.addEventListener("submit", e => { e.preventDefault(); save(); });
+  notifyBtn.addEventListener("click", async () => {
+    const s = site();
+    const p = s && (s.parks || []).find(x => x.id === lastParkId);
+    if (!p) { hideNotify(); return; }
+    notifyBtn.textContent = await Share.copy(Share.notice(s, p))
+      ? "✅ コピーしました。邸名のトークに貼ってください" : "コピーできません。もう一度押してください";
+  });
+  // 次の駐車場を入れ始めたら、前の知らせは消す（どの駐車場の知らせか迷わないように）
+  form.addEventListener("input", () => { if (!notifyBox.hidden) hideNotify(); });
   mapSave.addEventListener("click", save);
 
   cancelBtn.addEventListener("click", () => { clearForm(); msg.textContent = ""; });

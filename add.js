@@ -8,6 +8,21 @@
   const title = document.getElementById("addTitle");
   const addBtn = document.getElementById("addBtn");
   const cancelBtn = document.getElementById("cancelEdit");
+  const notesBox = document.getElementById("notesBox");
+  const notesText = document.getElementById("notesText");
+
+  // よく使う言葉のボタン：押すと注意事項の欄の最後に1行足す。〇があれば〇を選んだ形にして、すぐ数字を打てるようにする
+  document.getElementById("noteChips").addEventListener("click", e => {
+    const b = e.target.closest("button[data-note]");
+    if (!b) return;
+    const cur = notesText.value.replace(/\s+$/, "");
+    const start = cur ? cur.length + 1 : 0;
+    notesText.value = (cur ? cur + "\n" : "") + b.dataset.note;
+    notesText.focus();
+    const j = b.dataset.note.indexOf("〇");
+    if (j >= 0) notesText.setSelectionRange(start + j, start + j + 1);
+    else notesText.setSelectionRange(notesText.value.length, notesText.value.length);
+  });
 
   // 直す：選んだ現場の内容を入力欄に入れて、「直して保存」にする
   function setMode(editing) {
@@ -17,7 +32,8 @@
   }
   window.Editor = {
     start(site) {
-      for (const k of ["id", "name", "code", "inTel", "outTel", "kyUrl", "addr", "lat", "lng"]) form.elements[k].value = site[k] ?? "";
+      for (const k of ["id", "name", "code", "inTel", "outTel", "kyUrl", "addr", "lat", "lng", "notes"]) form.elements[k].value = site[k] ?? "";
+      notesBox.open = !!site.notes; // 注意事項があるときだけ開いておく
       if (typeof MapPick !== "undefined") MapPick.sync();
       setMode(true);
       addMsg.textContent = `「${site.name}」を直しています。`;
@@ -28,6 +44,7 @@
   function clearForm() {
     form.reset();
     for (const k of ["id", "lat", "lng"]) form.elements[k].value = "";
+    notesBox.open = false;
     setMode(false);
     if (typeof MapPick !== "undefined") MapPick.sync();
   }
@@ -42,6 +59,10 @@
     if (!f.name) { addMsg.textContent = "邸名か現場番号を入れてください。"; return; }
     if (!Store.cleanTel(f.inTel) || !Store.cleanTel(f.outTel)) {
       addMsg.textContent = "入場と退場の電話番号を入れてください。"; return;
+    }
+    if (/〇/.test(f.notes || "")) {
+      notesBox.open = true;
+      addMsg.textContent = "注意事項に「〇」が残っています。数字に直すか、その行を消してください。"; return;
     }
     if (f.kyUrl && !/^https:\/\//.test(f.kyUrl.trim())) {
       addMsg.textContent = "KYのページは https:// から始まるものだけ入れられます。"; return;

@@ -6,8 +6,8 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="apple-mobile-web-app-title" content="現場入場">
 <title>現場入場アプリ</title>
-<link rel="stylesheet" href="style.css?v=11">
-<script src="line-escape.js?v=14"></script>
+<link rel="stylesheet" href="style.css?v=13">
+<script src="line-escape.js?v=17"></script>
 </head>
 <body>
 <div id="listScreen">
@@ -41,11 +41,14 @@
   <p class="warn">⚠ 写真のあとは、看板と番号を見比べてください。</p>
   <p>住所を入れるか、「地図で場所を選ぶ」でピンを立てると（住所も自動で入ります）、地図アプリで道案内（ナビ）を始めるボタンが出ます。</p>
 
+  <h3>⚠ 注意事項</h3>
+  <p>「現場を追加」「直す」の「⚠ 注意事項」に、入場の時刻や近隣のことを書けます。カードの邸名のすぐ下（入場の電話より上）に黄色で出て、貼る文にも入ります。「入場は8時以降」と書くと、8時より前に入場の電話を押したときに知らせます。</p>
+
   <h3>② 退場の電話がまだのとき</h3>
   <p>入場の電話を押した日は、退場の電話を押すまで上に赤い字が出ます。赤い字を押しても、その現場の退場に電話できます。</p>
 
   <h3>③ 終わった現場</h3>
-  <p>「削除」で消します（元に戻せません）。仲間に送るときは「共有の文をコピー」。</p>
+  <p>「削除」で消します（元に戻せません）。仲間に知らせるときは「📋 貼る文をコピー」を押して、LINEの邸名のトークに貼る。</p>
 
   <h3>④ ホーム画面に置く</h3>
   <ul>
@@ -59,6 +62,7 @@
     <li><b>駐車場の中で</b>「📍 今いる場所を、この駐車場にする」を押す（場所は必須）</li>
     <li>場所がずれていたら「🗺 地図でピンを直す」でピンを動かす</li>
     <li>料金などは「📷 看板の写真で入れる」で読み取る。看板が2枚あるときは両方撮ると、読めた所が合わさる（読み違いがあるので看板と見比べる）。Claudeに看板の写真を送って出てきた【駐車場】の文を貼る・手で打つ、でもよい（空でもよい）</li>
+    <li>駐車場を保存すると「📋 知らせる文をコピー」が出ます。押して、LINEの邸名のトークに貼ると、地図つきで知らせられます</li>
     <li>入れた駐車場は「共有の文」にもいっしょに入ります</li>
   </ul>
   <p class="warn">⚠ 料金は変わることがあります。確認日が古いときは、現地の看板で確かめてください。</p>
@@ -91,6 +95,18 @@
     <label>入場の電話番号<input name="inTel" required inputmode="tel" placeholder="例：0766-00-0000"></label>
     <label>退場の電話番号<input name="outTel" required inputmode="tel" placeholder="例：0766-00-0000"></label>
     <label>KYのページ<input name="kyUrl" placeholder="https://..."></label>
+    <details class="notesBox" id="notesBox">
+      <summary>⚠ 注意事項（入場の時刻・近隣のことなど。なくてもよい）</summary>
+      <div class="chips" id="noteChips">
+        <button type="button" data-note="入場は〇時以降">入場は〇時以降</button>
+        <button type="button" data-note="近隣とトラブル中（あいさつ・駐車に注意）">近隣とトラブル中</button>
+        <button type="button" data-note="路上駐車禁止">路上駐車禁止</button>
+        <button type="button" data-note="騒音に注意（〇時まで）">騒音に注意</button>
+        <button type="button" data-note="車は〇台まで">車は〇台まで</button>
+      </div>
+      <textarea name="notes" id="notesText" rows="3" placeholder="押すと上の言葉が入ります。〇は数字に直してください。1行に1つ"></textarea>
+      <div class="note0">「入場は8時以降」と書くと、8時より前に入場の電話を押したときに知らせます。人の名前は書かないでください（LINEに貼るため）。</div>
+    </details>
     <label>住所（入れると「ナビ」のボタンが出ます。地図で選ぶと自動で入ります。なくてもよい）<input name="addr" placeholder="例：富山県〇〇市〇〇町1-2" autocomplete="off"></label>
     <input type="hidden" name="lat"><input type="hidden" name="lng">
     <div class="mapTools">
@@ -127,6 +143,11 @@
 <button type="button" class="back" data-back>← 一覧に戻る</button>
 <section class="panel">
   <h2 id="parkTitle">駐車場</h2>
+  <div id="parkNotify" class="notify" hidden>
+    <div id="parkNotifyMsg"></div>
+    <button type="button" class="main" id="parkNotifyBtn">📋 知らせる文をコピー</button>
+    <div class="note0">コピーしたら、LINEの邸名のトークに貼ってください。あとからは一覧の「📋 貼る文をコピー」でも出せます。</div>
+  </div>
   <div id="parkList"></div>
 </section>
 <section class="panel">
@@ -162,17 +183,17 @@
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/libphonenumber-js@1.13.16/bundle/libphonenumber-min.js"></script>
-<script src="storage.js?v=5"></script>
+<script src="storage.js?v=6"></script>
 <script src="parktext.js?v=10"></script>
-<script src="share.js?v=4"></script>
+<script src="share.js?v=7"></script>
 <script src="nav.js?v=4"></script>
-<script src="list.js?v=6"></script>
+<script src="list.js?v=9"></script>
 <script src="view.js?v=6"></script>
-<script src="add.js?v=5"></script>
+<script src="add.js?v=6"></script>
 <script src="mappick.js?v=11"></script>
 <script src="home.js?v=7"></script>
 <script src="parkocr.js?v=14"></script>
-<script src="park.js?v=15"></script>
+<script src="park.js?v=17"></script>
 <script src="qr.js"></script>
 <script src="ocr.js"></script>
 <script src="photo.js?v=9"></script>

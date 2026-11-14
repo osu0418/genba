@@ -32,6 +32,9 @@ const Store = (() => {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
   };
   const str = v => String(v ?? "").trim();
+  // 注意事項：【】は〔〕に変える（共有の文の区切りの【現場】【駐車場】と取り違えないため）。空の行は詰める
+  const cleanNotes = v => String(v ?? "").replace(/【/g, "〔").replace(/】/g, "〕")
+    .split(/\r?\n/).map(l => l.trim()).filter(Boolean).join("\n");
 
   // 駐車場1か所の形をそろえる。場所（緯度・経度）がなければ null（保存しない）
   const PARK_KEYS = ["name", "addr", "price", "rule", "size", "kind", "reserve", "tel", "memo"];
@@ -75,6 +78,15 @@ const Store = (() => {
     let i = site.id ? sites.findIndex(x => x.id === site.id) : -1;
     if (i < 0) i = sites.findIndex(x => x.inTel === s.inTel);
     s.parks = mergeParks(i >= 0 ? sites[i].parks : [], site.parks);
+    // 注意事項：入ってきた方に注意事項の欄がなければ（古い共有の文など）、前の注意事項を残す
+    // 中身が変わったら確認日を今日にする（貼った文に確認日があればそれを使う）
+    // 入場の番号だけで一致して名前が違う（別の現場）ときは、前の注意事項を引き継がない
+    const old = i >= 0 && (site.id || sites[i].name === s.name) ? sites[i] : {};
+    if (site.notes === undefined) { s.notes = old.notes || ""; s.notesChecked = old.notesChecked || ""; }
+    else {
+      s.notes = cleanNotes(site.notes);
+      s.notesChecked = !s.notes ? "" : str(site.notesChecked) || (s.notes === old.notes && old.notesChecked) || today();
+    }
     if (i >= 0) { s.id = sites[i].id; sites[i] = s; } else { sites.push(s); }
     save(sites);
     return i >= 0 ? "上書き" : "追加";
