@@ -76,7 +76,8 @@
   });
 
   function addFromPaste() {
-    const sites = Share.parse(pasteBox.value);
+    // 版29：貼った文にアプリのリンク（#in=…）があれば、リンクの中の現場を読む
+    const sites = typeof Receive !== "undefined" ? Receive.sitesFrom(pasteBox.value) : Share.parse(pasteBox.value);
     if (!sites.length) {
       if (pasteBox.value.trim()) pasteMsg.textContent = "現場を読み取れませんでした。【現場】から始まる文か確かめてください。";
       return;

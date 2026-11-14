@@ -71,5 +71,5 @@ const Receive = (() => {
   });
 
   fromHash();
-  return { link };
+  return { link, sitesFrom };
 })();

@@ -66,9 +66,11 @@ const Share = (() => {
       ? [s.name + "に駐車場を足しました"].concat(parkLines(park))
       : [s.name + "の現場の情報です"].concat(...(s.parks || []).map(p => [""].concat(parkLines(p))));
     // 一番上に「押すとアプリに入る」リンク（版28。携帯が苦手な人は押して「はい」だけ）
-    const top = typeof Receive !== "undefined" ? ["📲 押すとアプリに入ります（現場・駐車場・注意）", Receive.link(toText(s)), ""] : [];
-    return top.concat(head).concat(notes.length ? ["", "⚠ この現場の注意"].concat(notes) : [])
-      .concat(["", "―― アプリに貼る用（そのまま貼ってOK）――", toText(s)]).join("\n");
+    // 版29：下の「アプリに貼る用」の文（電話番号などが読める形）はやめた。リンクの中に同じ中身が入っていて、
+    // 「📥 仲間から届いた現場を入れる」も「現場を追加」の貼る欄も、リンクから読めるため
+    const body = head.concat(notes.length ? ["", "⚠ この現場の注意"].concat(notes) : []);
+    if (typeof Receive === "undefined") return body.concat(["", toText(s)]).join("\n");
+    return ["📲 押すとアプリに入ります（現場・駐車場・注意）", Receive.link(toText(s)), ""].concat(body).join("\n");
   }
 
   // 文をコピーする（それぞれが邸名ごとのLINEのトークに貼る）。うまくいけば true
