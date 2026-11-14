@@ -6,8 +6,8 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="apple-mobile-web-app-title" content="現場入場">
 <title>現場入場アプリ</title>
-<link rel="stylesheet" href="style.css?v=17">
-<script src="line-escape.js?v=23"></script>
+<link rel="stylesheet" href="style.css?v=18">
+<script src="line-escape.js?v=24"></script>
 </head>
 <body>
 <div id="listScreen">
@@ -57,9 +57,9 @@
   </ul>
 
   <h3>🅿 駐車場</h3>
-  <p>現場のカードの「🅿 駐車場を登録」から、その現場の駐車場を入れられます。</p>
+  <p>現場のカードの「🅿 駐車場を探す・登録」から、その現場の駐車場を入れられます。「📍 今いる場所で登録」「🏠 住所で登録」「📷 看板の写真で登録」の3つから選べます。</p>
   <ul>
-    <li><b>駐車場の中で</b>「📍 今いる場所を、この駐車場にする」を押す（場所は必須）</li>
+    <li><b>駐車場の中で</b>「📍 今いる場所で登録」、離れた所からは「🏠 住所で登録」（場所は必須）</li>
     <li>場所がずれていたら「🗺 地図でピンを直す」でピンを動かす</li>
     <li>料金などは「📷 看板の写真で入れる」で読み取る。看板が2枚あるときは両方撮ると、読めた所が合わさる（読み違いがあるので看板と見比べる）。Claudeに看板の写真を送って出てきた【駐車場】の文を貼る・手で打つ、でもよい（空でもよい）</li>
     <li>駐車場を保存すると「📋 知らせる文をコピー」が出ます。押して、LINEの邸名のトークに貼ると、地図つきで知らせられます</li>
@@ -153,10 +153,17 @@
 </section>
 <section class="panel">
   <h2>駐車場を登録</h2>
-  <form id="parkForm">
+  <!-- 登録のしかたを3つから選ぶ（版24）。選ぶと下の入れる欄が開く -->
+  <div id="parkChoose">
+    <button type="button" class="main" id="parkByHere">📍 今いる場所で登録<span class="sub">駐車場の中で押す</span></button>
+    <button type="button" class="main" id="parkByAddr">🏠 住所で登録</button>
+    <label class="main filebtnMain">📷 看板の写真で登録<span class="sub">何枚でも</span><input id="parkPhoto2" type="file" accept="image/*" multiple hidden></label>
+  </div>
+  <form id="parkForm" hidden>
     <input type="hidden" name="id"><input type="hidden" name="lat"><input type="hidden" name="lng"><input type="hidden" name="checked">
     <button type="button" class="main" id="parkHere">📍 今いる場所を、この駐車場にする</button>
     <div id="parkPlaceMsg" class="msg"></div>
+    <label id="parkAddrLabel">住所（打つと、その場所にピンが動きます）<input name="addr" autocomplete="off" placeholder="例：東京都千代田区霞が関1-3"></label>
     <div class="mapTools"><button type="button" id="parkMapOpen">🗺 地図でピンを直す</button></div>
     <div id="parkMapBox" class="mapBox" hidden></div>
     <button type="button" class="main" id="parkMapSave" hidden>✓ この場所で保存</button>
@@ -171,11 +178,10 @@
     <label>形<input name="kind" placeholder="例：平置き／機械式"></label>
     <label>予約制<input name="reserve" placeholder="例：いいえ／akippa"></label>
     <label>連絡先<input name="tel" inputmode="tel" placeholder="例：0120-000-000"></label>
-    <label>住所（なくてもよい）<input name="addr" autocomplete="off"></label>
     <label>メモ<input name="memo" placeholder="例：ハイエースで止められた"></label>
     <div id="parkMsg" class="msg"></div>
     <button type="submit" class="main" id="parkSave">この駐車場を保存</button>
-    <button type="button" id="parkCancel" hidden>直すのをやめる</button>
+    <button type="button" id="parkCancel">登録をやめる</button>
   </form>
 </section>
 </div>
@@ -187,14 +193,14 @@
 <script src="storage.js?v=7"></script>
 <script src="parktext.js?v=10"></script>
 <script src="share.js?v=7"></script>
-<script src="nav.js?v=5"></script>
+<script src="nav.js?v=6"></script>
 <script src="list.js?v=11"></script>
 <script src="view.js?v=6"></script>
 <script src="add.js?v=6"></script>
 <script src="mappick.js?v=14"></script>
 <script src="home.js?v=8"></script>
 <script src="parkocr.js?v=14"></script>
-<script src="park.js?v=19"></script>
+<script src="park.js?v=20"></script>
 <script src="qr.js"></script>
 <script src="ocr.js"></script>
 <script src="photo.js?v=9"></script>

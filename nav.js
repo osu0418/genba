@@ -16,16 +16,18 @@ const Nav = (() => {
     return `<div class="navs">${isIOS ? apple + google : google}</div>`;
   }
 
-  // 近くの駐車場を探す（版23）：地図アプリで、現場のまわりの「駐車場」を検索して開く
+  // 近くの駐車場を探す（版23・版24で直した）：地図アプリで、現場のまわりの「駐車場」を検索して開く
   // 場所：ピンがあればピン、なければ住所。iPhoneは「マップ」、それ以外は「Googleマップ」
   function parkSearch(p, label) {
     if (!has(p)) return "";
     const word = "駐車場";
     let href;
     if (isIOS) {
+      // 版24：古い書き方（?q=…&sll=…）だと「駐車場」という名前のピンが1つ立つだけだったので、
+      // Appleの新しい検索の書き方（/search?query=…&center=…）にする。まわり約1kmの駐車場が一覧で出る
       href = hasPoint(p)
-        ? `https://maps.apple.com/?q=${encodeURIComponent(word)}&sll=${p.lat},${p.lng}&z=16`
-        : `https://maps.apple.com/?q=${encodeURIComponent(p.addr + " " + word)}`;
+        ? `https://maps.apple.com/search?query=${encodeURIComponent(word)}&center=${p.lat},${p.lng}&span=0.01,0.01`
+        : `https://maps.apple.com/search?query=${encodeURIComponent(p.addr + " 周辺 " + word)}`;
     } else {
       href = hasPoint(p)
         ? `https://www.google.com/maps/search/${encodeURIComponent(word)}/@${p.lat},${p.lng},17z`

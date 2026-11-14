@@ -11,6 +11,10 @@ const Park = (() => {
   const cancelBtn = document.getElementById("parkCancel");
   const hereBtn = document.getElementById("parkHere");
   let siteId = "";
+  // 登録のしかた3つ（版24）：選ぶまで入れる欄はたたんでおく（画面を短くし、何をすればいいか迷わないように）
+  const chooseBox = document.getElementById("parkChoose");
+  function openForm() { chooseBox.hidden = true; form.hidden = false; }
+  function closeForm() { chooseBox.hidden = false; form.hidden = true; }
   // 保存した直後の「知らせる文をコピー」：別の駐車場を入れ始めたら・画面を出たら消す（コピーしたあとも、もう一度押せるよう残す）
   const notifyBox = document.getElementById("parkNotify");
   const notifyMsg = document.getElementById("parkNotifyMsg");
@@ -52,7 +56,7 @@ const Park = (() => {
   function showPlace(extra) {
     placeMsg.textContent = hasPlace()
       ? "✅ 場所は登録ずみ" + (extra || "") + "（ずれていたら「🗺 地図でピンを直す」でピンを動かす）"
-      : "まだ場所がありません。駐車場の中で上のボタンを押してください。";
+      : "まだ場所がありません。駐車場の中で上のボタンを押すか、下に住所を打ってください。";
     hereBtn.textContent = hasPlace() ? "📍 今いる場所で登録し直す" : "📍 今いる場所を、この駐車場にする";
   }
 
@@ -69,7 +73,8 @@ const Park = (() => {
     for (const k of ["id", "lat", "lng", "checked"]) form.elements[k].value = "";
     pasteBox.value = "";
     saveBtn.textContent = "この駐車場を保存";
-    cancelBtn.hidden = true;
+    cancelBtn.textContent = "登録をやめる";
+    closeForm();
     saved = snap();
     readNo++;
     mark("name", false); mark("price", false);
@@ -128,7 +133,8 @@ const Park = (() => {
       fill(p);
       for (const k of ["id", "lat", "lng", "checked"]) form.elements[k].value = p[k] ?? "";
       saveBtn.textContent = "直して保存";
-      cancelBtn.hidden = false;
+      cancelBtn.textContent = "直すのをやめる";
+      openForm();
       picker.sync();
       showPlace();
       saved = snap();
@@ -199,9 +205,18 @@ const Park = (() => {
   }
   form.addEventListener("input", e => { if (e.target.value && e.target.closest("label.need")) mark(e.target.name, false); });
 
-  photoInput.addEventListener("change", async () => {
-    const files = [...photoInput.files];
-    photoInput.value = "";
+  photoInput.addEventListener("change", () => readPhotos(photoInput));
+  // 「📷 看板の写真で登録」（版24）：入れる欄を開いてから読む
+  const photoInput2 = document.getElementById("parkPhoto2");
+  photoInput2.addEventListener("change", () => {
+    if (!photoInput2.files.length) return;
+    openForm();
+    readPhotos(photoInput2);
+    photoMsg.scrollIntoView({ behavior: "smooth", block: "center" });
+  });
+  async function readPhotos(input) {
+    const files = [...input.files];
+    input.value = "";
     if (!files.length) return;
     const my = ++readNo;
     photoMsg.textContent = "読み取り中…（初めては日本語の準備で30秒ほどかかります）";
@@ -233,14 +248,28 @@ const Park = (() => {
     mark("price", !got.price);
     photoMsg.textContent = (failed ? `${failed}枚は読めませんでした。\n` : "") + (read.length ? "読めた所：" + read.map(k => NAMES[k]).join("・") : "読めた所はありませんでした。")
       + "\n⚠ 読み違いがあります。看板と見比べて、違う所は直してください。"
-      + (hasPlace() ? "" : "\n場所がまだです。駐車場の中なら📍を押してください。");
+      + (hasPlace() ? "" : "\n場所がまだです。駐車場の中なら📍を押す、離れていたら住所を打ってください。");
+  }
+
+  // 「📍 今いる場所で登録」：欄を開いて、すぐ今いる場所を調べる
+  document.getElementById("parkByHere").addEventListener("click", () => {
+    openForm();
+    hereBtn.click();
+  });
+  // 「🏠 住所で登録」：欄を開いて、住所の欄に字を打てるようにする（打ち終わるとピンが動く）
+  document.getElementById("parkByAddr").addEventListener("click", () => {
+    openForm();
+    const a = form.elements.addr;
+    a.focus();
+    a.scrollIntoView({ behavior: "smooth", block: "center" });
+    placeMsg.textContent = "住所を打って「完了」を押すと、その場所にピンを置きます。";
   });
 
   pasteBox.addEventListener("paste", () => setTimeout(fromPaste, 50));
   pasteBox.addEventListener("blur", fromPaste);
 
   function save() {
-    if (!hasPlace()) { msg.textContent = "場所がまだです。駐車場の中で📍のボタンを押してください。"; return; }
+    if (!hasPlace()) { msg.textContent = "場所がまだです。駐車場の中で📍のボタンを押すか、住所を打ってください。"; return; }
     const f = Object.fromEntries(new FormData(form));
     f.checked = Store.today(); // 保存した日を「確認日」にする（直したときも新しくする）
     const editing = !!f.id;
