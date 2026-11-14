@@ -82,6 +82,9 @@ const Park = (() => {
     const s = site();
     if (!s) return;
     title.textContent = `${s.name} の駐車場`;
+    // 一番上に「🔍 近くの駐車場を地図で探す」（版23。ピンも住所も無い現場は、入れ方を知らせる）
+    document.getElementById("parkFind").innerHTML = Nav.parkSearch(s, "🔍 近くの駐車場を地図で探す")
+      || `<p class="note0">🔍 近くの駐車場を地図で探すには、現場の「直す」で住所か地図の場所を入れてください。</p>`;
     const parks = s.parks || [];
     listEl.innerHTML = parks.length
       ? parks.map(p => `<div class="parkItem">

@@ -28,7 +28,8 @@ const List = (() => {
   // 駐車場：ふだんはたたんでおき（カードを短くするため）、押すと料金・決まり・ナビが出る
   function parkRow(s) {
     const parks = s.parks || [];
-    const btn = `<button type="button" class="parkBtn" data-park="${esc(s.id)}">🅿 駐車場を${parks.length ? "足す・直す" : "登録"}</button>`;
+    // ボタンは1つ：押した先の駐車場の画面の一番上に「🔍 近くの駐車場を地図で探す」がある（版23）
+    const btn = `<button type="button" class="parkBtn" data-park="${esc(s.id)}">🅿 駐車場を探す・${parks.length ? "足す・直す" : "登録"}</button>`;
     if (!parks.length) return btn;
     const line = (label, v) => v ? `<div>${label}：${esc(v)}</div>` : "";
     const items = parks.map(p => `<div class="parkCard">

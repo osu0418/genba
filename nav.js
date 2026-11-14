@@ -16,5 +16,23 @@ const Nav = (() => {
     return `<div class="navs">${isIOS ? apple + google : google}</div>`;
   }
 
-  return { isIOS, has, hasPoint, links };
+  // 近くの駐車場を探す（版23）：地図アプリで、現場のまわりの「駐車場」を検索して開く
+  // 場所：ピンがあればピン、なければ住所。iPhoneは「マップ」、それ以外は「Googleマップ」
+  function parkSearch(p, label) {
+    if (!has(p)) return "";
+    const word = "駐車場";
+    let href;
+    if (isIOS) {
+      href = hasPoint(p)
+        ? `https://maps.apple.com/?q=${encodeURIComponent(word)}&sll=${p.lat},${p.lng}&z=16`
+        : `https://maps.apple.com/?q=${encodeURIComponent(p.addr + " " + word)}`;
+    } else {
+      href = hasPoint(p)
+        ? `https://www.google.com/maps/search/${encodeURIComponent(word)}/@${p.lat},${p.lng},17z`
+        : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(p.addr + " " + word)}`;
+    }
+    return `<a class="parkFind" href="${href.replace(/&/g, "&amp;")}" target="_blank" rel="noopener">${label || "🔍 近くの駐車場を探す"}</a>`;
+  }
+
+  return { isIOS, has, hasPoint, links, parkSearch };
 })();
