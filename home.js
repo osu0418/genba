@@ -46,7 +46,7 @@ const Home = (() => {
     q('[data-f="lng"]').value = h.lng ?? "";
     pickers[k] = MapPick.make({
       box: q(".mapBox"), openBtn: q('[data-m="open"]'), hereBtn: q('[data-m="here"]'),
-      clearBtn: q('[data-m="clear"]'), msg: q('[data-m="msg"]'),
+      clearBtn: q('[data-m="clear"]'), msg: q('[data-m="msg"]'), cancel: true,
       lat: q('[data-f="lat"]'), lng: q('[data-f="lng"]'), addr: q('[data-f="addr"]'),
     });
     pickers[k].sync();

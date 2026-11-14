@@ -106,3 +106,4 @@ label input { margin-top:4px; }
 .earlyText { margin:0 0 14px; font-size:17px; line-height:1.6; }
 .earlyCall { text-align:center; font-size:19px; font-weight:bold; padding:16px 12px; }
 .earlyNo { display:block; width:100%; margin-top:12px; font-size:17px; padding:14px; }
+.mapCancelBtn { margin-top:14px !important; } /* 地図の左上の「✕ やめる」（版21）。＋−と少し離す */

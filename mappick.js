@@ -42,6 +42,10 @@ const MapPick = (() => {
   function make(el) {
     const { box, openBtn, hereBtn, clearBtn, msg } = el;
     let map = null, pin = null, asked = 0, full = false, dot = null;
+    // 「✕ やめる」：地図を閉じて、ピンと住所を地図を開く前に戻す（版21。el.cancel が true の欄だけ）
+    // 押し間違えないよう、下の「✓ この場所にする」から離して、地図の左上（＋−の下）に置く
+    let before = null; // 地図を開いたときの場所と住所
+    const keep = () => ({ lat: el.lat.value, lng: el.lng.value, addr: el.addr.value });
     // 手でピンを立てた・消した回数。「今いる場所」の返事が遅れて届いたとき、
     // その間に手で選んでいたら、遅れた返事は使わない（手で選んだ場所を上書きしないため）
     let manual = 0;
@@ -114,6 +118,7 @@ const MapPick = (() => {
     }
 
     async function open() {
+      if (box.hidden) before = keep();
       box.hidden = false;
       openBtn.hidden = true;
       hereBtn.hidden = false;
@@ -161,6 +166,20 @@ const MapPick = (() => {
           },
         });
         map.addControl(new Kind());
+        if (el.cancel) {
+          const Cancel = L.Control.extend({
+            options: { position: "topleft" },
+            onAdd() {
+              const b = L.DomUtil.create("button", "mapBigBtn mapCancelBtn");
+              b.type = "button";
+              b.textContent = "✕ やめる";
+              L.DomEvent.disableClickPropagation(b);
+              L.DomEvent.on(b, "click", cancel);
+              return b;
+            },
+          });
+          map.addControl(new Cancel());
+        }
       }
       setTimeout(() => {
         map.invalidateSize();
@@ -223,6 +242,19 @@ const MapPick = (() => {
     }
     if (el.searchAddr) el.addr.addEventListener("change", fromAddr);
 
+    function cancel() {
+      asked++;  // 調べている途中の住所や今いる場所の返事が、戻したあとに届いても使わない
+      manual++;
+      setFull(false);
+      if (before) { el.lat.value = before.lat; el.lng.value = before.lng; el.addr.value = before.addr; }
+      if (pin) { pin.remove(); pin = null; }
+      box.hidden = true;
+      openBtn.hidden = false;
+      hereBtn.hidden = true;
+      showMsg();
+      if (el.onChange) el.onChange(false);
+    }
+
     bar.querySelector('[data-f="here"]').addEventListener("click", here);
     bar.querySelector('[data-f="done"]').addEventListener("click", () => setFull(false));
 
@@ -240,6 +272,7 @@ const MapPick = (() => {
     function sync() {
       asked++;
       manual++;
+      if (!box.hidden) before = keep();
       setFull(false);
       if (pin) { pin.remove(); pin = null; }
       if (has()) {
@@ -267,6 +300,7 @@ const MapPick = (() => {
     hereBtn: document.getElementById("mapHere"), clearBtn: document.getElementById("mapClear"),
     msg: document.getElementById("mapMsg"), lat: f.lat, lng: f.lng, addr: f.addr,
     searchAddr: true, // 住所を打ち替えたらピンを動かす（版20）
+    cancel: true, // 「✕ やめる」で地図を閉じて前に戻す（版21）
   });
   return { sync: add.sync, openHere: add.openHere, make };
 })();
