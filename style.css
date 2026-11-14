@@ -100,3 +100,9 @@ label input { margin-top:4px; }
 .notesBox summary { font-size:15px; font-weight:bold; color:#a07800; }
 .chips { display:flex; flex-wrap:wrap; gap:6px; margin:8px 0; }
 .chips button { font-size:14px; padding:8px 10px; }
+/* 時刻前の入場の確認の枠（版19） */
+.earlyBack { position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:2000; display:flex; align-items:center; justify-content:center; padding:16px; }
+.earlyBox { background:var(--card); color:var(--text); border-radius:14px; padding:18px 16px; width:100%; max-width:420px; box-shadow:0 4px 16px rgba(0,0,0,.4); }
+.earlyText { margin:0 0 14px; font-size:17px; line-height:1.6; }
+.earlyCall { text-align:center; font-size:19px; font-weight:bold; padding:16px 12px; }
+.earlyNo { display:block; width:100%; margin-top:12px; font-size:17px; padding:14px; }

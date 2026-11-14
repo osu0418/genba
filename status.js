@@ -35,15 +35,20 @@ window.Status = (() => {
   document.getElementById("list").addEventListener("click", e => {
     const a = e.target.closest("a[data-kind]");
     if (!a) return;
+    if (a.dataset.kind === "in") return markIn(a.dataset.id);
     const s = load();
-    if (a.dataset.kind === "in") {
-      s.open[a.dataset.id] = new Date().toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" });
-    } else {
-      delete s.open[a.dataset.id];
-    }
+    delete s.open[a.dataset.id];
     save(s);
     render();
   });
+
+  // 入場の記録（時刻前の確認の枠から電話したときも、ここを呼ぶ）
+  function markIn(id) {
+    const s = load();
+    s.open[id] = new Date().toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" });
+    save(s);
+    render();
+  }
 
   // 赤い字の行を押した：電話はリンクでかかる。こちらは退場済みにするだけ
   banner.addEventListener("click", e => {
@@ -58,5 +63,5 @@ window.Status = (() => {
   // 日付が変わったときや、ほかの画面から戻ったときにも表示を合わせる
   document.addEventListener("visibilitychange", () => { if (!document.hidden) render(); });
   render();
-  return { render };
+  return { render, markIn };
 })();

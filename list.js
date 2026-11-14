@@ -99,7 +99,9 @@ const List = (() => {
   }
   const hm = (h, mi) => `${h}:${String(mi).padStart(2, "0")}`;
 
-  // 入場の電話：注意事項の時刻より前なら、かける前に一度だけ聞く（「キャンセル」なら電話も入場の記録もしない）
+  // 入場の電話：注意事項の時刻より前なら、かける前に一度だけ聞く（「やめる」なら電話も入場の記録もしない）
+  // スマホに元からある確認の窓（confirm）を使うと、OKのあとの電話をiPhoneが「サイトが勝手にかけた」と見なして
+  // 「通話の自動開始がブロックされています」を出す。なので、アプリの中の枠を出し、その中の電話ボタンを指で押してもらう
   // この見張りは status.js（入場の記録）より先に動く（list.js の方が先に読み込まれるため）
   listEl.addEventListener("click", e => {
     const a = e.target.closest('a[data-kind="in"]');
@@ -109,11 +111,34 @@ const List = (() => {
     if (!t) return;
     const now = new Date();
     if (now.getHours() * 60 + now.getMinutes() >= t.h * 60 + t.mi) return;
-    if (!confirm(`この現場は ${hm(t.h, t.mi)} 以降の入場です（注意事項）。\nいまは ${hm(now.getHours(), now.getMinutes())} です。\n\nそれでも入場の電話をかけますか？`)) {
-      e.preventDefault();
-      e.stopImmediatePropagation();
-    }
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    askEarly(site, a.getAttribute("href"), t, now);
   });
+
+  function askEarly(site, href, t, now) {
+    const old = document.getElementById("earlyAsk");
+    if (old) old.remove();
+    const box = document.createElement("div");
+    box.id = "earlyAsk";
+    box.className = "earlyBack";
+    box.innerHTML =
+      `<div class="earlyBox" role="dialog" aria-modal="true">` +
+        `<p class="earlyText">⚠ <b>${esc(site.name)}</b>は <b>${hm(t.h, t.mi)} 以降</b>の入場です（注意事項）。<br>いまは ${hm(now.getHours(), now.getMinutes())} です。</p>` +
+        `<a class="call earlyCall" href="${esc(href)}">📞 それでも入場に電話</a>` +
+        `<button type="button" class="earlyNo">やめる</button>` +
+      `</div>`;
+    const close = () => box.remove();
+    box.addEventListener("click", e => {
+      if (e.target === box || e.target.closest(".earlyNo")) return close();
+      if (e.target.closest(".earlyCall")) {
+        // 電話はリンクでそのままかかる（指で押した電話なので止められない）。こちらは入場の記録と、枠を閉じるだけ
+        if (window.Status && Status.markIn) Status.markIn(site.id);
+        setTimeout(close, 0);
+      }
+    });
+    document.body.appendChild(box);
+  }
 
   listEl.addEventListener("click", e => {
     const b = e.target.closest("button");
