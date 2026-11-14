@@ -28,8 +28,8 @@ const List = (() => {
   // 駐車場：ふだんはたたんでおき（カードを短くするため）、押すと料金・決まり・ナビが出る
   function parkRow(s) {
     const parks = s.parks || [];
-    // ボタンは1つ：押した先の駐車場の画面の一番上に「🔍 近くの駐車場を地図で探す」がある（版23）
-    const btn = `<button type="button" class="parkBtn" data-park="${esc(s.id)}">🅿 駐車場を探す・${parks.length ? "足す・直す" : "登録"}</button>`;
+    // 登録は駐車場に行って📍でする。探すのは、登録した駐車場がいっぱいのときの控え（版26）
+    const btn = `<button type="button" class="parkBtn" data-park="${esc(s.id)}">🅿 駐車場を${parks.length ? "足す・直す" : "登録"}</button>`;
     if (!parks.length) return btn;
     const line = (label, v) => v ? `<div>${label}：${esc(v)}</div>` : "";
     const items = parks.map(p => `<div class="parkCard">
@@ -40,7 +40,7 @@ const List = (() => {
         ${Nav.links(p)}
       </div>`).join("");
     const first = parks[0];
-    return `<details class="parks"><summary>🅿 駐車場 ${parks.length}か所${first.price ? "（" + esc(first.price) + (parks.length > 1 ? " ほか" : "") + "）" : ""}</summary>${items}${btn}</details>`;
+    return `<details class="parks"><summary>🅿 駐車場 ${parks.length}か所${first.price ? "（" + esc(first.price) + (parks.length > 1 ? " ほか" : "") + "）" : ""}</summary>${items}${Nav.parkSearch(s, "🔍 いっぱいのとき：近くの駐車場を地図で探す")}${btn}</details>`;
   }
 
   function render() {

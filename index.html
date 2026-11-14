@@ -6,8 +6,8 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="apple-mobile-web-app-title" content="現場入場">
 <title>現場入場アプリ</title>
-<link rel="stylesheet" href="style.css?v=18">
-<script src="line-escape.js?v=25"></script>
+<link rel="stylesheet" href="style.css?v=19">
+<script src="line-escape.js?v=26"></script>
 </head>
 <body>
 <div id="listScreen">
@@ -57,7 +57,7 @@
   </ul>
 
   <h3>🅿 駐車場</h3>
-  <p>現場のカードの「🅿 駐車場を探す・登録」から、その現場の駐車場を入れられます。「📍 今いる場所で登録」「🏠 住所で登録」「📷 看板の写真で登録」の3つから選べます。</p>
+  <p>現場のカードの「🅿 駐車場を登録」から、その現場の駐車場を入れられます。「📍 今いる場所で登録」「🏠 住所で登録」「📷 看板の写真で登録」の3つから選べます。</p>
   <ul>
     <li><b>駐車場の中で</b>「📍 今いる場所で登録」、離れた所からは「🏠 住所で登録」（場所は必須）</li>
     <li>場所がずれていたら「🗺 地図でピンを直す」でピンを動かす</li>
@@ -143,13 +143,14 @@
 <button type="button" class="back" data-back>← 一覧に戻る</button>
 <section class="panel">
   <h2 id="parkTitle">駐車場</h2>
-  <div id="parkFind"></div>
   <div id="parkNotify" class="notify" hidden>
     <div id="parkNotifyMsg"></div>
     <button type="button" class="main" id="parkNotifyBtn">📋 知らせる文をコピー</button>
     <div class="note0">コピーしたら、LINEの邸名のトークに貼ってください。あとからは一覧の「📋 貼る文をコピー」でも出せます。</div>
   </div>
   <div id="parkList"></div>
+  <!-- 登録した駐車場がいっぱいのときに使う、控えのボタン（版26。登録は駐車場に行って📍でする） -->
+  <div id="parkFind"></div>
 </section>
 <section class="panel">
   <h2>駐車場を登録</h2>
@@ -194,13 +195,13 @@
 <script src="parktext.js?v=10"></script>
 <script src="share.js?v=7"></script>
 <script src="nav.js?v=7"></script>
-<script src="list.js?v=11"></script>
+<script src="list.js?v=12"></script>
 <script src="view.js?v=6"></script>
 <script src="add.js?v=6"></script>
 <script src="mappick.js?v=15"></script>
 <script src="home.js?v=8"></script>
 <script src="parkocr.js?v=14"></script>
-<script src="park.js?v=21"></script>
+<script src="park.js?v=22"></script>
 <script src="qr.js"></script>
 <script src="ocr.js"></script>
 <script src="photo.js?v=9"></script>
