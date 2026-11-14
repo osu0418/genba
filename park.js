@@ -88,7 +88,7 @@ const Park = (() => {
     if (!s) return;
     title.textContent = `${s.name} の駐車場`;
     // 登録した駐車場の下に、控えの「🔍 いっぱいのとき：近くの駐車場を地図で探す」（版26。ふだんは登録した駐車場を使い、登録は駐車場に行って📍でする）
-    document.getElementById("parkFind").innerHTML = Nav.parkSearch(s, "🔍 いっぱいのとき：近くの駐車場を地図で探す")
+    document.getElementById("parkFind").innerHTML = Nav.parkSearch(s, (s.parks || []).length ? "🔍 満車なら近くを探す" : "🔍 近くの駐車場を探す")
       || `<p class="note0">🔍 近くの駐車場を地図で探すには、現場の「直す」で住所か地図の場所を入れてください。</p>`;
     const parks = s.parks || [];
     listEl.innerHTML = parks.length

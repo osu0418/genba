@@ -28,5 +28,13 @@ const Nav = (() => {
     return `<a class="parkFind" href="${href.replace(/&/g, "&amp;")}" target="_blank" rel="noopener">${label || "🔍 近くの駐車場を探す"}</a>`;
   }
 
-  return { isIOS, has, hasPoint, links, parkSearch };
+  // 1回で道案内を始めるボタン（版27。現場のカードの「🅿 ナビ」）：iPhoneは「マップ」、それ以外は「Googleマップ」
+  function go(p, label, cls) {
+    if (!has(p)) return "";
+    const q = encodeURIComponent(hasPoint(p) ? `${p.lat},${p.lng}` : p.addr);
+    const href = isIOS ? `https://maps.apple.com/?daddr=${q}` : `https://www.google.com/maps/dir/?api=1&amp;destination=${q}`;
+    return `<a class="${cls || "goBtn"}" href="${href}">${label}</a>`;
+  }
+
+  return { isIOS, has, hasPoint, links, parkSearch, go };
 })();

@@ -112,4 +112,14 @@ label input { margin-top:4px; }
 /* 駐車場の登録のしかた3つ（版24） */
 #parkChoose .main { display:block; text-align:center; padding:16px 12px; border-radius:10px; }
 #parkChoose .sub { display:block; font-size:13px; font-weight:normal; opacity:.9; margin-top:2px; }
-#parkChoose .filebtnMain { background:var(--green); color:#fff; }
+/* 版27：カードの駐車場。着いたら1回で動ける大きなボタン（ナビ／近くを探す） */
+.parkGo { display:flex; gap:8px; margin-top:12px; }
+.parkGo > a { flex:1; display:flex; flex-direction:column; justify-content:center; text-align:center; text-decoration:none; color:#fff; border-radius:10px; padding:12px 8px; font-size:17px; font-weight:bold; line-height:1.3; }
+.parkGo .parkNavi { background:var(--blue); }
+.parkGo .parkNavi .sub { display:block; font-size:12px; font-weight:normal; opacity:.9; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.parkGo .parkFind { background:#e8730c; color:#fff; border:none; margin:0; font-size:17px; padding:12px 8px; }
+.parkGo.one .parkFind { padding:14px; font-size:18px; }
+.parkBtn.small { display:block; width:100%; margin-top:8px; font-size:14px; padding:8px; }
+.parks summary { font-size:14px; color:var(--sub); margin-top:8px; }
+.parkOther { display:flex; gap:8px; margin-top:10px; }
+.parkOther > * { flex:1; font-size:15px; padding:12px 6px; text-align:center; margin:0; }

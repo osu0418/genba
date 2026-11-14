@@ -6,8 +6,8 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="apple-mobile-web-app-title" content="現場入場">
 <title>現場入場アプリ</title>
-<link rel="stylesheet" href="style.css?v=19">
-<script src="line-escape.js?v=26"></script>
+<link rel="stylesheet" href="style.css?v=20">
+<script src="line-escape.js?v=27"></script>
 </head>
 <body>
 <div id="listScreen">
@@ -57,7 +57,7 @@
   </ul>
 
   <h3>🅿 駐車場</h3>
-  <p>現場のカードの「🅿 駐車場を登録」から、その現場の駐車場を入れられます。「📍 今いる場所で登録」「🏠 住所で登録」「📷 看板の写真で登録」の3つから選べます。</p>
+  <p>現場のカードの「🅿 ナビ」で登録した駐車場へ、満車なら「🔍 満車なら近くを探す」で地図アプリに近くの駐車場が出ます。駐車場の登録は、駐車場に着いてから「🅿 駐車場を登録」→「📍 今いる場所で登録」が一番かんたんです（住所・看板の写真でも登録できます）。</p>
   <ul>
     <li><b>駐車場の中で</b>「📍 今いる場所で登録」、離れた所からは「🏠 住所で登録」（場所は必須）</li>
     <li>場所がずれていたら「🗺 地図でピンを直す」でピンを動かす</li>
@@ -157,8 +157,10 @@
   <!-- 登録のしかたを3つから選ぶ（版24）。選ぶと下の入れる欄が開く -->
   <div id="parkChoose">
     <button type="button" class="main" id="parkByHere">📍 今いる場所で登録<span class="sub">駐車場の中で押す</span></button>
-    <button type="button" class="main" id="parkByAddr">🏠 住所で登録</button>
-    <label class="main filebtnMain">📷 看板の写真で登録<span class="sub">何枚でも</span><input id="parkPhoto2" type="file" accept="image/*" multiple hidden></label>
+    <div class="parkOther">
+      <button type="button" id="parkByAddr">🏠 住所で登録</button>
+      <label class="filebtn">📷 看板の写真で登録<input id="parkPhoto2" type="file" accept="image/*" multiple hidden></label>
+    </div>
   </div>
   <form id="parkForm" hidden>
     <input type="hidden" name="id"><input type="hidden" name="lat"><input type="hidden" name="lng"><input type="hidden" name="checked">
@@ -194,14 +196,14 @@
 <script src="storage.js?v=7"></script>
 <script src="parktext.js?v=10"></script>
 <script src="share.js?v=7"></script>
-<script src="nav.js?v=7"></script>
-<script src="list.js?v=12"></script>
+<script src="nav.js?v=8"></script>
+<script src="list.js?v=13"></script>
 <script src="view.js?v=6"></script>
 <script src="add.js?v=6"></script>
 <script src="mappick.js?v=15"></script>
 <script src="home.js?v=8"></script>
 <script src="parkocr.js?v=14"></script>
-<script src="park.js?v=22"></script>
+<script src="park.js?v=23"></script>
 <script src="qr.js"></script>
 <script src="ocr.js"></script>
 <script src="photo.js?v=9"></script>

@@ -25,12 +25,18 @@ const List = (() => {
     return `<div class="addr">${where}${Nav.hasPoint(s) ? "　📍地図の場所あり" : ""}</div>${Nav.links(s)}`;
   }
 
-  // 駐車場：ふだんはたたんでおき（カードを短くするため）、押すと料金・決まり・ナビが出る
+  // 駐車場（版27）：着いたら1回で動けるように、カードを開かなくても大きなボタンを出す
+  //  登録あり：「🅿 ナビ（1つ目の駐車場）」と「🔍 満車なら近くを探す」を並べる。料金・ほかの駐車場・登録は下にたたむ
+  //  登録なし：「🔍 近くの駐車場を探す」を大きく。登録は小さく（駐車場に着いてから📍でする）
   function parkRow(s) {
     const parks = s.parks || [];
-    // 登録は駐車場に行って📍でする。探すのは、登録した駐車場がいっぱいのときの控え（版26）
-    const btn = `<button type="button" class="parkBtn" data-park="${esc(s.id)}">🅿 駐車場を${parks.length ? "足す・直す" : "登録"}</button>`;
-    if (!parks.length) return btn;
+    const find = Nav.parkSearch(s, parks.length ? "🔍 満車なら<br>近くを探す" : "🔍 近くの駐車場を探す");
+    if (!parks.length) {
+      return `${find ? `<div class="parkGo one">${find}</div>` : ""}
+        <button type="button" class="parkBtn small" data-park="${esc(s.id)}">🅿 駐車場を登録（駐車場に着いてから）</button>`;
+    }
+    const first = parks[0];
+    const go = Nav.go(first, `🅿 ナビ<span class="sub">${esc(first.name || "登録の駐車場")}</span>`, "parkNavi");
     const line = (label, v) => v ? `<div>${label}：${esc(v)}</div>` : "";
     const items = parks.map(p => `<div class="parkCard">
         <div class="parkName">🅿 ${esc(p.name || "名前なし")}</div>
@@ -39,8 +45,9 @@ const List = (() => {
         <div class="note0">確認日：${esc(p.checked)}</div>
         ${Nav.links(p)}
       </div>`).join("");
-    const first = parks[0];
-    return `<details class="parks"><summary>🅿 駐車場 ${parks.length}か所${first.price ? "（" + esc(first.price) + (parks.length > 1 ? " ほか" : "") + "）" : ""}</summary>${items}${Nav.parkSearch(s, "🔍 いっぱいのとき：近くの駐車場を地図で探す")}${btn}</details>`;
+    const btn = `<button type="button" class="parkBtn small" data-park="${esc(s.id)}">🅿 駐車場を足す・直す</button>`;
+    return `<div class="parkGo">${go}${find}</div>
+      <details class="parks"><summary>料金・ほかの駐車場（${parks.length}か所${first.price ? "　" + esc(first.price) : ""}）</summary>${items}${btn}</details>`;
   }
 
   function render() {
