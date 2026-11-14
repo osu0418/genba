@@ -30,6 +30,11 @@ const Park = (() => {
     lat: form.elements.lat, lng: form.elements.lng, addr: form.elements.addr,
     // ピンを人が動かしたら、地図のすぐ下に「✓ この場所で保存」を出す（下の保存ボタンまで探さなくてよいように）
     onChange: manual => { showPlace(); if (manual) mapSave.hidden = false; },
+    // 地図の左上の「✕ やめる」：地図を閉じてピンと住所を開く前に戻す。「✓ この場所で保存」も隠す（版22）
+    cancel: true,
+    onCancel: () => { mapSave.hidden = true; showPlace(); },
+    // 住所を書いたら、その住所へピンを動かす（現場と同じ。版22）
+    searchAddr: true,
   });
   // 地図を閉じた形に戻す（別の駐車場を入れるとき・直すとき）
   function resetMap() {
@@ -145,6 +150,8 @@ const Park = (() => {
       const m = Math.round(pos.coords.accuracy || 0);
       msg.textContent = msg.textContent.replace(/\n?⚠ 場所がまだ.*$/, ""); // 古い「場所がまだ」を消す
       picker.sync(); // 地図を開いていれば、ピンを今いる場所へ動かす
+      // 住所が空なら、今いる場所の住所を入れる（版22。書いてある住所は、番地まであることが多いので上書きしない）
+      if (!form.elements.addr.value.trim()) picker.fillAddr(pos.coords.latitude, pos.coords.longitude);
       showPlace(m ?`（ずれ 約${m}m${m > 100 ? "。大きいので外の開けた所で押し直すのがおすすめ" : ""}）` : "");
     }, () => {
       placeMsg.textContent = "今いる場所を使えませんでした。位置情報の許可を確かめて、もう一度押してください。";

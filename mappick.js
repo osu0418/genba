@@ -2,7 +2,7 @@
 // ピンは指で動かして直せる。「今いる場所」で携帯の位置を使える。選んだ点は lat / lng（緯度・経度）に入る
 // 点を選ぶと、住所の欄をその点の住所（国土地理院で調べる。町名・丁目まで）に合わせる
 // 地図の部品（Leaflet）と地図の絵（国土地理院の淡色地図・航空写真）は、ボタンを押したときだけ読む
-// 地図を開くと、今いる場所のあたりを出す（まだ場所を選んでいないとき）
+// 地図を開くと、ピンがあればピン、無くて住所があれば住所の場所、どちらも無ければ今いる場所のあたりを出す
 // 地図の右上の「⛶ 大きく」で画面いっぱいに広げられる。下の「✓ この場所にする」で元の画面に戻る
 // 「現場を追加」の欄では、住所の欄を打ち替えるとピンがその住所へ動く（版20）
 // 「現場を追加」の欄・「帰る」の欄（home.js）・駐車場の画面（park.js）で使う：MapPick.make({ 欄の部品 }) で1つ作る
@@ -184,6 +184,8 @@ const MapPick = (() => {
       setTimeout(() => {
         map.invalidateSize();
         if (has()) setPoint(lat(), lng(), true);
+        // ピンが無くて住所があれば、住所の場所から始める（版22。探せなければ今いる場所のあたり）
+        else if (el.addr && el.addr.value.trim()) fromAddr(showHere);
         else showHere();
       }, 50);
       showMsg();
@@ -216,7 +218,8 @@ const MapPick = (() => {
     // 住所の欄を人が打ち替えたら、その住所の場所へピンを動かす（国土地理院の住所検索）
     // 番地まで分かった住所（例「霞が関一丁目３番」）はその場所に、町名までしか分からない住所は町のあたりに置く
     // 地図の点から自動で入れた住所では動かない（自動で入れたときは「change」が起きないため）
-    async function fromAddr() {
+    // fallback：探せなかったときに代わりにすること（地図を開いたときは「今いる場所のあたりを出す」）
+    async function fromAddr(fallback) {
       const q = el.addr.value.trim();
       if (!q) return;
       const my = ++manual;
@@ -234,13 +237,14 @@ const MapPick = (() => {
         if (map && !exact) map.setView([c[1], c[0]], 16);
         say(exact
           ? `📍 住所の場所（${title}）にピンを動かしました。ずれていたらピンを動かしてください。`
-          : `📍 「${title}」のあたりにピンを置きました。番地までは分からないので、現場の所へピンを動かしてください。`);
+          : `📍 「${title}」のあたりにピンを置きました。番地までは分からないので、正しい場所へピンを動かしてください。`);
       } catch {
         if (my !== manual) return;
+        if (typeof fallback === "function") { showMsg(); return fallback(); }
         say("住所から場所を探せませんでした（前のピンのままです）。地図でピンを動かしてください。");
       }
     }
-    if (el.searchAddr) el.addr.addEventListener("change", fromAddr);
+    if (el.searchAddr) el.addr.addEventListener("change", () => fromAddr());
 
     function cancel() {
       asked++;  // 調べている途中の住所や今いる場所の返事が、戻したあとに届いても使わない
@@ -253,6 +257,7 @@ const MapPick = (() => {
       hereBtn.hidden = true;
       showMsg();
       if (el.onChange) el.onChange(false);
+      if (el.onCancel) el.onCancel(); // 使う側（駐車場の画面）に「やめた」と知らせる
     }
 
     bar.querySelector('[data-f="here"]').addEventListener("click", here);
@@ -290,7 +295,7 @@ const MapPick = (() => {
     openBtn.addEventListener("click", open);
     hereBtn.addEventListener("click", here);
     clearBtn.addEventListener("click", clear);
-    return { sync, openHere };
+    return { sync, openHere, fillAddr };
   }
 
   // 「現場を追加」の欄の地図（add.js から MapPick.sync()、photo.js から MapPick.openHere() で使う）
