@@ -33,7 +33,7 @@ const List = (() => {
     const find = Nav.parkSearch(s, parks.length ? "🔍 満車なら<br>近くを探す" : "🔍 近くの駐車場を探す");
     if (!parks.length) {
       return `${find ? `<div class="parkGo one">${find}</div>` : ""}
-        <button type="button" class="parkBtn small" data-park="${esc(s.id)}">🅿 駐車場を登録（駐車場に着いてから）</button>`;
+        <button type="button" class="parkBtn small helperOnly" data-park="${esc(s.id)}">🅿 駐車場を登録（駐車場に着いてから）</button>`;
     }
     const first = parks[0];
     const go = Nav.go(first, `🅿 ナビ<span class="sub">${esc(first.name || "登録の駐車場")}</span>`, "parkNavi");
@@ -45,7 +45,7 @@ const List = (() => {
         <div class="note0">確認日：${esc(p.checked)}</div>
         ${Nav.links(p)}
       </div>`).join("");
-    const btn = `<button type="button" class="parkBtn small" data-park="${esc(s.id)}">🅿 駐車場を足す・直す</button>`;
+    const btn = `<button type="button" class="parkBtn small helperOnly" data-park="${esc(s.id)}">🅿 駐車場を足す・直す</button>`;
     return `<div class="parkGo">${go}${find}</div>
       <details class="parks"><summary>料金・ほかの駐車場（${parks.length}か所${first.price ? "　" + esc(first.price) : ""}）</summary>${items}${btn}</details>`;
   }
@@ -71,8 +71,8 @@ const List = (() => {
         ${/^https:\/\//.test(s.kyUrl) ? `<a class="ky" href="${esc(s.kyUrl)}" target="_blank" rel="noopener">KYを開く</a>` : ""}
         ${parkRow(s)}
         <div class="tools">
-          <button data-share="${esc(s.id)}">📋 貼る文をコピー</button>
-          <button data-edit="${esc(s.id)}">直す</button>
+          <button class="helperOnly" data-share="${esc(s.id)}">📋 貼る文をコピー</button>
+          <button class="helperOnly" data-edit="${esc(s.id)}">直す</button>
           <button class="del" data-del="${esc(s.id)}">削除</button>
         </div>
       </section>`).join("");

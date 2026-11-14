@@ -123,3 +123,15 @@ label input { margin-top:4px; }
 .parks summary { font-size:14px; color:var(--sub); margin-top:8px; }
 .parkOther { display:flex; gap:8px; margin-top:10px; }
 .parkOther > * { flex:1; font-size:15px; padding:12px 6px; text-align:center; margin:0; }
+/* 版28：かんたん表示（登録する人の表示がオフのときは、登録・直す用のボタンを出さない） */
+body:not(.helper) .helperOnly { display:none !important; }
+.modeBtn { display:block; margin:16px; width:calc(100% - 32px); font-size:14px; padding:10px; color:var(--sub); }
+.helper .modeBtn { color:var(--blue); border-color:var(--blue); }
+/* 版28：仲間から届いた現場を入れる */
+.receiveBtn { display:block; margin:8px 16px 4px; width:calc(100% - 32px); background:var(--green); color:#fff; border:none; font-size:17px; font-weight:bold; padding:12px; }
+.receiveBtn .sub { display:block; font-size:12px; font-weight:normal; opacity:.9; }
+.receiveAsk { position:fixed; inset:0; z-index:20; background:rgba(0,0,0,.45); display:flex; align-items:center; justify-content:center; padding:16px; }
+.receiveCard { background:var(--card); color:var(--text); border-radius:14px; padding:20px 16px; width:100%; max-width:420px; text-align:center; }
+.receiveTitle { font-size:16px; color:var(--sub); }
+.receiveNames { font-size:24px; font-weight:bold; margin:10px 0 6px; }
+.receiveNo { display:block; width:100%; margin-top:12px; font-size:17px; padding:12px; }

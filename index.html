@@ -6,8 +6,8 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="apple-mobile-web-app-title" content="現場入場">
 <title>現場入場アプリ</title>
-<link rel="stylesheet" href="style.css?v=20">
-<script src="line-escape.js?v=27"></script>
+<link rel="stylesheet" href="style.css?v=21">
+<script src="line-escape.js?v=28"></script>
 </head>
 <body>
 <div id="listScreen">
@@ -38,6 +38,7 @@
     <li>仲間から届いた【現場】の文を貼る</li>
     <li>手で打つ</li>
   </ul>
+  <p><b>仲間から届いた現場は、もっとかんたん</b>：LINEの「📲 押すとアプリに入ります」のリンクを押す →「はい、アプリに入れる」。うまくいかないときは、LINEで文を長押し→「コピー」→ アプリの「📥 仲間から届いた現場を入れる」→「はい」。</p>
   <p class="warn">⚠ 写真のあとは、看板と番号を見比べてください。</p>
   <p>住所を入れるか、「地図で場所を選ぶ」でピンを立てると（住所も自動で入ります）、地図アプリで道案内（ナビ）を始めるボタンが出ます。</p>
 
@@ -49,6 +50,9 @@
 
   <h3>③ 終わった現場</h3>
   <p>「削除」で消します（元に戻せません）。仲間に知らせるときは「📋 貼る文をコピー」を押して、LINEの邸名のトークに貼る。</p>
+
+  <h3>🔧 登録する人の表示</h3>
+  <p>ふだんは、電話・KY・ナビ・駐車場のボタンだけの「かんたん表示」です。現場を直す・仲間に貼る文を作る・駐車場を登録する人は、一番下の「🔧 登録する人の表示」を押してオンにしてください。</p>
 
   <h3>④ ホーム画面に置く</h3>
   <ul>
@@ -71,11 +75,13 @@
   <p>上の「倉庫へ」「自宅へ」でナビが出ます。最初に、その下の「倉庫・自宅の住所を入れる・直す」から住所を入れてください。</p>
 </details>
 
+<button type="button" class="receiveBtn" id="receiveBtn">📥 仲間から届いた現場を入れる<span class="sub">LINEで文を長押し→コピーしてから押す</span></button>
 <button type="button" class="fab" id="openAdd">＋ 現場を追加</button>
 <div id="flash" class="flash" hidden></div>
 <div id="status"></div>
 <main id="list"></main>
 <p class="note">入れた現場は、このスマホの中にだけ保存されます。LINEのお知らせのURLから開いてください（LINEの中ではなくSafariなどで開きます）。</p>
+<button type="button" class="modeBtn" id="modeBtn">🔧 登録する人の表示</button>
 </div>
 
 <div id="addScreen" hidden>
@@ -195,9 +201,9 @@
 <script src="https://cdn.jsdelivr.net/npm/libphonenumber-js@1.13.16/bundle/libphonenumber-min.js"></script>
 <script src="storage.js?v=7"></script>
 <script src="parktext.js?v=10"></script>
-<script src="share.js?v=7"></script>
+<script src="share.js?v=8"></script>
 <script src="nav.js?v=8"></script>
-<script src="list.js?v=13"></script>
+<script src="list.js?v=14"></script>
 <script src="view.js?v=6"></script>
 <script src="add.js?v=6"></script>
 <script src="mappick.js?v=15"></script>
@@ -210,6 +216,8 @@
 <script src="tel-format.js"></script>
 <script src="help.js"></script>
 <script src="status.js?v=5"></script>
+<script src="receive.js?v=1"></script>
+<script src="mode.js?v=1"></script>
 <!-- 開いた人数を数える（GoatCounter）。現場の情報は送らない。止まってもアプリは動く -->
 <script data-goatcounter="https://osu0418.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
 </body>

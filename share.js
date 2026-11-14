@@ -65,7 +65,9 @@ const Share = (() => {
     const head = park
       ? [s.name + "に駐車場を足しました"].concat(parkLines(park))
       : [s.name + "の現場の情報です"].concat(...(s.parks || []).map(p => [""].concat(parkLines(p))));
-    return head.concat(notes.length ? ["", "⚠ この現場の注意"].concat(notes) : [])
+    // 一番上に「押すとアプリに入る」リンク（版28。携帯が苦手な人は押して「はい」だけ）
+    const top = typeof Receive !== "undefined" ? ["📲 押すとアプリに入ります（現場・駐車場・注意）", Receive.link(toText(s)), ""] : [];
+    return top.concat(head).concat(notes.length ? ["", "⚠ この現場の注意"].concat(notes) : [])
       .concat(["", "―― アプリに貼る用（そのまま貼ってOK）――", toText(s)]).join("\n");
   }
 
