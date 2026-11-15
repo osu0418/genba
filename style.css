@@ -219,3 +219,10 @@ body:not(.helper) .calls { display:grid; grid-template-columns:1fr 1fr; gap:8px;
 body:not(.helper) .calls .row { margin-top:8px; }
 body:not(.helper) .calls .call { padding:10px 8px; }
 body:not(.helper) .calls .call .num { font-size:17px; letter-spacing:0; white-space:nowrap; }
+/* 版57：まとめた文を貼る */
+.npBtn { display:block; width:100%; margin:8px 0; font-size:15px; padding:10px; border:2px solid var(--blue); color:var(--blue); font-weight:bold; }
+.npBox { border:2px dashed var(--blue); border-radius:10px; padding:8px; margin-bottom:8px; }
+.npBox textarea { width:100%; box-sizing:border-box; font-size:16px; }
+.npHead { font-weight:bold; margin:6px 0 2px; }
+.npBox ol { margin:4px 0 8px; padding-left:22px; font-size:15px; line-height:1.6; }
+.npCancel { width:100%; margin-top:6px; font-size:14px; padding:8px; }

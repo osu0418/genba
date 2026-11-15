@@ -21,8 +21,8 @@ const NoteChips = (() => {
     [/進入路.*指定|から入る/, l => { const m = l.match(/[（(](.{1,8}?)から入る/); return `🚧${m && !/〇/.test(m[1]) ? m[1] + "から入る" : "進入路の指定"}`; }, false],
     [/路上駐車|路駐|駐車禁止/, () => "🚫路駐禁止", true],
     [/(\d+)\s*台まで/, l => `🚗${l.match(/(\d+)\s*台まで/)[1]}台まで`, false],
+    [SECRET, () => "⚠近隣・要確認", false], // 人や家が分かる注意は、騒音などより先に「要確認」にする
     [/騒音/, l => { const m = l.match(new RegExp(T + "\\s*まで")); return `🔇騒音${m ? m[1] + "まで" : "注意"}`; }, false],
-    [SECRET, () => "⚠近隣・要確認", false],
   ];
 
   // 1行 → { t: 札の字, red: 赤いか }
@@ -42,7 +42,9 @@ const NoteChips = (() => {
     if (!lines.length) return "";
     const cs = lines.map(chip);
     // 赤い札を先に（見落とすと困るもの）
-    const order = cs.map((c, i) => ({ c, i })).sort((a, b) => (b.c.red - a.c.red) || (a.i - b.i));
+    // 同じ字の札は1つだけ（「入場は8時以降」と「入場は8時以降でお願いします」など）。全文の方には全部出る
+    const order = cs.map((c, i) => ({ c, i })).filter((x, k, a) => a.findIndex(y => y.c.t === x.c.t) === k)
+      .sort((a, b) => (b.c.red - a.c.red) || (a.i - b.i));
     return `<div class="nchips" data-nchips="${esc(s.id)}">${order.map(({ c }) => `<button type="button" class="nchip${c.red ? " red" : ""}" data-nfull="${esc(s.id)}">${esc(c.t)}</button>`).join("")}`
       + `<button type="button" class="nchip more" data-nfull="${esc(s.id)}">全文</button></div>`
       + `<div class="notice nfull" id="nfull-${esc(s.id)}" hidden>⚠ ${lines.map(esc).join("<br>⚠ ")}${s.notesChecked ? `<div class="note0">確認日：${esc(s.notesChecked)}</div>` : ""}</div>`;

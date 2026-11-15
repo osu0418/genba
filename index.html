@@ -6,8 +6,8 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="apple-mobile-web-app-title" content="現場入場">
 <title>現場入場アプリ</title>
-<link rel="stylesheet" href="style.css?v=34">
-<script src="line-escape.js?v=56"></script>
+<link rel="stylesheet" href="style.css?v=35">
+<script src="line-escape.js?v=57"></script>
 </head>
 <body>
 <div id="listScreen">
@@ -119,6 +119,13 @@
         <button type="button" data-note="進入路 通学路（〇時〜〇時は車が通れない）">進入路 通学路</button>
         <button type="button" data-note="進入路 通行許可証が要る（申請：〇）">通行許可証が要る</button>
       </div>
+      <!-- 版57：現場監督がまとめた注意事項を貼るだけで入る -->
+      <button type="button" id="notePasteBtn" class="npBtn">📋 まとめた文を貼る（現場監督の注意事項など）</button>
+      <div id="notePasteBox" class="npBox" hidden>
+        <textarea rows="4" placeholder="ここを長押し →「ペースト」。1行ずつ・「・」や番号つき・「。」で続けた文、どれでも分けます"></textarea>
+        <div class="npPrev"></div>
+        <button type="button" class="npCancel">やめる</button>
+      </div>
       <textarea name="notes" id="notesText" rows="3" placeholder="押すと上の言葉が入ります。〇は数字に直してください。1行に1つ"></textarea>
       <div class="note0">「入場は8時以降」と書くと、8時より前に入場の電話を押したときに知らせます。人の名前は書かないでください。<br>LINEの文には注意事項が全部出ます。ただし、近隣トラブル・人の名前・どの家か分かりそうな行は「近隣・周りのことで要確認の注意があります」とだけ出て、中身はリンクからアプリに入った人だけが見られます。</div>
     </details>
@@ -224,7 +231,8 @@
 <script src="nav.js?v=12"></script>
 <script src="parkview.js?v=8"></script>
 <script src="routemap.js?v=3"></script>
-<script src="notechips.js?v=1"></script>
+<script src="notechips.js?v=2"></script>
+<script src="notepaste.js?v=1"></script>
 <script src="list.js?v=27"></script>
 <script src="view.js?v=6"></script>
 <script src="add.js?v=10"></script>
