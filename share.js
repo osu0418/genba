@@ -11,6 +11,7 @@ const Share = (() => {
       s.addr ? "住所：" + s.addr : "",
       s.lat !== "" && s.lat != null && s.lng !== "" && s.lng != null ? "位置：" + s.lat + "," + s.lng : "",
       s.routeLine ? "進入路の線：" + s.routeLine : "", // 版49
+      s.routeLine && s.routeWhy ? "進入路の理由：" + s.routeWhy : "", // 版55
     ].concat(noteLines(s).length ? noteLines(s).map(l => "注意：" + l) : ["注意：なし"]) // 「なし」：消したことも仲間に伝わるように
       .concat(s.notes && s.notesChecked ? ["注意の確認日：" + s.notesChecked] : [])
       .filter(Boolean)
@@ -45,6 +46,7 @@ const Share = (() => {
       })(),
       notesChecked: pick(b, "注意の確認日"),
       routeLine: /^\s*進入路の線\s*[：:]/m.test(b) ? pick(b, "進入路の線") : undefined, // 版49。無い古い文は undefined（前の線を消さない）
+      routeWhy: /^\s*進入路の線\s*[：:]/m.test(b) ? pick(b, "進入路の理由") : undefined, // 版55
     })).filter(s => s.name && s.inTel && s.outTel);
   }
 
@@ -63,13 +65,15 @@ const Share = (() => {
     const head = `📲【${s.name}】${d.getMonth() + 1}/${d.getDate()}更新${park ? "（駐車場を足しました）" : ""}`;
     const n = hiddenCount(s);
     const ns = openNotes(s).concat(n ? [`要確認の注意${n > 1 ? n + "つ" : ""}（アプリで）`] : []);
-    const notes = (typeof RouteMap !== "undefined" && RouteMap.has(s) ? ["🚧 進入路の地図あり（アプリで）"] : []).concat(ns.length ? ["⚠ " + ns.join("／")] : []);
+    // 版55：理由があればLINEにも1行で出す（人や家が分かりそうな字のときは出さない）
+    const why = s.routeWhy && !SECRET.test(s.routeWhy) ? s.routeWhy : "";
+    const notes = (typeof RouteMap !== "undefined" && RouteMap.has(s) ? [why ? `🚧 進入路あり：${why}（アプリのナビで）` : "🚧 進入路の地図あり（アプリで）"] : []).concat(ns.length ? ["⚠ " + ns.join("／")] : []);
     if (typeof Receive === "undefined") return [head].concat(notes, [toText(s)]).join("\n");
     return [head, "▼押すとアプリに入ります", await Receive.link(s)].concat(notes).join("\n");
   }
 
   // 版45：リンクに入れる短い形。見出しの字を外し、決まった順に並べる（うしろの空は落とす）
-  const SK = ["name", "code", "inTel", "outTel", "kyUrl", "addr", "lat", "lng", "notes", "notesChecked", "routeLine"]; // routeLine：版49で後ろに足した
+  const SK = ["name", "code", "inTel", "outTel", "kyUrl", "addr", "lat", "lng", "notes", "notesChecked", "routeLine", "routeWhy"]; // routeLine：版49、routeWhy：版55で後ろに足した
   const PK = ["name", "addr", "price", "max", "rule", "size", "kind", "reserve", "tel", "memo", "lat", "lng", "checked"];
   const trim = a => { while (a.length && (a[a.length - 1] === "" || a[a.length - 1] == null)) a.pop(); return a; };
   const row = (o, keys) => trim(keys.map(k => o[k] == null ? "" : o[k]));
@@ -83,6 +87,7 @@ const Share = (() => {
     const obj = (r, keys) => Object.fromEntries(keys.map((k, i) => [k, r && r[i] != null ? r[i] : ""]));
     const s = obj(a[1], SK);
     if (!(a[1] && a[1].length > SK.indexOf("routeLine"))) s.routeLine = undefined; // 線の欄が無い前のリンクでは、前の線を消さない
+    if (!(a[1] && a[1].length > SK.indexOf("routeWhy"))) s.routeWhy = undefined; // 版55：理由の欄が無いリンクでは前の理由を残す
     s.parks = (a[2] || []).map(r => obj(r, PK));
     return s.name && s.inTel && s.outTel ? [s] : [];
   }

@@ -66,6 +66,7 @@ const RouteMap = (() => {
     box.innerHTML = `<div class="pvCard">
       <div class="pvKind">🚧 進入路</div>
       <div class="pvName">${esc(site.name)}</div>
+      ${site.routeWhy ? `<div class="rmWhy">🚧 ${esc(site.routeWhy)}</div>` : ""}
       <div class="rmMap" id="rmMap"></div>
       <div class="pvLegend"><span class="rmLine"></span> 通る道　<span class="rmIn small">入</span> ここから入る　<span class="pvDotS">現</span> 現場${(site.parks || []).length ? `　<span class="pvDotP">P</span> 駐車場` : ""}</div>
       ${rules.length ? `<div class="notice">⚠ ${rules.map(esc).join("<br>⚠ ")}</div>` : ""}

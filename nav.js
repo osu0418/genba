@@ -48,8 +48,37 @@ const Nav = (() => {
     const pick = mid.length <= 2 ? mid : [mid[Math.floor(mid.length / 3)], mid[Math.floor(mid.length * 2 / 3)]];
     const ways = [pts[0], ...pick].map(ll).join("|");
     const href = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(dest)}&waypoints=${encodeURIComponent(ways)}&travelmode=driving`;
-    return `<a class="viaRoute" href="${href.replace(/&/g, "&amp;")}">🚧 進入路から入るナビ<span class="sub">Googleマップだけ（入口を通ってから現場へ）</span></a>`;
+    const why = s.routeWhy ? `<span class="why">${String(s.routeWhy).replace(/[&<>"']/g, c => "&#" + c.charCodeAt(0) + ";")}</span>` : "";
+    return `<a class="viaRoute" data-via="1" href="${href.replace(/&/g, "&amp;")}">🚧 進入路から入るナビ${why}<span class="sub">Googleマップだけ（入口を通ってから現場へ）</span></a>`;
   }
+
+  // 版55：はじめて「進入路から入るナビ」を押したときだけ、アプリの中に案内の枠を出す
+  // （iPhoneの確認の窓は前に戸惑う人が出たので使わない。2回目からはすぐGoogleマップが開く）
+  const SEEN = "genbaViaSeen";
+  const seen = () => { try { return localStorage.getItem(SEEN) === "1"; } catch { return true; } };
+  document.addEventListener("click", e => {
+    const a = e.target.closest("a[data-via]");
+    if (!a || seen()) return;
+    e.preventDefault();
+    const box = document.createElement("div");
+    box.className = "pvBack";
+    box.innerHTML = `<div class="pvCard">
+      <div class="pvKind">🚧 進入路から入るナビ（はじめての1回だけ出ます）</div>
+      <div class="viaHelp">
+        <p>① <b>Googleマップ</b>で開きます（iPhoneの「マップ」は、通る道を決められないため）。</p>
+        <p>② 途中の<b>入口</b>で「到着」と出たら、そのまま<b>「次へ」「続行」</b>を押すと現場へ進みます。</p>
+        <p>③ Googleマップのアプリを入れていないiPhoneは、Safariで開きます。アプリを入れておくと楽です。</p>
+      </div>
+      <a class="pvGo" data-viago href="${a.getAttribute("href").replace(/&/g, "&amp;")}">わかった・開く</a>
+      <button type="button" class="pvClose" data-viaclose>やめる</button>
+    </div>`;
+    const close = () => box.remove();
+    box.addEventListener("click", ev => {
+      if (ev.target === box || ev.target.closest("[data-viaclose]")) close();
+      if (ev.target.closest("[data-viago]")) { try { localStorage.setItem(SEEN, "1"); } catch {} setTimeout(close, 300); }
+    });
+    document.body.appendChild(box);
+  });
 
   return { isIOS, has, hasPoint, links, parkSearch, go, viaRoute };
 })();

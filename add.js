@@ -52,7 +52,16 @@
     const n = RouteMap.dec(form.elements.routeLine.value).length;
     routeMsg.textContent = n >= 2 ? `✅ 進入路の線あり（点 ${n}こ）。直すときはもう一度押してください。` : "";
     document.getElementById("routeDraw").textContent = n >= 2 ? "🚧 進入路の線を直す" : "🚧 進入路を地図に描く（初めての人向け。なくてもよい）";
+    // 版55：線があるときだけ「この道を使う理由」の欄を出す
+    document.getElementById("routeWhyBox").hidden = n < 2;
+    document.getElementById("routeWhy3t").hidden = n < 2;
   }
+  // 版55：よく使う理由のボタン。〇を選んだ形で入れる（数字を打つだけ）
+  document.getElementById("routeWhy3t").addEventListener("click", () => {
+    const f = form.elements.routeWhy;
+    f.value = "周りは〇t規制。この道なら入れる";
+    f.focus(); f.setSelectionRange(3, 4);
+  });
   document.getElementById("routeDraw").addEventListener("click", () => {
     const la = parseFloat(form.elements.lat.value), ln = parseFloat(form.elements.lng.value);
     RouteMap.draw(form.elements.routeLine, isFinite(la) && isFinite(ln) ? { lat: la, lng: ln } : null, form.elements.addr.value.trim(), routeMsgSet);
@@ -66,7 +75,7 @@
   }
   window.Editor = {
     start(site) {
-      for (const k of ["id", "name", "code", "inTel", "outTel", "kyUrl", "addr", "lat", "lng", "notes", "routeLine"]) form.elements[k].value = site[k] ?? "";
+      for (const k of ["id", "name", "code", "inTel", "outTel", "kyUrl", "addr", "lat", "lng", "notes", "routeLine", "routeWhy"]) form.elements[k].value = site[k] ?? "";
       routeMsgSet();
       notesBox.open = !!site.notes; // 注意事項があるときだけ開いておく
       if (typeof MapPick !== "undefined") MapPick.sync();

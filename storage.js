@@ -95,6 +95,8 @@ const Store = (() => {
     const old = same ? sites[i] : {};
     // 進入路の線（版49）：入ってきた方に欄がなければ前の線を残す。字の形が正しいときだけ入れる
     s.routeLine = site.routeLine === undefined ? (old.routeLine || "") : (/^-?\d+(,-?\d+){3,}$/.test(str(site.routeLine)) ? str(site.routeLine) : "");
+    // 版55：この道を使う理由。入ってきた方に欄がなければ前の理由を残す。線が無ければ理由も持たない
+    s.routeWhy = !s.routeLine ? "" : site.routeWhy === undefined ? (old.routeWhy || "") : str(site.routeWhy).slice(0, 60);
     if (site.notes === undefined) { s.notes = old.notes || ""; s.notesChecked = old.notesChecked || ""; }
     else {
       s.notes = cleanNotes(site.notes);
