@@ -12,8 +12,26 @@ const ParkOCR = (() => {
     return workerPromise;
   }
 
+  // 版53：白黒にするとき、ふつうの明るさではなく「緑の濃さ」を使う：黄色い看板の赤い字・黒い字が、地の黄色とはっきり分かれる
+  //  （黄色は緑が多く明るい、赤と黒は緑が少なく暗い。白い看板・青い看板でも字は読める）
+  //  bw：true なら、さらに白と黒の2色にする（暗い所＝字だけを黒に残す）。黄色い看板の太い数字はこの方が読めた
+  //  境目の85は、タイムズの白い看板と黄色い看板の2枚で試して両方読めた値
+  function green(c, bw) {
+    const g = c.getContext("2d");
+    const d = g.getImageData(0, 0, c.width, c.height), a = d.data;
+    let lo = 255, hi = 0;
+    for (let k = 1; k < a.length; k += 4 * 7) { if (a[k] < lo) lo = a[k]; if (a[k] > hi) hi = a[k]; }
+    const span = Math.max(40, hi - lo);
+    for (let k = 0; k < a.length; k += 4) {
+      let v = Math.max(0, Math.min(255, (a[k + 1] - lo) * 255 / span));
+      if (bw) v = v < 85 ? 0 : 255;
+      a[k] = a[k + 1] = a[k + 2] = v;
+    }
+    g.putImageData(d, 0, 0);
+  }
+
   // 写真を、横幅 width の白黒にする
-  function prepare(img, width) {
+  function prepare(img, width, bw) {
     const scale = Math.min(1, width / img.width);
     const c = document.createElement("canvas");
     c.width = Math.round(img.width * scale);
@@ -21,8 +39,8 @@ const ParkOCR = (() => {
     const g = c.getContext("2d");
     g.imageSmoothingEnabled = true;
     g.imageSmoothingQuality = "high"; // 縮めるときに字がつぶれにくくする
-    g.filter = "grayscale(1)";
     g.drawImage(img, 0, 0, c.width, c.height);
+    green(c, bw);
     return c;
   }
 
@@ -94,7 +112,54 @@ const ParkOCR = (() => {
     const tel = tels.find(x => /緊急|連絡|管理|ロック|お客様/.test(x.l)) || tels.find(x => /^0120/.test(x.m[0])) || tels[0];
     if (tel) out.tel = tel.m[0].replace(/[.(（)）]/g, "-").replace(/^(0120|0570|0800)(\d{3})(\d{3})$/, "$1-$2-$3");
 
+    // ---- 版53：タイムズなどの看板の書き方（「駐車後24時間 500円」「60分200円」「最初の60分無料」）----
+    // 字はばらばらに読まれる（「24時間」「500」が別の行、「60分200円」が「60,200」）ので、行をつないだ字から探す
+    const flat = all.join(" ");
+    // 料金：「60分200円」「60,200」「60.200」「30ヵ100」など（分のあとに3〜4けたの値段）
+    if (!out.price || /確かめる/.test(out.price)) {
+      const m = flat.match(/(?:^|[^\d:：.-])(5|10|15|20|30|40|45|60|90|120)\s?[分ヵカ,，.．・、]\s?(\d{3,4})(?!\d)/);
+      if (m && +m[2] % 10 === 0 && +m[2] <= 3000) out.price = `${m[1]}分${m[2]}円`;
+    }
+    // 最大料金：「駐車後24時間 500円」「24時間最大500円」「最大料金…500円」
+    const mx = flat.match(/(駐車後|入庫後)?\s?(\d{1,2})\s?時間[^\d]{0,8}?(\d{3,4})(?!\d)/);
+    if (mx && +mx[3] % 10 === 0 && +mx[3] <= 5000) out.max = `${mx[1] || ""}${mx[2]}時間 最大${mx[3]}円`;
+    else {
+      const m2 = flat.match(/最大[^\d]{0,8}(\d{3,4})(?!\d)/);
+      if (m2 && +m2[1] % 10 === 0) out.max = `最大${m2[1]}円`;
+    }
+    // 無料の時間
+    const free = flat.replace(/\s/g, "").match(/最初の?(\d{1,3})分(?:間)?無料/);
+    if (free && out.price) out.price += `（最初の${free[1]}分無料）`;
+    else if (free) out.price = `最初の${free[1]}分無料`;
+    const memo = [];
+    if (/無料追加|無料延長|サービス券|お買[い上]?/.test(flat.replace(/\s/g, ""))) memo.push("買い物などで無料の時間が延びる（看板で確かめる）");
+    const f2 = flat.replace(/\s/g, "");
+    const rule2 = [];
+    if (/帰り.{0,4}前に?必ず.{0,3}精算/.test(f2)) rule2.push("帰る前に必ず精算");
+    if (/(入場|入庫)から(課金|料金)?/.test(f2)) rule2.push("入った時から料金がかかる");
+    if (rule2.length) out.rule = [out.rule].concat(rule2).filter(Boolean).join("／");
+    if (/ナンバー.{0,3}(精算|認識|管理)|駐車券なし/.test(f2)) memo.push("ナンバーで精算（駐車券なし）");
+    if (/車止め.{0,3}(ありま|なし|無し)/.test(f2)) memo.push("車止めなし");
+    if (/満車の場合|満車時/.test(f2)) memo.push("満車のときは場内で待たずに出る");
+    if (memo.length) out.memo = memo.join("／");
+    if (!out.name && /Times|TIMES|タイムズ/i.test(flat)) out.name = "タイムズ";
+
     return out;
+  }
+
+  // 版53：写真を上・中・下の3つの帯に分け、2倍に大きくして濃くしてから読む（看板の小さい字・色のついた看板用）
+  //  「最初の60分無料」「駐車後24時間」などは、写真をそのまま読むと字が小さすぎて読めなかった
+  function band(img, i, n) {
+    const h = img.height / n, y = Math.max(0, i * h - h * 0.15), bh = Math.min(img.height - y, h * 1.3);
+    const scale = Math.min(2, 2400 / img.width); // 大きくしすぎるとiPhoneのメモリが足りなくなる
+    const c = document.createElement("canvas");
+    c.width = Math.round(img.width * scale);
+    c.height = Math.round(bh * scale);
+    const g = c.getContext("2d");
+    g.imageSmoothingQuality = "high";
+    g.drawImage(img, 0, y, img.width, bh, 0, 0, c.width, c.height);
+    green(c);
+    return c;
   }
 
   // 写真（createImageBitmap の結果）を読む。onStep(何回目, 全部) で進み具合を知らせる
@@ -102,10 +167,17 @@ const ParkOCR = (() => {
     if (typeof Tesseract === "undefined") throw new Error("nolib");
     const w = await getWorker();
     await w.setParameters({ tessedit_pageseg_mode: "11", tessedit_char_whitelist: "" });
-    onStep && onStep(1, 2);
+    const N = 6;
+    onStep && onStep(1, N);
     const big = lines((await w.recognize(prepare(img, 1200))).data.text);
-    onStep && onStep(2, 2);
+    onStep && onStep(2, N);
     const small = lines((await w.recognize(prepare(img, 450))).data.text);
+    onStep && onStep(3, N);
+    big.push(...lines((await w.recognize(prepare(img, 1200, true))).data.text)); // 白と黒の2色で（太い数字用）
+    for (let i = 0; i < 3; i++) {
+      onStep && onStep(4 + i, N);
+      big.push(...lines((await w.recognize(band(img, i, 3))).data.text));
+    }
     return pick(big, small);
   }
 

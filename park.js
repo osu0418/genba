@@ -206,7 +206,7 @@ const Park = (() => {
   // 看板の写真で入れる：読めた欄だけ入れ、読めなかった大事な欄（名前・料金）は赤枠で知らせる
   const photoInput = document.getElementById("parkPhoto");
   const photoMsg = document.getElementById("parkPhotoMsg");
-  const NAMES = { name: "名前", price: "料金", rule: "最大料金の決まり", size: "車の大きさ", kind: "形", reserve: "予約制", tel: "連絡先" };
+  const NAMES = { name: "名前", price: "料金", max: "最大料金", rule: "最大料金の決まり", size: "車の大きさ", kind: "形", reserve: "予約制", tel: "連絡先", memo: "メモ" }; // 版53：最大料金・メモも
   function mark(k, on) {
     const label = form.elements[k].closest("label");
     label.classList.toggle("need", on);
