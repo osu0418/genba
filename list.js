@@ -25,22 +25,20 @@ const List = (() => {
     return `<div class="addr">${where}${Nav.hasPoint(s) ? "　📍地図の場所あり" : ""}</div>${Nav.links(s)}`;
   }
 
-  // 駐車場（版34）：携帯が苦手な人は「押すだけ」。登録してある駐車場へのナビだけを大きく出す
-  //  1番目＝いつもの駐車場「🅿 ナビ」、2・3番目＝「満車なら②・③」（満車のときの駐車場は、登録する人が先に入れておく）
+  // 駐車場（版34・39・40）：携帯が苦手な人は「押すだけ」。登録してある駐車場を、現場から近い順に①②③で出す
+  //  押すと駐車場を見る画面（地図・距離・料金）→「ここにする」でナビ（parkview.js）
   //  「🔍 近くを探す」「駐車場を登録」は登録する人の表示（🔧）のときだけ
   function parkRow(s) {
-    const parks = s.parks || [];
-    const find = Nav.parkSearch(s, parks.length ? "🔍 満車なら近くを探す" : "🔍 近くの駐車場を探す", "parkFind helperOnly");
+    const parks = ParkView.sorted(s);
+    const find = Nav.parkSearch(s, parks.length ? "🔍 近くのほかの駐車場を探す" : "🔍 近くの駐車場を探す", "parkFind helperOnly");
     if (!parks.length) {
       return `${find}<button type="button" class="parkBtn small helperOnly" data-park="${esc(s.id)}">🅿 駐車場を登録（駐車場に着いてから）</button>`;
     }
     const nums = ["①", "②", "③"];
-    // 版39：押すといきなりナビではなく、駐車場を見る画面（地図・距離・料金→「ここにする」でナビ）を開く
     const gos = parks.slice(0, 3).map((p, i) => {
-      const d = typeof ParkView !== "undefined" ? ParkView.distText(s, p).replace("現場まで ", "現場まで") : "";
-      return `<button type="button" class="parkNavi${i ? " alt" : ""}" data-pview="${esc(s.id)}" data-pi="${i}">`
-        + (i === 0 ? `🅿 駐車場 ①` : `満車なら ${nums[i]}`)
-        + `<span class="sub">${esc(p.name || (i ? "ほかの駐車場" : "いつもの駐車場"))}</span>${d ? `<span class="sub">${esc(d.replace(/（.*$/, ""))}</span>` : ""}</button>`;
+      const d = ParkView.short(s, p);
+      return `<button type="button" class="parkNavi" data-pview="${esc(s.id)}" data-pid="${esc(p.id)}">🅿 駐車場${parks.length > 1 ? " " + nums[i] : ""}`
+        + `<span class="sub">${esc(p.name || "名前なし")}</span>${d ? `<span class="sub">現場まで${d}</span>` : ""}</button>`;
     }).join("");
     const line = (label, v) => v ? `<div>${label}：${esc(v)}</div>` : "";
     const items = parks.map((p, i) => `<div class="parkCard">
@@ -51,9 +49,8 @@ const List = (() => {
         ${Nav.links(p)}
       </div>`).join("");
     const btn = `<button type="button" class="parkBtn small helperOnly" data-park="${esc(s.id)}">🅿 駐車場を足す・直す</button>`;
-    const first = parks[0];
     return `<div class="parkGo${parks.length > 1 ? " many" : ""}">${gos}</div>${find}
-      <details class="parks"><summary>料金・ほかの駐車場（${parks.length}か所${first.price ? "　" + esc(first.price) : ""}）</summary>${items}${btn}</details>`;
+      <details class="parks"><summary>料金・ほかの駐車場（${parks.length}か所${parks[0].price ? "　" + esc(parks[0].price) : ""}）</summary>${items}${btn}</details>`;
   }
 
   function render() {
@@ -158,7 +155,7 @@ const List = (() => {
     const b = e.target.closest("button");
     if (!b) return;
     if (b.dataset.copy) return copy(b, b.dataset.copy, "コピー");
-    if (b.dataset.pview) return ParkView.show(b.dataset.pview, +b.dataset.pi);
+    if (b.dataset.pview) return ParkView.show(b.dataset.pview, b.dataset.pid);
     const site = Store.load().find(s => s.id === (b.dataset.share || b.dataset.del || b.dataset.edit || b.dataset.park));
     if (!site) return;
     if (b.dataset.park) return Park.open(site.id);

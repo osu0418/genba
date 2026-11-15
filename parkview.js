@@ -1,6 +1,6 @@
 // 駐車場を見る画面（版39）：カードの「🅿 駐車場」を押しても、いきなりナビを始めない
 // 駐車場と現場の場所を地図に出し、現場までの距離・料金などを見てから「ここにする（ナビ開始）」で道案内を始める
-// 満車のとき用の②③も、上の番号ボタンで見比べられる
+// 駐車場が2つ以上あれば、現場から近い順に①②③と並べ、上の番号ボタンで見比べられる（版40）
 const ParkView = (() => {
   const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
   const hasPt = p => p && typeof p.lat === "number" && typeof p.lng === "number";
@@ -19,12 +19,28 @@ const ParkView = (() => {
     return m < 1000 ? `現場まで 約${Math.round(m / 10) * 10}m（歩いて約${walk}分）` : `現場まで 約${(m / 1000).toFixed(1)}km（歩いて約${walk}分）`;
   }
 
+  // 近い順に並べる（版40。「満車なら」はやめた）。現場の場所が無いときは入れた順
+  function sorted(site) {
+    const parks = (site && site.parks) || [];
+    if (!hasPt(site)) return parks.slice();
+    const d = p => hasPt(p) ? meters(site, p) : Infinity;
+    return parks.slice().sort((a, b) => d(a) - d(b));
+  }
+  // 短い距離の字（ボタン用）：「約190m」
+  function short(site, p) {
+    if (!hasPt(site) || !hasPt(p)) return "";
+    const m = meters(site, p);
+    return m < 1000 ? `約${Math.round(m / 10) * 10}m` : `約${(m / 1000).toFixed(1)}km`;
+  }
+
   let box = null, map = null;
   function close() { if (box) box.remove(); box = null; map = null; }
 
-  function show(siteId, idx) {
+  function show(siteId, parkId) {
     const site = Store.load().find(s => s.id === siteId);
-    const parks = (site && site.parks) || [];
+    const parks = sorted(site);
+    let idx = parks.findIndex(q => q.id === parkId);
+    if (idx < 0) idx = 0;
     const p = parks[idx];
     if (!p) return;
     close();
@@ -32,11 +48,11 @@ const ParkView = (() => {
     box.className = "pvBack";
     const line = (label, v) => v ? `<tr><th>${label}</th><td>${esc(v)}</td></tr>` : "";
     const tabs = parks.length > 1 ? `<div class="pvTabs">${parks.slice(0, 5).map((q, i) =>
-      `<button type="button" data-pv="${i}" class="${i === idx ? "on" : ""}">${NUM[i]} ${i === 0 ? "いつもの" : "満車なら"}</button>`).join("")}</div>` : "";
+      `<button type="button" data-pv="${esc(q.id)}" class="${i === idx ? "on" : ""}">${NUM[i]} ${short(site, q) || esc((q.name || "").slice(0, 6))}</button>`).join("")}</div>` : "";
     const d = distText(site, p);
     box.innerHTML = `<div class="pvCard">
       ${tabs}
-      <div class="pvKind">🅿 ${NUM[idx]} ${idx === 0 ? "いつもの駐車場" : "満車のときの駐車場"}</div>
+      <div class="pvKind">🅿 駐車場 ${NUM[idx]}${parks.length > 1 && hasPt(site) ? "（現場から近い順）" : ""}</div>
       <div class="pvName">${esc(p.name || "名前なし")}</div>
       ${d ? `<div class="pvDist">🚶 ${d}</div>` : `<div class="note0">現場の場所が入っていないので、距離は出せません。</div>`}
       <div class="pvMap" id="pvMap"></div>
@@ -48,7 +64,7 @@ const ParkView = (() => {
     box.addEventListener("click", e => {
       if (e.target === box || e.target.closest("[data-pvclose]")) return close();
       const t = e.target.closest("[data-pv]");
-      if (t) show(siteId, +t.dataset.pv);
+      if (t) show(siteId, t.dataset.pv);
       if (e.target.closest(".pvGo")) setTimeout(close, 300); // ナビを開いたら、この画面は閉じる
     });
     document.body.appendChild(box);
@@ -75,5 +91,5 @@ const ParkView = (() => {
     if (pts.length > 1) map.fitBounds(pts, { padding: [40, 40], maxZoom: 18 }); else map.setView(pts[0], 17);
   }
 
-  return { show, distText };
+  return { show, distText, sorted, short };
 })();

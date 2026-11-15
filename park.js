@@ -88,17 +88,16 @@ const Park = (() => {
     if (!s) return;
     title.textContent = `${s.name} の駐車場`;
     // 登録した駐車場の下に、控えの「🔍 いっぱいのとき：近くの駐車場を地図で探す」（版26。ふだんは登録した駐車場を使い、登録は駐車場に行って📍でする）
-    document.getElementById("parkFind").innerHTML = Nav.parkSearch(s, (s.parks || []).length ? "🔍 満車なら近くを探す" : "🔍 近くの駐車場を探す")
+    document.getElementById("parkFind").innerHTML = Nav.parkSearch(s, (s.parks || []).length ? "🔍 近くのほかの駐車場を探す" : "🔍 近くの駐車場を探す")
       || `<p class="note0">🔍 近くの駐車場を地図で探すには、現場の「直す」で住所か地図の場所を入れてください。</p>`;
     const parks = s.parks || [];
     listEl.innerHTML = parks.length
-      // 版34：1番目が「いつもの駐車場」（カードの🅿 ナビ）、2・3番目が「満車なら②③」。⬆で1番目にできる
-      ? `<p class="note0">1番目が<b>いつもの駐車場</b>、2・3番目が<b>満車のとき</b>にカードに出ます。満車のときの駐車場も先に入れておくと、みんなが押すだけで行けます。</p>`
-        + parks.map((p, i) => `<div class="parkItem">
+      // 版40：カードには現場から近い順に①②③で出る（「いつもの」「満車なら」はやめた）
+      ? `<p class="note0">カードには、現場から<b>近い順</b>に3つまで出ます。近くの駐車場をいくつか入れておくと、みんなが押すだけで選べます。</p>`
+        + ParkView.sorted(s).map((p, i) => `<div class="parkItem">
           <div><b>${["①", "②", "③"][i] || "🅿"} ${esc(p.name || "名前なし")}</b>${p.price ? "　" + esc(p.price) : ""}</div>
-          <div class="note0">${i === 0 ? "いつもの駐車場" : i < 3 ? "満車のとき" : "カードには出ない（料金・ほかの駐車場の中だけ）"}／確認日：${esc(p.checked)}</div>
+          <div class="note0">${ParkView.short(s, p) ? "現場まで" + ParkView.short(s, p) + "／" : ""}確認日：${esc(p.checked)}</div>
           <div class="tools"><button type="button" data-pedit="${esc(p.id)}">直す</button>
-          ${i > 0 ? `<button type="button" data-ptop="${esc(p.id)}">⬆ いつもの駐車場にする</button>` : ""}
           <button type="button" class="del" data-pdel="${esc(p.id)}">削除</button></div>
         </div>`).join("")
       : `<p class="note0">まだ駐車場はありません。</p>`;
@@ -128,7 +127,6 @@ const Park = (() => {
     const b = e.target.closest("button");
     const s = site();
     if (!b || !s) return;
-    if (b.dataset.ptop) { Store.moveParkTop(siteId, b.dataset.ptop); renderList(); return; }
     const p = (s.parks || []).find(x => x.id === (b.dataset.pedit || b.dataset.pdel));
     if (!p) return;
     if (b.dataset.pedit) {

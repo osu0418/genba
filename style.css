@@ -138,7 +138,6 @@ body:not(.helper) .helperOnly { display:none !important; }
 /* 版34：駐車場のナビ。①いつもの（青）、②③満車なら（オレンジ）。🔍は登録する人の表示のときだけ、白い控えのボタン */
 .parkGo.many { flex-wrap:wrap; }
 .parkGo.many .parkNavi:first-child { flex-basis:100%; }
-.parkGo .parkNavi.alt { background:#e8730c; }
 .card > .parkFind { margin-top:8px; }
 /* 版35：倉庫・自宅がまだのときの「今、〇〇にいますか？」 */
 .homeAsk { margin-top:10px; font-size:16px; }
@@ -149,7 +148,6 @@ body:not(.helper) .helperOnly { display:none !important; }
 .homeTo { font-size:17px; font-weight:bold; color:var(--blue); margin:10px 0 2px; }
 /* 版39：駐車場を見る画面（地図・距離・料金 →「ここにする」でナビ） */
 .parkGo button.parkNavi { flex:1; border:none; color:#fff; border-radius:10px; padding:12px 8px; font-size:17px; font-weight:bold; line-height:1.3; background:var(--blue); }
-.parkGo button.parkNavi.alt { background:#e8730c; }
 .pvBack { position:fixed; inset:0; z-index:30; background:rgba(0,0,0,.5); display:flex; align-items:flex-end; justify-content:center; }
 .pvCard { background:var(--card); color:var(--text); width:100%; max-width:480px; max-height:92vh; overflow:auto; border-radius:16px 16px 0 0; padding:14px 14px calc(16px + env(safe-area-inset-bottom)); }
 .pvTabs { display:flex; gap:6px; margin-bottom:8px; } .pvTabs button { flex:1; padding:8px 4px; font-size:14px; font-weight:bold; }
