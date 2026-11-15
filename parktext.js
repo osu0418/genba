@@ -3,7 +3,7 @@
 const ParkText = (() => {
   // 文の見出しと、保存するときの名前の組
   const LABELS = [
-    ["名前", "name"], ["住所", "addr"], ["料金", "price"], ["最大料金", "max"], ["最大料金の決まり", "rule"], // 最大料金：版42で足した欄
+    ["名前", "name"], ["住所", "addr"], ["料金", "price"], ["最大料金", "max"], ["決まり", "rule"], // 最大料金：版42で足した欄。版53：「最大料金の決まり」→「決まり」（精算のしかたなども入るため）
     ["車の大きさ", "size"], ["形", "kind"], ["予約制", "reserve"], ["連絡先", "tel"], ["メモ", "memo"],
   ];
 
@@ -25,6 +25,7 @@ const ParkText = (() => {
       };
       const p = {};
       for (const [l, k] of LABELS) p[k] = pick(l);
+      if (!p.rule) p.rule = pick("最大料金の決まり"); // 版52までの文
       // 「【駐車場】稲葉町…」のように、見出しのすぐ後ろに名前が書いてあるとき
       const first = b.split("\n")[0].trim();
       if (!p.name && first && !/[：:]/.test(first)) p.name = first;

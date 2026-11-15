@@ -195,12 +195,12 @@
     <label>名前<input name="name" placeholder="例：稲葉町チケット式24時間駐車場"></label>
     <label>料金<input name="price" placeholder="例：30分100円"></label>
     <label class="maxLabel">💴 最大料金（大事。分からなければ空、無い駐車場は「なし」。土日だけ無いなどは書き足す）<input name="max" placeholder="例：24時間 最大500円（土日・特別日は上限なし）／なし"></label>
-    <label>最大料金の決まり<input name="rule" placeholder="例：24時間ごとに繰り返し／1回限り"></label>
+    <label>決まり（精算のしかた・最大料金のくり返しなど）<input name="rule" placeholder="例：帰る前に必ず精算／24時間ごとに繰り返し"></label>
     <label>車の大きさ<input name="size" placeholder="例：高さ2.1mまで"></label>
     <label>形<input name="kind" placeholder="例：平置き／機械式"></label>
     <label>予約制<input name="reserve" placeholder="例：いいえ／akippa"></label>
     <label>連絡先<input name="tel" inputmode="tel" placeholder="例：0120-000-000"></label>
-    <label>メモ<input name="memo" placeholder="例：ハイエースで止められた"></label>
+    <label>メモ（満車のとき・車止めなし・無料の時間など）<input name="memo" placeholder="例：満車のときは場内で待たずに出る／ハイエースで止められた"></label>
     <div id="parkMsg" class="msg"></div>
     <button type="submit" class="main" id="parkSave">この駐車場を保存</button>
     <button type="button" id="parkCancel">登録をやめる</button>
@@ -213,18 +213,18 @@
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/libphonenumber-js@1.13.16/bundle/libphonenumber-min.js"></script>
 <script src="storage.js?v=12"></script>
-<script src="parktext.js?v=11"></script>
+<script src="parktext.js?v=12"></script>
 <script src="share.js?v=15"></script>
 <script src="nav.js?v=9"></script>
-<script src="parkview.js?v=7"></script>
+<script src="parkview.js?v=8"></script>
 <script src="routemap.js?v=1"></script>
-<script src="list.js?v=23"></script>
+<script src="list.js?v=24"></script>
 <script src="view.js?v=6"></script>
 <script src="add.js?v=9"></script>
 <script src="mappick.js?v=17"></script>
 <script src="home.js?v=10"></script>
 <script src="parkocr.js?v=15"></script>
-<script src="park.js?v=28"></script>
+<script src="park.js?v=29"></script>
 <script src="qr.js"></script>
 <script src="ocr.js"></script>
 <script src="photo.js?v=9"></script>

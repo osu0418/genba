@@ -45,7 +45,7 @@ const List = (() => {
     const line = (label, v) => v ? `<div>${label}：${esc(v)}</div>` : "";
     const items = parks.map((p, i) => `<div class="parkCard">
         <div class="parkName">${i < 3 ? nums[i] : "🅿"} ${esc(p.name || "名前なし")}</div>
-        ${line("料金", p.price)}${line("最大料金の決まり", p.rule)}${line("車の大きさ", p.size)}
+        ${line("料金", p.price)}${line("決まり", p.rule)}${line("車の大きさ", p.size)}
         ${line("形", p.kind)}${line("予約制", p.reserve)}${line("連絡先", p.tel)}${line("メモ", p.memo)}
         <div class="note0">確認日：${esc(p.checked)}</div>
         ${Nav.links(p)}

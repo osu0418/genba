@@ -102,7 +102,7 @@ const ParkView = (() => {
            <button type="button" class="pvSite helperOnly" data-pvsite>📍 現場の場所を入れる（現場を直す）</button>`}
       <div class="pvMap" id="pvMap"></div>
       <div class="pvLegend"><span class="pvDotP">P</span> 駐車場　<span class="pvDotS">現</span> 現場（${esc(site.name)}）</div>
-      <table class="pvInfo">${line("料金", p.price)}${line("最大料金の決まり", p.rule)}${line("車の大きさ", p.size)}${line("形", p.kind)}${line("予約制", p.reserve)}${line("連絡先", p.tel)}${line("メモ", p.memo)}${line("確認日", p.checked)}</table>
+      <table class="pvInfo">${line("料金", p.price)}${line("決まり", p.rule)}${line("車の大きさ", p.size)}${line("形", p.kind)}${line("予約制", p.reserve)}${line("連絡先", p.tel)}${line("メモ", p.memo)}${line("確認日", p.checked)}</table>
       ${Nav.go(p, "🚗 ここにする（ナビ開始）", "pvGo") || `<div class="note0">この駐車場は場所が入っていないので、ナビを出せません。</div>`}
       <button type="button" class="pvEdit helperOnly" data-pvedit="${esc(p.id)}">✏ この駐車場を直す（料金・最大料金など）</button>
       <button type="button" class="pvClose" data-pvclose>やめる</button>
