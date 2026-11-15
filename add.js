@@ -46,6 +46,18 @@
   notesText.addEventListener("compositionend", () => setTimeout(nextMaru, 0)); // 日本語の入力で数字を打ったとき
   notesText.addEventListener("blur", () => { waitNum = -1; clearTimeout(waitTimer); });
 
+  // 版49：進入路を地図に描く（routemap.js）。現場の場所（📍）があればそこから始める
+  const routeMsg = document.getElementById("routeMsg");
+  function routeMsgSet() {
+    const n = RouteMap.dec(form.elements.routeLine.value).length;
+    routeMsg.textContent = n >= 2 ? `✅ 進入路の線あり（点 ${n}こ）。直すときはもう一度押してください。` : "";
+    document.getElementById("routeDraw").textContent = n >= 2 ? "🚧 進入路の線を直す" : "🚧 進入路を地図に描く（初めての人向け。なくてもよい）";
+  }
+  document.getElementById("routeDraw").addEventListener("click", () => {
+    const la = parseFloat(form.elements.lat.value), ln = parseFloat(form.elements.lng.value);
+    RouteMap.draw(form.elements.routeLine, isFinite(la) && isFinite(ln) ? { lat: la, lng: ln } : null, form.elements.addr.value.trim(), routeMsgSet);
+  });
+
   // 直す：選んだ現場の内容を入力欄に入れて、「直して保存」にする
   function setMode(editing) {
     title.textContent = editing ? "現場を直す" : "現場を追加";
@@ -54,7 +66,8 @@
   }
   window.Editor = {
     start(site) {
-      for (const k of ["id", "name", "code", "inTel", "outTel", "kyUrl", "addr", "lat", "lng", "notes"]) form.elements[k].value = site[k] ?? "";
+      for (const k of ["id", "name", "code", "inTel", "outTel", "kyUrl", "addr", "lat", "lng", "notes", "routeLine"]) form.elements[k].value = site[k] ?? "";
+      routeMsgSet();
       notesBox.open = !!site.notes; // 注意事項があるときだけ開いておく
       if (typeof MapPick !== "undefined") MapPick.sync();
       setMode(true);
@@ -65,7 +78,8 @@
   // 隠れた欄（id）は reset で消えないので、手で消す
   function clearForm() {
     form.reset();
-    for (const k of ["id", "lat", "lng"]) form.elements[k].value = "";
+    for (const k of ["id", "lat", "lng", "routeLine"]) form.elements[k].value = "";
+    routeMsgSet();
     notesBox.open = false;
     setMode(false);
     if (typeof MapPick !== "undefined") MapPick.sync();

@@ -93,6 +93,8 @@ const Store = (() => {
     // 注意事項：入ってきた方に注意事項の欄がなければ（古い共有の文など）、前の注意事項を残す
     // 中身が変わったら確認日を今日にする（貼った文に確認日があればそれを使う）
     const old = same ? sites[i] : {};
+    // 進入路の線（版49）：入ってきた方に欄がなければ前の線を残す。字の形が正しいときだけ入れる
+    s.routeLine = site.routeLine === undefined ? (old.routeLine || "") : (/^-?\d+(,-?\d+){3,}$/.test(str(site.routeLine)) ? str(site.routeLine) : "");
     if (site.notes === undefined) { s.notes = old.notes || ""; s.notesChecked = old.notesChecked || ""; }
     else {
       s.notes = cleanNotes(site.notes);

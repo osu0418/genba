@@ -171,3 +171,15 @@ body:not(.helper) .helperOnly { display:none !important; }
 /* 版42：駐車場を見る画面の「✏ 直す」（登録する人だけ）と、入力欄の最大料金を目立たせる */
 .pvEdit, .pvSite { display:block; width:100%; margin-top:10px; font-size:16px; padding:12px; border:2px solid var(--blue); color:var(--blue); font-weight:bold; }
 .maxLabel { color:#1b7a2b; font-weight:bold; } .maxLabel input { border:2px solid #1b7a2b; }
+
+/* 進入路の地図（版49） */
+.routeView { display:block; width:100%; margin-top:10px; padding:12px; font-size:18px; font-weight:bold; color:#fff; background:#e3001b; border:none; border-radius:12px; }
+.routeView .sub { display:block; font-size:13px; font-weight:normal; }
+.routeBtn { display:block; width:100%; margin-top:10px; font-size:16px; padding:12px; border:2px solid #e3001b; color:#e3001b; font-weight:bold; }
+.rmMap { height:300px; border-radius:10px; overflow:hidden; border:1px solid var(--line); }
+.rmMap.big { height:58vh; }
+.rmIn { display:inline-flex; align-items:center; justify-content:center; width:34px; height:34px; border-radius:50%; background:#fff; color:#e3001b; border:3px solid #e3001b; font-weight:bold; font-size:17px; box-sizing:border-box; box-shadow:0 1px 4px rgba(0,0,0,.5); }
+.rmIn.small { width:22px; height:22px; font-size:12px; border-width:2px; box-shadow:none; }
+.rmLine { display:inline-block; width:26px; height:6px; background:#e3001b; border-radius:3px; vertical-align:middle; }
+.rmCount { margin:6px 0; font-weight:bold; }
+.rmDraw .pvCard { max-height:100vh; border-radius:0; }

@@ -6,8 +6,8 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="apple-mobile-web-app-title" content="現場入場">
 <title>現場入場アプリ</title>
-<link rel="stylesheet" href="style.css?v=30">
-<script src="line-escape.js?v=48"></script>
+<link rel="stylesheet" href="style.css?v=31">
+<script src="line-escape.js?v=49"></script>
 </head>
 <body>
 <div id="listScreen">
@@ -130,6 +130,10 @@
     </div>
     <div id="mapBox" hidden></div>
     <div id="mapMsg" class="msg"></div>
+    <!-- 版49：進入路の赤い線（「初めて見る人がすぐわかるように」） -->
+    <input type="hidden" name="routeLine">
+    <button type="button" id="routeDraw" class="routeBtn">🚧 進入路を地図に描く（初めての人向け。なくてもよい）</button>
+    <div id="routeMsg" class="note0"></div>
     <div id="addMsg" class="msg"></div>
     <button type="submit" class="main" id="addBtn">追加する</button>
     <button type="button" id="cancelEdit" hidden>直すのをやめる</button>
@@ -208,14 +212,15 @@
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/libphonenumber-js@1.13.16/bundle/libphonenumber-min.js"></script>
-<script src="storage.js?v=11"></script>
+<script src="storage.js?v=12"></script>
 <script src="parktext.js?v=11"></script>
-<script src="share.js?v=13"></script>
+<script src="share.js?v=14"></script>
 <script src="nav.js?v=9"></script>
 <script src="parkview.js?v=6"></script>
-<script src="list.js?v=22"></script>
+<script src="routemap.js?v=1"></script>
+<script src="list.js?v=23"></script>
 <script src="view.js?v=6"></script>
-<script src="add.js?v=8"></script>
+<script src="add.js?v=9"></script>
 <script src="mappick.js?v=17"></script>
 <script src="home.js?v=10"></script>
 <script src="parkocr.js?v=14"></script>

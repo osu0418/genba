@@ -10,6 +10,7 @@ const Share = (() => {
       s.kyUrl ? "KY：" + s.kyUrl : "",
       s.addr ? "住所：" + s.addr : "",
       s.lat !== "" && s.lat != null && s.lng !== "" && s.lng != null ? "位置：" + s.lat + "," + s.lng : "",
+      s.routeLine ? "進入路の線：" + s.routeLine : "", // 版49
     ].concat(noteLines(s).length ? noteLines(s).map(l => "注意：" + l) : ["注意：なし"]) // 「なし」：消したことも仲間に伝わるように
       .concat(s.notes && s.notesChecked ? ["注意の確認日：" + s.notesChecked] : [])
       .filter(Boolean)
@@ -43,6 +44,7 @@ const Share = (() => {
         return ls.map(l => l.replace(/^\s*注意\s*[：:]\s*/, "").trim()).filter(l => l && l !== "なし").join("\n");
       })(),
       notesChecked: pick(b, "注意の確認日"),
+      routeLine: /^\s*進入路の線\s*[：:]/m.test(b) ? pick(b, "進入路の線") : undefined, // 版49。無い古い文は undefined（前の線を消さない）
     })).filter(s => s.name && s.inTel && s.outTel);
   }
 
@@ -58,23 +60,26 @@ const Share = (() => {
     const head = park ? `📲 ${s.name}に駐車場を足しました` : `📲 ${s.name}`;
     const n = hiddenCount(s);
     const ns = openNotes(s).concat(n ? [`要確認の注意${n > 1 ? n + "つ" : ""}（アプリで）`] : []);
-    const notes = ns.length ? ["⚠ " + ns.join("／")] : [];
+    const notes = (typeof RouteMap !== "undefined" && RouteMap.has(s) ? ["🚧 進入路の地図あり（アプリで）"] : []).concat(ns.length ? ["⚠ " + ns.join("／")] : []);
     if (typeof Receive === "undefined") return [head].concat(notes, [toText(s)]).join("\n");
     return [head + "（押すとアプリに入ります）", await Receive.link(s)].concat(notes).join("\n");
   }
 
   // 版45：リンクに入れる短い形。見出しの字を外し、決まった順に並べる（うしろの空は落とす）
-  const SK = ["name", "code", "inTel", "outTel", "kyUrl", "addr", "lat", "lng", "notes", "notesChecked"];
+  const SK = ["name", "code", "inTel", "outTel", "kyUrl", "addr", "lat", "lng", "notes", "notesChecked", "routeLine"]; // routeLine：版49で後ろに足した
   const PK = ["name", "addr", "price", "max", "rule", "size", "kind", "reserve", "tel", "memo", "lat", "lng", "checked"];
   const trim = a => { while (a.length && (a[a.length - 1] === "" || a[a.length - 1] == null)) a.pop(); return a; };
   const row = (o, keys) => trim(keys.map(k => o[k] == null ? "" : o[k]));
   function pack(s) {
-    return [1, row(s, SK), (s.parks || []).map(p => row(p, PK))]; // 1：形の番号（あとで形を変えたときに見分ける）
+    const r = row(s, SK);
+    while (r.length < SK.length) r.push(""); // 進入路の線の場所まで必ず入れる（消したことも伝わるように。版49）
+    return [1, r, (s.parks || []).map(p => row(p, PK))]; // 1：形の番号（あとで形を変えたときに見分ける）
   }
   function unpack(a) {
     if (!Array.isArray(a) || a[0] !== 1) return [];
     const obj = (r, keys) => Object.fromEntries(keys.map((k, i) => [k, r && r[i] != null ? r[i] : ""]));
     const s = obj(a[1], SK);
+    if (!(a[1] && a[1].length > SK.indexOf("routeLine"))) s.routeLine = undefined; // 線の欄が無い前のリンクでは、前の線を消さない
     s.parks = (a[2] || []).map(r => obj(r, PK));
     return s.name && s.inTel && s.outTel ? [s] : [];
   }

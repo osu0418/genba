@@ -72,6 +72,7 @@ const List = (() => {
         ${s.notes ? `<div class="notice">⚠ ${esc(s.notes).replace(/\n/g, "<br>⚠ ")}${s.notesChecked ? `<div class="note0">確認日：${esc(s.notesChecked)}</div>` : ""}</div>` : ""}
         ${callRow("入場", s.inTel, "in", s.id)}
         ${callRow("退場", s.outTel, "out", s.id)}
+        ${RouteMap.has(s) ? `<button type="button" class="routeView" data-route="${esc(s.id)}">🚧 進入路を地図で見る<span class="sub">初めての現場は見てから行く</span></button>` : ""}
         ${navRow(s)}
         ${/^https:\/\//.test(s.kyUrl) ? `<a class="ky" href="${esc(s.kyUrl)}" target="_blank" rel="noopener">KYを開く</a>` : ""}
         ${parkRow(s)}
@@ -176,6 +177,7 @@ const List = (() => {
     if (!b) return;
     if (b.dataset.copy) return copy(b, b.dataset.copy, "コピー");
     if (b.dataset.pview) return ParkView.show(b.dataset.pview, b.dataset.pid);
+    if (b.dataset.route) return RouteMap.show(b.dataset.route);
     const site = Store.load().find(s => s.id === (b.dataset.share || b.dataset.del || b.dataset.edit || b.dataset.park));
     if (!site) return;
     if (b.dataset.park) return Park.open(site.id);
