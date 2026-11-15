@@ -135,3 +135,5 @@ body:not(.helper) .helperOnly { display:none !important; }
 .receiveTitle { font-size:16px; color:var(--sub); }
 .receiveNames { font-size:24px; font-weight:bold; margin:10px 0 6px; }
 .receiveNo { display:block; width:100%; margin-top:12px; font-size:17px; padding:12px; }
+/* 版32：図つきの説明書へのボタン（📖 使い方を開いた一番上） */
+.guideBtn { display:block; text-align:center; text-decoration:none; color:#fff; background:var(--blue); border-radius:10px; padding:14px; font-size:18px; font-weight:bold; margin:10px 0; }
