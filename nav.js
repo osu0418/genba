@@ -36,5 +36,20 @@ const Nav = (() => {
     return `<a class="${cls || "goBtn"}" href="${href}">${label}</a>`;
   }
 
-  return { isIOS, has, hasPoint, links, parkSearch, go };
+  // 進入路を通るナビ（版54）：「進入路が決まっているところは、ナビを設定したときに進入路から入るように」
+  // ・Googleマップの「経由地」で、進入路の入口（＋途中の曲がり角）を通ってから現場へ行く道にする
+  // ・iPhoneの「マップ」はアドレスで経由地を渡せないので、iPhoneもGoogleマップで開く（ボタンに「Googleマップだけ」と書く）
+  // ・スマホのブラウザから開くと経由地は3つまで → 入口＋途中2つまで（線の最後の点は現場なので行き先にする）
+  function viaRoute(s, pts) {
+    if (!pts || pts.length < 2) return "";
+    const ll = p => `${p[0]},${p[1]}`;
+    const dest = hasPoint(s) ? `${s.lat},${s.lng}` : ll(pts[pts.length - 1]);
+    const mid = pts.slice(1, -1);
+    const pick = mid.length <= 2 ? mid : [mid[Math.floor(mid.length / 3)], mid[Math.floor(mid.length * 2 / 3)]];
+    const ways = [pts[0], ...pick].map(ll).join("|");
+    const href = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(dest)}&waypoints=${encodeURIComponent(ways)}&travelmode=driving`;
+    return `<a class="viaRoute" href="${href.replace(/&/g, "&amp;")}">🚧 進入路から入るナビ<span class="sub">Googleマップだけ（入口を通ってから現場へ）</span></a>`;
+  }
+
+  return { isIOS, has, hasPoint, links, parkSearch, go, viaRoute };
 })();

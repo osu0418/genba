@@ -183,3 +183,7 @@ body:not(.helper) .helperOnly { display:none !important; }
 .rmLine { display:inline-block; width:26px; height:6px; background:#e3001b; border-radius:3px; vertical-align:middle; }
 .rmCount { margin:6px 0; font-weight:bold; }
 .rmDraw .pvCard { max-height:100vh; border-radius:0; }
+/* 版54：進入路から入るナビ（Googleマップだけ） */
+.viaRoute { display:block; text-align:center; text-decoration:none; color:#fff; background:#1a73e8; border:4px solid #e3001b; border-radius:12px; padding:12px 8px; font-size:19px; font-weight:bold; margin-top:6px; }
+.viaRoute .sub { display:block; font-size:13px; font-weight:normal; }
+.viaNote { color:var(--sub); font-size:13px; margin-top:8px; }

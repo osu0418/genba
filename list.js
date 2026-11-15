@@ -22,7 +22,9 @@ const List = (() => {
   function navRow(s) {
     if (!Nav.has(s)) return "";
     const where = s.addr ? `住所：${esc(s.addr)}` : "住所：（なし）";
-    return `<div class="addr">${where}${Nav.hasPoint(s) ? (s.addrPt ? "　📍住所から出した場所（だいたい）" : "　📍地図の場所あり") : ""}</div>${Nav.links(s)}`;
+    // 版54：進入路の線があれば、入口を通るナビを先に大きく出す（ふつうのナビは下に残す）
+    const via = RouteMap.has(s) ? Nav.viaRoute(s, RouteMap.dec(s.routeLine)) : "";
+    return `<div class="addr">${where}${Nav.hasPoint(s) ? (s.addrPt ? "　📍住所から出した場所（だいたい）" : "　📍地図の場所あり") : ""}</div>${via}${via ? `<div class="viaNote">ふつうのナビ（進入路を通らないことがあります）</div>` : ""}${Nav.links(s)}`;
   }
 
   // 駐車場（版34・39・40）：携帯が苦手な人は「押すだけ」。登録してある駐車場を、現場から近い順に①②③で出す
