@@ -36,9 +36,12 @@ const ParkView = (() => {
   // 最大料金があるか（版41。「最大料金があるかが大事」）：料金と決まりの欄から「最大〇円」を探す
   // 返り値：{ ok:true, text:"最大500円" } ／ 最大の字はあるが金額が読めない { ok:true, text:"最大料金あり" } ／ 分からない { ok:false }
   function maxFee(p) {
-    const t = String((p.price || "") + " " + (p.rule || "")).normalize("NFKC");
+    const mx = String(p.max || "").normalize("NFKC").trim();
+    if (/^(なし|無し|無|ない|×)$/.test(mx)) return { ok: false, none: true, text: "最大料金なし" };
+    const t = (mx + " " + String((p.price || "") + " " + (p.rule || "")).normalize("NFKC"));
     const m = t.match(/最大[^0-9]{0,8}([0-9][0-9,]*)\s*円/);
     if (m) return { ok: true, text: `最大${m[1]}円` };
+    if (mx) { const n = mx.match(/([0-9][0-9,]*)\s*円/); return { ok: true, text: n ? `最大${n[1]}円` : mx }; }
     if (/最大|上限|打ち止め|打止/.test(t)) return { ok: true, text: "最大料金あり" };
     return { ok: false };
   }
@@ -66,16 +69,20 @@ const ParkView = (() => {
       <div class="pvName">${esc(p.name || "名前なし")}</div>
       ${(() => { const f = maxFee(p); return f.ok
         ? `<div class="pvMax ok">💴 ${esc(f.text)}${p.rule ? `<span>（${esc(p.rule)}）</span>` : ""}</div>`
+        : f.none ? `<div class="pvMax ng">⚠ 最大料金なし<span>（長く止めると高くなります）</span></div>`
         : `<div class="pvMax ng">⚠ 最大料金が分かりません<span>（看板で確かめてください）</span></div>`; })()}
       ${d ? `<div class="pvDist">🚶 ${d}</div>` : `<div class="note0">現場の場所が入っていないので、距離は出せません。</div>`}
       <div class="pvMap" id="pvMap"></div>
       <div class="pvLegend"><span class="pvDotP">P</span> 駐車場　<span class="pvDotS">現</span> 現場（${esc(site.name)}）</div>
       <table class="pvInfo">${line("料金", p.price)}${line("最大料金の決まり", p.rule)}${line("車の大きさ", p.size)}${line("形", p.kind)}${line("予約制", p.reserve)}${line("連絡先", p.tel)}${line("メモ", p.memo)}${line("確認日", p.checked)}</table>
       ${Nav.go(p, "🚗 ここにする（ナビ開始）", "pvGo") || `<div class="note0">この駐車場は場所が入っていないので、ナビを出せません。</div>`}
+      <button type="button" class="pvEdit helperOnly" data-pvedit="${esc(p.id)}">✏ この駐車場を直す（料金・最大料金など）</button>
       <button type="button" class="pvClose" data-pvclose>やめる</button>
     </div>`;
     box.addEventListener("click", e => {
       if (e.target === box || e.target.closest("[data-pvclose]")) return close();
+      const ed = e.target.closest("[data-pvedit]");
+      if (ed) { close(); return Park.edit(siteId, ed.dataset.pvedit, maxFee(p).ok ? "" : "max"); }
       const t = e.target.closest("[data-pv]");
       if (t) show(siteId, t.dataset.pv);
       if (e.target.closest(".pvGo")) setTimeout(close, 300); // ナビを開いたら、この画面は閉じる

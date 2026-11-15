@@ -40,7 +40,7 @@ const Store = (() => {
     .split(/\r?\n/).map(l => l.trim()).filter(Boolean).join("\n");
 
   // 駐車場1か所の形をそろえる。場所（緯度・経度）がなければ null（保存しない）
-  const PARK_KEYS = ["name", "addr", "price", "rule", "size", "kind", "reserve", "tel", "memo"];
+  const PARK_KEYS = ["name", "addr", "price", "max", "rule", "size", "kind", "reserve", "tel", "memo"];
   function cleanPark(p) {
     const lat = num(p && p.lat, 90), lng = num(p && p.lng, 180);
     if (lat === "" || lng === "") return null;

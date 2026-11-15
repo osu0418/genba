@@ -97,7 +97,7 @@ const Park = (() => {
         + ParkView.sorted(s).map((p, i) => `<div class="parkItem">
           <div><b>${["①", "②", "③"][i] || "🅿"} ${esc(p.name || "名前なし")}</b>${p.price ? "　" + esc(p.price) : ""}</div>
           <div class="note0">${ParkView.short(s, p) ? "現場まで" + ParkView.short(s, p) + "／" : ""}確認日：${esc(p.checked)}</div>
-          <div class="tools"><button type="button" data-pedit="${esc(p.id)}">直す</button>
+          <div class="tools"><button type="button" data-pedit="${esc(p.id)}">✏ 直す（料金・最大料金など）</button>
           <button type="button" class="del" data-pdel="${esc(p.id)}">削除</button></div>
         </div>`).join("")
       : `<p class="note0">まだ駐車場はありません。</p>`;
@@ -129,7 +129,16 @@ const Park = (() => {
     if (!b || !s) return;
     const p = (s.parks || []).find(x => x.id === (b.dataset.pedit || b.dataset.pdel));
     if (!p) return;
-    if (b.dataset.pedit) {
+    if (b.dataset.pedit) startEdit(p);
+    else if (confirm(`「${p.name || "名前なし"}」を削除しますか？\n元に戻せません。`)) {
+      Store.removePark(siteId, p.id);
+      if (form.elements.id.value === p.id) clearForm();
+      renderList();
+    }
+  });
+  // 駐車場を直す（版42で外からも呼べるようにした：駐車場を見る画面の「✏ 直す」から）
+  function startEdit(p, focus) {
+    {
       hideNotify();
       clearForm();
       fill(p);
@@ -141,13 +150,17 @@ const Park = (() => {
       showPlace();
       saved = snap();
       msg.textContent = `「${p.name || "名前なし"}」を直しています。`;
-      form.scrollIntoView({ behavior: "smooth" });
-    } else if (confirm(`「${p.name || "名前なし"}」を削除しますか？\n元に戻せません。`)) {
-      Store.removePark(siteId, p.id);
-      if (form.elements.id.value === p.id) clearForm();
-      renderList();
+      const f = focus && form.elements[focus];
+      if (f) { f.scrollIntoView({ behavior: "smooth", block: "center" }); f.focus(); }
+      else form.scrollIntoView({ behavior: "smooth" });
     }
-  });
+  }
+  // 駐車場を見る画面から：その現場の駐車場の画面を開き、その駐車場を直す形にする（focus：最初に打つ欄）
+  function edit(siteIdArg, parkId, focus) {
+    open(siteIdArg);
+    const p = (site() && site().parks || []).find(x => x.id === parkId);
+    if (p) startEdit(p, focus);
+  }
 
   hereBtn.addEventListener("click", () => {
     if (!navigator.geolocation) { placeMsg.textContent = "この携帯では今いる場所を使えません。"; return; }
@@ -245,6 +258,8 @@ const Park = (() => {
     // 料金：前の写真で「看板で確かめる」つきになっていて、今回は時間つきで読めたら入れ替える
     if (got.price && /確かめる/.test(form.elements.price.value) && !/確かめる/.test(got.price)) form.elements.price.value = "";
     fill(got, true, true);
+    // 最大料金の欄が空なら、読めた料金・決まりの中の「最大〇円」を入れる（版42）
+    if (!form.elements.max.value.trim()) { const mf = ParkView.maxFee(got); if (mf.ok && /\d/.test(mf.text)) form.elements.max.value = mf.text; }
     const read = Object.keys(NAMES).filter(k => got[k]);
     mark("name", !got.name);
     mark("price", !got.price);
@@ -313,5 +328,5 @@ const Park = (() => {
     clearForm();
   });
 
-  return { open };
+  return { open, edit };
 })();

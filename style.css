@@ -168,3 +168,6 @@ body:not(.helper) .helperOnly { display:none !important; }
 .maxTag.ng { background:#ffe08a; color:#5a4300; }
 .pvMax { font-size:21px; font-weight:bold; margin:2px 0 4px; } .pvMax span { font-size:14px; font-weight:normal; }
 .pvMax.ok { color:#1b7a2b; } .pvMax.ng { color:#b06000; }
+/* 版42：駐車場を見る画面の「✏ 直す」（登録する人だけ）と、入力欄の最大料金を目立たせる */
+.pvEdit { display:block; width:100%; margin-top:10px; font-size:16px; padding:12px; border:2px solid var(--blue); color:var(--blue); font-weight:bold; }
+.maxLabel { color:#1b7a2b; font-weight:bold; } .maxLabel input { border:2px solid #1b7a2b; }
