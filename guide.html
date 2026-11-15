@@ -4,76 +4,51 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>現場入場アプリ 使い方（図つき）</title>
-<!-- 図つきの説明書（版32）。画面の写真は作り物の現場（山田邸など）で撮ったもの。写真は開いた所から順に読む -->
+<title>現場入場アプリ 使い方</title>
+<!-- 図つきの説明書（版33）：苦手な人が読むのは「1 ホーム画面に置く」「2 LINEで届いた現場を入れる」の2つだけ。
+     毎朝の電話・KY・駐車場は「見たら分かる」ので書かない。登録する人向けはたたんでおく。写真は作り物の現場で撮影 -->
 <style>
 body{margin:0;font-family:-apple-system,"Hiragino Sans",sans-serif;background:#f4f6f8;color:#1a1a1a;font-size:17px;line-height:1.6}
-@media (prefers-color-scheme:dark){body{background:#16191d;color:#eee} section,.toc{background:#22262c!important} .tip{background:#1c2a3a!important} .box{background:#3a1c1c!important}}
+@media (prefers-color-scheme:dark){body{background:#16191d;color:#eee} section,.reg{background:#22262c!important} .tip{background:#1c2a3a!important} .box{background:#3a1c1c!important}}
 .bar{position:sticky;top:0;z-index:2;background:#1f5fa8;padding:10px 12px} .bar a{color:#fff;font-weight:bold;text-decoration:none;font-size:17px}
-h1{font-size:22px;margin:16px 14px 8px} h2{font-size:20px;color:#1f5fa8;margin:0 0 8px} h3{font-size:17px;color:#1f5fa8;margin:16px 0 6px}
-.toc{display:block;margin:6px 14px;padding:12px 14px;background:#fff;border-radius:10px;text-decoration:none;color:inherit;font-weight:bold;border-left:6px solid #1f5fa8}
-section{background:#fff;margin:14px 10px;padding:14px;border-radius:12px}
+h1{font-size:22px;margin:16px 14px 4px} h2{font-size:20px;color:#1f5fa8;margin:0 0 8px} h3{font-size:17px;color:#1f5fa8;margin:16px 0 6px}
+section,.reg{background:#fff;margin:14px 10px;padding:14px;border-radius:12px}
+.reg summary{font-weight:bold;font-size:16px;color:#555}
 img{display:block;margin:6px auto;border:1px solid #ccc;border-radius:8px;max-width:100%}
 .step{margin:14px 0} .st{font-weight:bold;font-size:18px} .step p{margin:4px 0}
 .no{display:inline-block;background:#e3001b;color:#fff;border-radius:50%;width:28px;height:28px;text-align:center;line-height:28px;margin-right:6px}
-.b{display:inline-block;background:#e3001b;color:#fff;border-radius:50%;width:24px;height:24px;text-align:center;line-height:24px;font-weight:bold;font-size:14px}
-.leg{border-collapse:collapse;width:100%;font-size:15px} .leg td{border-bottom:1px solid #ddd;padding:6px 4px;vertical-align:top}
-.box{border:2px solid #e3001b;border-radius:10px;padding:10px;background:#fff5f5;font-size:15px;margin:10px 0}
+.box{border:2px solid #e3001b;border-radius:10px;padding:10px;background:#fff5f5;font-size:16px;margin:10px 0}
 .tip{border:1px solid #1f5fa8;border-radius:10px;padding:10px;background:#f0f6ff;font-size:15px;margin:10px 0}
-.flow{display:flex;flex-wrap:wrap;gap:4px;align-items:center;font-size:15px;margin:6px 0} .flow span{background:#f0f6ff;color:#1a1a1a;border:1px solid #1f5fa8;border-radius:8px;padding:4px 8px} .flow i{font-style:normal;color:#e3001b;font-weight:bold}
 .chat{background:#dfe6ee;border-radius:10px;padding:12px} .bub{background:#fff;color:#1a1a1a;border-radius:14px;padding:10px 12px;font-size:14px;word-break:break-all} .bub u{color:#1a5fd0}
-.small{font-size:13px;color:#888} .top{display:block;text-align:right;font-size:14px;margin-top:8px}
+.small{font-size:13px;color:#888}
 </style>
 </head>
-<body id="top">
+<body>
 <div class="bar"><a href="./">← アプリに戻る</a></div>
-<h1>📖 使い方（図つき）</h1>
-<p class="small" style="margin:0 14px">見たい所を押してください。画面の写真は、作り物の現場（山田邸など）です。</p>
-<a class="toc" href="#g0">0　はじめに（全体の図）</a><a class="toc" href="#g1">1　写真で現場を登録する</a><a class="toc" href="#g2">2　仲間に現場を送る（登録する人）</a><a class="toc" href="#g3">3　LINEで届いた現場を入れる</a><a class="toc" href="#g4">4　電話と赤い字・帰る・削除</a><a class="toc" href="#g5">5　ホーム画面に置く</a><a class="toc" href="#g6">6　駐車場</a>
-<section id="g0"><h2>0　はじめに（全体の図）</h2><p>現場の入場・退場の電話とKYを、ボタン1つで開けるアプリです。入れた現場は<b>自分のスマホの中だけ</b>に残ります。</p>
-<h3>最初の1回だけ</h3><div class="flow"><span><a href="#g5">5 ホーム画面に置く</a></span><i>→</i><span><a href="#g3">3 LINEのリンクで現場を入れる</a></span></div>
-<p class="small">リンクが届いていない現場は「<a href="#g1">1 写真で現場を登録する</a>」で入れます。</p>
-<h3>毎朝の流れ</h3><div class="flow"><span>アイコンから開く</span><i>→</i><span>邸名で探す</span><i>→</i><span>②入場に電話</span><i>→</i><span>⑤KYを開く</span><i>→</i><span>⑥駐車場へナビ</span></div><div class="flow"><span>帰るとき</span><i>→</i><span>③退場に電話</span><i>→</i><span>Bの倉庫へ・自宅へ</span></div>
-<h3>画面の上の方</h3><img src="guide/0_top.jpg" loading="lazy" style="width:100%" alt=""><table class="leg"><tr><td><span class="b">A</span></td><td><b>邸名で探す</b>　キーボードのマイクで話しても探せます</td></tr><tr><td><span class="b">B</span></td><td><b>帰る</b>　倉庫・自宅へのナビ（→4）</td></tr><tr><td><span class="b">C</span></td><td><b>仲間から届いた現場を入れる</b>　LINEのリンクでうまくいかないとき（→3）</td></tr></table>
-<h3>現場のカード</h3><img src="guide/0_card.jpg" loading="lazy" style="width:85%" alt=""><table class="leg"><tr><td><span class="b">1</span></td><td><b>注意事項</b>　入場の時刻など。黄色で出ます</td></tr><tr><td><span class="b">2</span></td><td><b>入場に電話</b>　朝着いたら押す（→4）</td></tr><tr><td><span class="b">3</span></td><td><b>退場に電話</b>　帰るときに押す（→4）</td></tr><tr><td><span class="b">4</span></td><td><b>ナビ</b>　現場まで道案内</td></tr><tr><td><span class="b">5</span></td><td><b>KYを開く</b>　KYの入力ページ</td></tr><tr><td><span class="b">6</span></td><td><b>🅿 ナビ</b>　登録した駐車場まで道案内（→6）</td></tr><tr><td><span class="b">7</span></td><td><b>🔍 満車なら近くを探す</b>　近くの駐車場が出ます（→6）</td></tr><tr><td><span class="b">8</span></td><td><b>料金・ほかの駐車場</b>　駐車場の料金など（→6）</td></tr><tr><td><span class="b">9</span></td><td><b>削除</b>　終わった現場を消す（→4）</td></tr></table><a class="top" href="#top">▲ 目次へ</a></section><section id="g1"><h2>1　写真で現場を登録する</h2><p>LINEのリンクが届いていない現場は、看板の写真で入れます。</p>
-<div class="step"><div class="st"><span class="no">1</span>「＋ 現場を追加」を押す</div><p>画面の右下のオレンジのボタンです。</p><img src="guide/1_fab.jpg" loading="lazy" style="width:100%" alt=""></div>
-<div class="step"><div class="st"><span class="no">2</span>「📷 看板の写真で登録」を押す</div><p>現場の看板を撮ります。番号が自動で入ります。</p><img src="guide/1_photo.jpg" loading="lazy" style="width:100%" alt=""></div>
-<div class="step"><div class="st"><span class="no">3</span>看板と番号を見比べる</div><p><b>読み違いがあります。</b>現場番号・入場と退場の電話番号を、看板と1つずつ見比べてください。違っていたら手で直します。</p><img src="guide/1_form.jpg" loading="lazy" style="width:100%" alt=""></div>
-<div class="step"><div class="st"><span class="no">4</span>「追加する」を押す</div><p>一番下の青いボタンです。</p><img src="guide/1_addbtn.jpg" loading="lazy" style="width:100%" alt=""></div>
-<div class="step"><div class="st"><span class="no">5</span>入りました</div><p>一覧の上に「〇〇邸を追加しました」と出ます。</p><img src="guide/1_done.jpg" loading="lazy" style="width:100%" alt=""></div>
-<div class="tip">住所を入れるか、「🗺 地図で場所を選ぶ」でピンを立てると、カードに現場までの「ナビ」が出ます。</div><a class="top" href="#top">▲ 目次へ</a></section><section id="g2"><h2>2　仲間に現場を送る（登録する人）</h2><p>現場を仲間に教える人（登録する人）の手順です。</p>
-<div class="step"><div class="st"><span class="no">1</span>「🔧 登録する人の表示」をオンにする</div><p>一覧の一番下にあります。1回押せば、次からもオンのままです。「直す」「📋 貼る文をコピー」「🅿 駐車場を登録」が出るようになります。</p><img src="guide/2_mode.jpg" loading="lazy" style="width:100%" alt=""></div>
-<div class="step"><div class="st"><span class="no">2</span>「📋 貼る文をコピー」を押す</div><p>送りたい現場のカードの下にあります。</p><img src="guide/2_share.jpg" loading="lazy" style="width:100%" alt=""></div>
-<div class="step"><div class="st"><span class="no">3</span>LINEの邸名のトークに貼る</div><p>「コピーしました」と出たら、LINEを開いて邸名のトークに貼り、送ります。</p><img src="guide/2_copied.jpg" loading="lazy" style="width:70%" alt=""></div>
-<div class="step"><div class="st"><span class="no">4</span>仲間にはこう届きます</div><p>仲間はリンクを押して「はい」を押すだけで、アプリに入ります（→3）。</p><div class="chat"><div class="bub">📲 山田邸の現場の情報（押すとアプリに入ります）<br><u>https://nyujo.genba-benri.com/#i=hPrA2JII…</u><br><br>⚠ 入場は8時以降</div></div></div>
-<div class="box">⚠ LINEに字で見えるのは、<b>邸名</b>と、<b>入場の時刻・駐車・騒音などの決まり</b>だけです。電話番号・住所・駐車場はリンクの中です。<br>近隣トラブルなどを注意事項に書くときは「近隣」「トラブル」の言葉を入れてください。LINEには出ません（よく使う言葉のボタン「近隣とトラブル中」が確実）。</div><a class="top" href="#top">▲ 目次へ</a></section><section id="g3"><h2>3　LINEで届いた現場を入れる</h2><p>仲間がLINEに貼った「📲」のリンクを押して、「はい」を押すだけです。</p>
-<div class="box">⚠ 先に「<a href="#g5">5 ホーム画面に置く</a>」のとおり、<b>「Webアプリとして開く」を切って</b>ホーム画面に置いてください。切っていないと、リンクで入れた現場がアイコンから開いたアプリに出ません。</div>
-<div class="step"><div class="st"><span class="no">1</span>LINEのリンクを押す</div><p>邸名のトークに、仲間からこういう文が届きます。<b>青い字のリンク</b>を押してください。</p><div class="chat"><div class="bub">📲 山田邸の現場の情報（押すとアプリに入ります）<br><u>https://nyujo.genba-benri.com/#i=hPrA2JII…</u><br><br>⚠ 入場は8時以降</div></div><p class="small">※LINEに見えるのは邸名と、入場の時刻・駐車などの決まりだけです。</p></div>
-<div class="step"><div class="st"><span class="no">2</span>「はい、アプリに入れる」を押す</div><p>Safariでアプリが開き、この枠が出ます。</p><img src="guide/3_ask.jpg" loading="lazy" style="width:100%" alt=""></div>
-<div class="step"><div class="st"><span class="no">3</span>入りました</div><p>一覧の上に「〇〇邸を追加しました」と出ます。前から入っている現場なら「上書きしました」と出て、新しい中身に直ります。</p><img src="guide/3_done.jpg" loading="lazy" style="width:100%" alt=""></div>
-<div class="tip"><b>リンクでうまくいかないとき</b><br>① LINEで仲間の文を<b>長押し</b>して「コピー」<br>② アプリの緑の「📥 仲間から届いた現場を入れる」を押す<br>③ iPhoneは小さな「ペースト」が出たら押す<br>④「はい、アプリに入れる」を押す<img src="guide/3_btn.jpg" loading="lazy" style="width:100%" alt=""></div><a class="top" href="#top">▲ 目次へ</a></section><section id="g4"><h2>4　電話と赤い字・帰る・削除</h2>
-<div class="step"><div class="st"><span class="no">1</span>朝：「入場に電話」を押す</div><p>そのまま電話がかかります。</p><img src="guide/4_in.jpg" loading="lazy" style="width:100%" alt=""></div>
-<div class="step"><div class="st"><span class="no">2</span>赤い字が出ます</div><p>入場の電話を押した日は、退場の電話を押すまで、一番上に赤い字が出ます。<b>赤い字を押しても退場に電話できます。</b></p><img src="guide/4_banner.jpg" loading="lazy" style="width:100%" alt=""></div>
-<div class="step"><div class="st"><span class="no">3</span>帰るとき：「退場に電話」を押す</div><p>押すと赤い字が消えます。</p><img src="guide/4_out.jpg" loading="lazy" style="width:100%" alt=""></div>
-<div class="step"><div class="st"><span class="no">4</span>倉庫・自宅へのナビ</div><p>上の「倉庫へ」「自宅へ」を押すと、ナビのボタンが出ます。最初に「倉庫・自宅の住所を入れる・直す」で住所を入れてください。</p><img src="guide/4_home.jpg" loading="lazy" style="width:100%" alt=""></div>
-<div class="step"><div class="st"><span class="no">5</span>終わった現場は「削除」</div><p>押すと「削除しますか？」と出ます。元に戻せません。</p><img src="guide/4_del.jpg" loading="lazy" style="width:100%" alt=""></div>
-<div class="tip"><b>入場の時刻より早く押したとき</b><br>注意事項に「入場は8時以降」とある現場で、8時より前に「入場に電話」を押すと、この枠が出ます。かけてよいときだけ「それでも入場に電話」を押してください。<img src="guide/4_early.jpg" loading="lazy" style="width:100%" alt=""></div><a class="top" href="#top">▲ 目次へ</a></section><section id="g5"><h2>5　ホーム画面に置く</h2><p>毎朝すぐ開けるように、アプリをホーム画面に置きます。最初に1回だけです。</p>
+<h1>📖 使い方</h1>
+<p class="small" style="margin:0 14px">読むのはこの2つだけ。ほかはアプリを見れば分かります。写真は作り物の現場（山田邸など）です。</p>
+<section id="g1"><h2>1　ホーム画面に置く（最初に1回だけ）</h2>
+<div class="box">⚠ <b>iPhoneの人は「Webアプリとして開く」を必ず切ってください。</b>切らないと、LINEで届いた現場がアプリに入りません。</div>
 <h3>iPhone</h3>
 <div class="step"><div class="st"><span class="no">1</span>Safariでアプリを開く</div><p>LINEのお知らせのURLを押すと、Safariで開きます。</p></div>
-<div class="step"><div class="st"><span class="no">2</span>共有ボタン →「ホーム画面に追加」</div><p>画面の下にある共有ボタン（四角から上に矢印が出ているマーク）を押して、「ホーム画面に追加」を押します。<span class='small'>見つからないときは、右下の「…」を押すと出ます。</span></p></div>
-<div class="step"><div class="st"><span class="no">3</span>「Webアプリとして開く」を切る</div><p><b>右のスイッチが灰色（切れている）</b>か見てください。緑なら押して灰色にします（①）。それから右上の「追加」を押します（②）。</p><img src="guide/5_toggle.jpg" loading="lazy" style="width:100%" alt=""></div>
-<div class="box">⚠ <b>「Webアプリとして開く」が緑のままだと</b>、LINEのリンクで入れた現場が、アイコンから開いたアプリに出ません。</div>
-<div class="step"><div class="st"><span class="no">4</span>これからはアイコンから開く</div><p>ホーム画面の「現」のアイコンから開いてください。</p></div>
-<div class="tip"><b>やってはいけないこと</b><br>Safariの設定の「履歴とWebサイトデータを消去」をすると、入れた現場が全部消えます。</div>
-<h3>Android</h3><p>Chromeの右上の「︙」→「ホーム画面に追加」→「追加」。</p><a class="top" href="#top">▲ 目次へ</a></section><section id="g6"><h2>6　駐車場</h2><p>現場に着いたら、カードの大きなボタンを押すだけです。</p>
-<div class="step"><div class="st"><span class="no">1</span>「🅿 ナビ」を押す</div><p>仲間が登録した駐車場まで、地図アプリで道案内が始まります。</p><img src="guide/6_navi.jpg" loading="lazy" style="width:100%" alt=""></div>
-<div class="step"><div class="st"><span class="no">2</span>満車なら「🔍 満車なら近くを探す」</div><p>Googleマップに、現場の近くの駐車場がいくつも出ます。</p><img src="guide/6_find.jpg" loading="lazy" style="width:100%" alt=""></div>
-<div class="step"><div class="st"><span class="no">3</span>料金を見るとき</div><p>「料金・ほかの駐車場」を押すと、料金・最大料金の決まり・車の大きさ・メモが出ます。</p><img src="guide/6_detail.jpg" loading="lazy" style="width:100%" alt=""></div>
-<div class="step"><div class="st"><span class="no">4</span>駐車場がまだ無い現場</div><p>オレンジの「🔍 近くの駐車場を探す」だけが出ます。</p><img src="guide/6_none.jpg" loading="lazy" style="width:100%" alt=""></div>
-<h3>登録する人だけ：駐車場を登録する（駐車場に着いてから）</h3>
-<div class="step"><div class="st"><span class="no">1</span>「🔧 登録する人の表示」をオン</div><p>一覧の一番下にあります（→2）。</p></div>
-<div class="step"><div class="st"><span class="no">2</span>「🅿 駐車場を登録」を押す</div><p>カードの駐車場のボタンの下に出ます。</p><img src="guide/6_regbtn.jpg" loading="lazy" style="width:100%" alt=""></div>
-<div class="step"><div class="st"><span class="no">3</span>駐車場の中で「📍 今いる場所で登録」</div><p>料金などは「📷 看板の写真で入れる」か手で入れて「この駐車場を保存」。保存すると「📋 知らせる文をコピー」が出るので、LINEの邸名のトークに貼ってください。</p><img src="guide/6_here.jpg" loading="lazy" style="width:100%" alt=""></div><a class="top" href="#top">▲ 目次へ</a></section>
+<div class="step"><div class="st"><span class="no">2</span>共有ボタン →「ホーム画面に追加」</div><p>画面の下の共有ボタン（四角から上に矢印のマーク）を押して、「ホーム画面に追加」。<span class='small'>見つからないときは右下の「…」の中にあります。</span></p></div>
+<div class="step"><div class="st"><span class="no">3</span>「Webアプリとして開く」を切る →「追加」</div><p>右のスイッチが<b>灰色（切れている）</b>か見る。緑なら押して灰色に（①）。それから右上の「追加」（②）。</p><img src="guide/5_toggle.jpg" loading="lazy" style="width:100%" alt=""></div>
+<div class="tip">これからは、ホーム画面の「現」のアイコンから開いてください。Safariの「履歴とWebサイトデータを消去」はしないでください（入れた現場が消えます）。</div>
+<h3>Android</h3><p>Chromeの右上の「︙」→「ホーム画面に追加」→「追加」。</p></section>
+<section id="g2"><h2>2　LINEで届いた現場を入れる</h2>
+<div class="step"><div class="st"><span class="no">1</span>LINEの青い字のリンクを押す</div><p>邸名のトークに、仲間からこういう文が届きます。</p><div class="chat"><div class="bub">📲 山田邸の現場の情報（押すとアプリに入ります）<br><u>https://nyujo.genba-benri.com/#i=hPrA2JII…</u><br><br>⚠ 入場は8時以降</div></div></div>
+<div class="step"><div class="st"><span class="no">2</span>「はい、アプリに入れる」を押す</div><p>Safariでアプリが開き、この枠が出ます。押せば終わりです。</p><img src="guide/3_ask.jpg" loading="lazy" style="width:100%" alt=""></div>
+<div class="tip"><b>うまくいかないとき</b><br>LINEで文を<b>長押し</b>→「コピー」→ アプリの緑の「📥 仲間から届いた現場を入れる」→（iPhoneは「ペースト」）→「はい」<img src="guide/3_btn.jpg" loading="lazy" style="width:100%" alt=""></div></section>
+<details class="reg"><summary>🔧 登録する人だけ（現場を写真で入れる・仲間に送る・駐車場を登録）</summary>
+<h3>現場を写真で入れる</h3>
+<div class="step"><div class="st"><span class="no">1</span>「＋ 現場を追加」→「📷 看板の写真で登録」</div><p>番号が自動で入ります。</p><img src="guide/1_photo.jpg" loading="lazy" style="width:100%" alt=""></div>
+<div class="step"><div class="st"><span class="no">2</span>看板と番号を見比べて「追加する」</div><p><b>読み違いがあります。</b>現場番号・入場と退場の電話番号を看板と見比べてください。</p><img src="guide/1_form.jpg" loading="lazy" style="width:100%" alt=""></div>
+<h3>仲間に送る</h3>
+<div class="step"><div class="st"><span class="no">1</span>一番下の「🔧 登録する人の表示」をオン</div><p>「直す」「📋 貼る文をコピー」「🅿 駐車場を登録」が出るようになります。</p><img src="guide/2_mode.jpg" loading="lazy" style="width:100%" alt=""></div>
+<div class="step"><div class="st"><span class="no">2</span>「📋 貼る文をコピー」→ LINEの邸名のトークに貼る</div><p>LINEに字で見えるのは邸名と、入場の時刻・駐車などの決まりだけです。近隣トラブルは「近隣」「トラブル」の言葉を入れて書けばLINEに出ません。</p><img src="guide/2_share.jpg" loading="lazy" style="width:100%" alt=""></div>
+<h3>駐車場を登録（駐車場に着いてから）</h3>
+<div class="step"><div class="st"><span class="no">1</span>「🅿 駐車場を登録」→「📍 今いる場所で登録」</div><p>料金などは看板の写真か手で入れて保存。出てきた「📋 知らせる文をコピー」をLINEに貼ります。</p><img src="guide/6_here.jpg" loading="lazy" style="width:100%" alt=""></div>
+</details>
 <div class="bar" style="position:static;margin-top:20px"><a href="./">← アプリに戻る</a></div>
 </body>
 </html>
