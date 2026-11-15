@@ -97,7 +97,9 @@ const ParkView = (() => {
           + (f.except ? `<div class="pvMax ng">⚠ ${f.todayNone ? `今日は最大料金なし<span>（${esc(f.except)}は上限なし。長く止めると高くなります）</span>` : `${esc(f.except)}は最大料金なし<span>（長く止めると高くなります）</span>`}</div>` : "")
         : f.none ? `<div class="pvMax ng">⚠ 最大料金なし<span>（長く止めると高くなります）</span></div>`
         : `<div class="pvMax ng">⚠ 最大料金が分かりません<span>（看板で確かめてください）</span></div>`; })()}
-      ${d ? `<div class="pvDist">🚶 ${d}</div>` : `<div class="note0">現場の場所が入っていないので、距離は出せません。</div>`}
+      ${d ? `<div class="pvDist">🚶 ${d}${site.addrPt ? `<span class="note0">（現場の場所は住所から出した、だいたいの場所）</span>` : ""}</div>`
+        : `<div class="note0">現場（${esc(site.name)}）の${site.addr ? "住所の場所が見つからない" : "住所も📍も入っていない"}ので、距離は出せません。</div>
+           <button type="button" class="pvSite helperOnly" data-pvsite>📍 現場の場所を入れる（現場を直す）</button>`}
       <div class="pvMap" id="pvMap"></div>
       <div class="pvLegend"><span class="pvDotP">P</span> 駐車場　<span class="pvDotS">現</span> 現場（${esc(site.name)}）</div>
       <table class="pvInfo">${line("料金", p.price)}${line("最大料金の決まり", p.rule)}${line("車の大きさ", p.size)}${line("形", p.kind)}${line("予約制", p.reserve)}${line("連絡先", p.tel)}${line("メモ", p.memo)}${line("確認日", p.checked)}</table>
@@ -107,6 +109,7 @@ const ParkView = (() => {
     </div>`;
     box.addEventListener("click", e => {
       if (e.target === box || e.target.closest("[data-pvclose]")) return close();
+      if (e.target.closest("[data-pvsite]")) { close(); return Editor.start(site); }
       const ed = e.target.closest("[data-pvedit]");
       if (ed) { close(); return Park.edit(siteId, ed.dataset.pvedit, maxFee(p).ok ? "" : "max"); }
       const t = e.target.closest("[data-pv]");

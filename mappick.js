@@ -344,5 +344,17 @@ const MapPick = (() => {
     searchAddr: true, // 住所を打ち替えたらピンを動かす（版20）
     cancel: true, // 「✕ やめる」で地図を閉じて前に戻す（版21）
   });
-  return { sync: add.sync, openHere: add.openHere, make, load }; // load：地図の部品を読む（駐車場を見る画面 parkview.js でも使う。版39）
+  // 住所だけで場所を探す（地図は出さない。版44）：現場に住所はあるが📍が無いとき、距離を出すのに使う
+  // 返り値：{ lat, lng } ／ 見つからない null ／ 電波がない "net"
+  async function geocode(addr) {
+    for (const t of addrTries(addr)) {
+      try {
+        const r = await (await fetch(`https://msearch.gsi.go.jp/address-search/AddressSearch?q=${encodeURIComponent(t)}`)).json();
+        const c = r && r[0] && r[0].geometry && r[0].geometry.coordinates;
+        if (c && isFinite(c[0]) && isFinite(c[1])) return { lat: +(+c[1]).toFixed(6), lng: +(+c[0]).toFixed(6) };
+      } catch { return "net"; }
+    }
+    return null;
+  }
+  return { sync: add.sync, openHere: add.openHere, make, load, geocode }; // load：地図の部品を読む（駐車場を見る画面 parkview.js でも使う。版39）
 })();

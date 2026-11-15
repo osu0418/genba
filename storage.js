@@ -87,6 +87,8 @@ const Store = (() => {
     // 合わなければ、入場の番号だけが同じ別の現場（使い回し）。前の駐車場・注意事項は引き継がない
     const same = i >= 0 && (!!site.id || (s.code && normCode(sites[i].code) === normCode(s.code)) || normName(sites[i].name) === normName(s.name));
     const replaced = i >= 0 && !same ? sites[i].name : "";
+    // 現場の場所（📍）：入ってきた方に場所がなければ、前の場所を残す（版44。場所の無いリンクで消えないように。「直す」から来たときは、人が消したのかもしれないので残さない）
+    if (!site.id && same && s.lat === "" && s.lng === "" && sites[i].lat !== "" && sites[i].lat != null) { s.lat = sites[i].lat; s.lng = sites[i].lng; if (!s.addrPt && sites[i].addrPt) s.addrPt = 1; }
     s.parks = mergeParks(same ? sites[i].parks : [], site.parks);
     // 注意事項：入ってきた方に注意事項の欄がなければ（古い共有の文など）、前の注意事項を残す
     // 中身が変わったら確認日を今日にする（貼った文に確認日があればそれを使う）
@@ -126,5 +128,14 @@ const Store = (() => {
     save(sites);
   }
 
-  return { load, upsert, remove, cleanTel, savePark, removePark, today };
+  // 現場の場所だけを入れる（版44：住所から探した場所。addrPt＝住所から出した、だいたいの場所）
+  function setSitePoint(id, lat, lng) {
+    const sites = load();
+    const site = sites.find(s => s.id === id);
+    if (!site) return false;
+    site.lat = num(lat, 90); site.lng = num(lng, 180); site.addrPt = 1;
+    return save(sites);
+  }
+
+  return { load, upsert, remove, cleanTel, savePark, removePark, today, setSitePoint };
 })();

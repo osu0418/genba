@@ -22,7 +22,7 @@ const List = (() => {
   function navRow(s) {
     if (!Nav.has(s)) return "";
     const where = s.addr ? `住所：${esc(s.addr)}` : "住所：（なし）";
-    return `<div class="addr">${where}${Nav.hasPoint(s) ? "　📍地図の場所あり" : ""}</div>${Nav.links(s)}`;
+    return `<div class="addr">${where}${Nav.hasPoint(s) ? (s.addrPt ? "　📍住所から出した場所（だいたい）" : "　📍地図の場所あり") : ""}</div>${Nav.links(s)}`;
   }
 
   // 駐車場（版34・39・40）：携帯が苦手な人は「押すだけ」。登録してある駐車場を、現場から近い順に①②③で出す
@@ -82,6 +82,24 @@ const List = (() => {
         </div>
       </section>`).join("");
     if (window.Status) window.Status.render();
+    fillPoints(all);
+  }
+
+  // 現場に住所はあるが📍（地図の場所）が無いとき、住所から場所を探して入れる（版44）
+  // 「駐車場を登録しても距離が出ない」のは、現場の場所が無いため。押すだけの人が何もしなくても距離が出るように
+  // 1つの現場につき、開いている間に1回だけ探す（見つからない住所で何度も調べないため）
+  const tried = new Set();
+  async function fillPoints(all) {
+    if (typeof MapPick === "undefined" || !MapPick.geocode) return; // const で作った部品は window に乗らないため typeof で見る
+    let got = false;
+    for (const s of all) {
+      if (Nav.hasPoint(s) || !s.addr || tried.has(s.id)) continue;
+      tried.add(s.id);
+      const r = await MapPick.geocode(s.addr);
+      if (r === "net") { tried.delete(s.id); break; } // 電波が無いときは、次に開いたときにまた探す
+      if (r && Store.setSitePoint(s.id, r.lat, r.lng)) got = true;
+    }
+    if (got) render();
   }
 
   async function copy(btn, text, label) {
@@ -171,5 +189,6 @@ const List = (() => {
 
   searchEl.addEventListener("input", render);
   render();
+  window.addEventListener("load", () => fillPoints(Store.load())); // 地図の部品（mappick.js）は list.js より後に読まれるため
   return { render };
 })();
