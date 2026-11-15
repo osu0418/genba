@@ -29,8 +29,15 @@ window.Status = (() => {
     banner.innerHTML = items.map(({ site, time }) =>
       `<a class="exitCall" data-exit="${esc(site.id)}" href="tel:${esc(String(site.outTel).replace(/-/g, ""))}">` +
       `⚠ <b>${esc(site.name)}</b>の退場の電話がまだです（${esc(time)} 入場）` +
-      `<span class="exitGo">📞 ここを押すと退場に電話</span></a>`).join("");
+      `<span class="exitGo">📞 ここを押すと退場に電話</span></a>` +
+      // 版58：入場の電話をキャンセルしたときに取り消せるように。押してから10分だけ出す（ずっと出すと間違えて消すため）
+      (Date.now() - ((s.at || {})[site.id] || 0) < UNDO_MS
+        ? `<button type="button" class="exitUndo" data-undo="${esc(site.id)}">入場の電話をしなかった（取り消す）</button>` : "")
+    ).join("");
+    clearTimeout(render.t);
+    if (items.some(({ site }) => Date.now() - ((s.at || {})[site.id] || 0) < UNDO_MS)) render.t = setTimeout(render, 30000);
   }
+  const UNDO_MS = 10 * 60 * 1000;
 
   document.getElementById("list").addEventListener("click", e => {
     const a = e.target.closest("a[data-kind]");
@@ -48,6 +55,7 @@ window.Status = (() => {
     s.open[id] = new Date().toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" });
     // 版56：今日入場した現場は、退場したあとも覚えておく（一覧の一番上に出すため）
     s.seen = Object.assign({}, s.seen, { [id]: Date.now() });
+    s.at = Object.assign({}, s.at, { [id]: Date.now() }); // 版58：取り消しを出す10分を数えるため
     save(s);
     render();
     if (typeof List !== "undefined") setTimeout(() => List.render(id), 800); // 電話が開いたあとで一覧を並べ直す
@@ -57,6 +65,17 @@ window.Status = (() => {
 
   // 赤い字の行を押した：電話はリンクでかかる。こちらは退場済みにするだけ
   banner.addEventListener("click", e => {
+    const u = e.target.closest("button[data-undo]");
+    if (u) { // 版58：入場の取り消し（電話をキャンセルしたとき）。赤い枠も、一番上に開くのもやめる
+      const s = load(), id = u.dataset.undo;
+      delete s.open[id];
+      if (s.at) delete s.at[id];
+      if (s.seen) delete s.seen[id];
+      save(s);
+      render();
+      if (typeof List !== "undefined") List.render();
+      return;
+    }
     const a = e.target.closest("a[data-exit]");
     if (!a) return;
     const s = load();
