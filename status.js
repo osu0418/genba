@@ -46,9 +46,14 @@ window.Status = (() => {
   function markIn(id) {
     const s = load();
     s.open[id] = new Date().toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" });
+    // 版56：今日入場した現場は、退場したあとも覚えておく（一覧の一番上に出すため）
+    s.seen = Object.assign({}, s.seen, { [id]: Date.now() });
     save(s);
     render();
+    if (typeof List !== "undefined") setTimeout(() => List.render(id), 800); // 電話が開いたあとで一覧を並べ直す
   }
+  // 版56：今日入場した現場 { id: 押した時刻 }
+  const todayIn = () => load().seen || {};
 
   // 赤い字の行を押した：電話はリンクでかかる。こちらは退場済みにするだけ
   banner.addEventListener("click", e => {
@@ -63,5 +68,5 @@ window.Status = (() => {
   // 日付が変わったときや、ほかの画面から戻ったときにも表示を合わせる
   document.addEventListener("visibilitychange", () => { if (!document.hidden) render(); });
   render();
-  return { render, markIn };
+  return { render, markIn, todayIn };
 })();

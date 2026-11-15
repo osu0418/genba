@@ -70,10 +70,13 @@ const RouteMap = (() => {
       <div class="rmMap" id="rmMap"></div>
       <div class="pvLegend"><span class="rmLine"></span> 通る道　<span class="rmIn small">入</span> ここから入る　<span class="pvDotS">現</span> 現場${(site.parks || []).length ? `　<span class="pvDotP">P</span> 駐車場` : ""}</div>
       ${rules.length ? `<div class="notice">⚠ ${rules.map(esc).join("<br>⚠ ")}</div>` : ""}
+      ${Nav.viaRoute(Object.assign({}, site, { routeWhy: "" }), pts)}
+      ${Nav.alt(site, "ふつうのナビ（進入路を通らないことがあります）", true)}
       <button type="button" class="pvClose" data-rmclose>とじる</button>
     </div>`;
     box.addEventListener("click", e => { if (e.target === box || e.target.closest("[data-rmclose]")) close(); });
     document.body.appendChild(box);
+    box.querySelector(".pvCard").scrollTop = 0;
     const el = document.getElementById("rmMap");
     try { await MapPick.load(); } catch { el.textContent = "地図を読み込めませんでした（電波を確かめてください）。"; return; }
     if (!box || !document.body.contains(el)) return;

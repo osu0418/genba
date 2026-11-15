@@ -14,17 +14,22 @@ const List = (() => {
     const mark = `data-kind="${kind}" data-id="${esc(id)}"`;
     return `<div class="row">
       <a class="call" ${mark} href="tel:${esc(num.replace(/-/g, ""))}"><div class="lbl">${label}に電話</div><div class="num">${esc(num)}</div></a>
-      <button class="copy" data-copy="${esc(num)}">コピー</button>
+      <button class="copy helperOnly" data-copy="${esc(num)}">コピー</button>
     </div>`;
   }
 
   // 住所とナビのボタン（ボタンの作り方は nav.js）
+  // 版56：ナビは大きいボタン1つ「🚗 現場へナビ」。迷わないように
+  //  進入路がある現場：押すと進入路の地図（赤い線・理由・規制）→「この道でナビ開始」（駐車場と同じ「見てから行く」流れ）
+  //  ない現場：押すとすぐナビ（iPhoneはマップ、それ以外はGoogleマップ）。ほかの地図は下に小さく
   function navRow(s) {
     if (!Nav.has(s)) return "";
     const where = s.addr ? `住所：${esc(s.addr)}` : "住所：（なし）";
-    // 版54：進入路の線があれば、入口を通るナビを先に大きく出す（ふつうのナビは下に残す）
-    const via = RouteMap.has(s) ? Nav.viaRoute(s, RouteMap.dec(s.routeLine)) : "";
-    return `<div class="addr">${where}${Nav.hasPoint(s) ? (s.addrPt ? "　📍住所から出した場所（だいたい）" : "　📍地図の場所あり") : ""}</div>${via}${via ? `<div class="viaNote">ふつうのナビ（進入路を通らないことがあります）</div>` : ""}${Nav.links(s)}`;
+    const addr = `<div class="addr">${where}${Nav.hasPoint(s) ? (s.addrPt ? "　📍住所から出した場所（だいたい）" : "") : ""}</div>`;
+    if (RouteMap.has(s)) {
+      return `<button type="button" class="goSite" data-route="${esc(s.id)}">🚗 現場へナビ<span class="sub">🚧 進入路あり：先に通る道を見る</span>${s.routeWhy ? `<span class="why">${esc(s.routeWhy)}</span>` : ""}</button>${addr}`;
+    }
+    return Nav.go(s, `🚗 現場へナビ<span class="sub">${Nav.isIOS ? "iPhoneのマップ" : "Googleマップ"}で道案内</span>`, "goSite") + addr + Nav.alt(s);
   }
 
   // 駐車場（版34・39・40）：携帯が苦手な人は「押すだけ」。登録してある駐車場を、現場から近い順に①②③で出す
@@ -57,31 +62,47 @@ const List = (() => {
       <details class="parks"><summary>料金・ほかの駐車場（${parks.length}か所${parks[0].price ? "　" + esc(parks[0].price) : ""}）</summary>${items}${btn}</details>`;
   }
 
-  function render() {
+  // 版56：カードをたたむ（「10件ぐらい現場が重なる」「これだけ長いと探しにくい」）
+  //  たたんだ形：邸名・注意の札・入場と退場の電話だけ。邸名を押すと開く（開くのは1件ずつ）
+  //  今日入場の電話をした現場は一番上に、開いた形で出す
+  let chosen = null; // 人が開いた・閉じた現場（null：まだ選んでいない → 今日の現場を開く。"" ：全部閉じた）
+  let lastCount = -1;
+  function render(openNow) {
+    if (typeof openNow === "string") chosen = openNow;
     const all = Store.load();
     const q = norm(searchEl.value);
+    const seen = window.Status && Status.todayIn ? Status.todayIn() : {};
     const sites = all.filter(s => !q || norm(s.name).includes(q) || norm(s.code).includes(q))
-      .sort((a, b) => a.name.localeCompare(b.name, "ja"));
+      .sort((a, b) => (seen[b.id] || 0) - (seen[a.id] || 0) || a.name.localeCompare(b.name, "ja"));
+    // 開く現場：人が選んだもの → 今日の現場 → 1件だけならそれ
+    const openId = chosen !== null ? chosen : (sites.find(s => seen[s.id]) || (sites.length === 1 ? sites[0] : {})).id || "";
+    const isOpen = s => s.id === openId || (sites.length === 1 && chosen === null);
+    // 現場が入ったら「使い方」を閉じる（入れた現場が下に押しやられないように）
+    if (lastCount === 0 && all.length) { const h = document.getElementById("help"); if (h) h.open = false; }
+    lastCount = all.length;
 
     if (!all.length) statusEl.textContent = "まだ現場がありません。下の「現場を追加」から入れてください。";
     else if (!sites.length) statusEl.textContent = `「${searchEl.value}」に合う現場がありません。`;
     else statusEl.textContent = q ? `${sites.length}件見つかりました` : `現場 ${all.length}件`;
 
     listEl.innerHTML = sites.map(s => `
-      <section class="card">
-        <div class="name">${esc(s.name)}</div>
-        ${s.code ? `<div class="code">現場番号：${esc(s.code)}</div>` : ""}
-        ${s.notes ? `<div class="notice">⚠ ${esc(s.notes).replace(/\n/g, "<br>⚠ ")}${s.notesChecked ? `<div class="note0">確認日：${esc(s.notesChecked)}</div>` : ""}</div>` : ""}
-        ${callRow("入場", s.inTel, "in", s.id)}
-        ${callRow("退場", s.outTel, "out", s.id)}
-        ${RouteMap.has(s) ? `<button type="button" class="routeView" data-route="${esc(s.id)}">🚧 進入路を地図で見る<span class="sub">初めての現場は見てから行く</span></button>` : ""}
-        ${navRow(s)}
-        ${/^https:\/\//.test(s.kyUrl) ? `<a class="ky" href="${esc(s.kyUrl)}" target="_blank" rel="noopener">KYを開く</a>` : ""}
-        ${parkRow(s)}
-        <div class="tools">
-          <button class="helperOnly" data-share="${esc(s.id)}">📋 貼る文をコピー</button>
-          <button class="helperOnly" data-edit="${esc(s.id)}">直す</button>
-          <button class="del" data-del="${esc(s.id)}">削除</button>
+      <section class="card${isOpen(s) ? " open" : ""}${seen[s.id] ? " today" : ""}">
+        <button type="button" class="cardHead" data-toggle="${esc(s.id)}">
+          <span class="name">${esc(s.name)}</span>${seen[s.id] ? `<span class="todayTag">今日</span>` : ""}
+          <span class="arrow">${isOpen(s) ? "▲ とじる" : "▼ 開く"}</span>
+        </button>
+        ${NoteChips.html(s)}
+        <div class="calls">${callRow("入場", s.inTel, "in", s.id)}${callRow("退場", s.outTel, "out", s.id)}</div>
+        <div class="cardMore">
+          ${s.code ? `<div class="code">現場番号：${esc(s.code)}</div>` : ""}
+          ${navRow(s)}
+          ${/^https:\/\//.test(s.kyUrl) ? `<a class="ky" href="${esc(s.kyUrl)}" target="_blank" rel="noopener">KYを開く</a>` : ""}
+          ${parkRow(s)}
+          <div class="tools">
+            <button class="helperOnly" data-share="${esc(s.id)}">📋 貼る文をコピー</button>
+            <button class="helperOnly" data-edit="${esc(s.id)}">直す</button>
+            <button class="del" data-del="${esc(s.id)}">削除</button>
+          </div>
         </div>
       </section>`).join("");
     if (window.Status) window.Status.render();
@@ -177,6 +198,13 @@ const List = (() => {
   listEl.addEventListener("click", e => {
     const b = e.target.closest("button");
     if (!b) return;
+    if (b.dataset.toggle !== undefined) { // 版56：邸名を押すと開く・閉じる
+      const card = b.closest(".card");
+      render(card.classList.contains("open") ? "" : b.dataset.toggle);
+      const c2 = [...listEl.querySelectorAll("[data-toggle]")].find(x => x.dataset.toggle === b.dataset.toggle);
+      if (c2) c2.scrollIntoView({ block: "nearest" });
+      return;
+    }
     if (b.dataset.copy) return copy(b, b.dataset.copy, "コピー");
     if (b.dataset.pview) return ParkView.show(b.dataset.pview, b.dataset.pid);
     if (b.dataset.route) return RouteMap.show(b.dataset.route);
@@ -193,6 +221,6 @@ const List = (() => {
 
   searchEl.addEventListener("input", render);
   render();
-  window.addEventListener("load", () => fillPoints(Store.load())); // 地図の部品（mappick.js）は list.js より後に読まれるため
+  window.addEventListener("load", () => { render(); fillPoints(Store.load()); }); // 版56：status.js が読まれてから並べ直す（今日の現場を上に） // 地図の部品（mappick.js）は list.js より後に読まれるため
   return { render };
 })();

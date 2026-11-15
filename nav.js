@@ -49,7 +49,18 @@ const Nav = (() => {
     const ways = [pts[0], ...pick].map(ll).join("|");
     const href = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(dest)}&waypoints=${encodeURIComponent(ways)}&travelmode=driving`;
     const why = s.routeWhy ? `<span class="why">${String(s.routeWhy).replace(/[&<>"']/g, c => "&#" + c.charCodeAt(0) + ";")}</span>` : "";
-    return `<a class="viaRoute" data-via="1" href="${href.replace(/&/g, "&amp;")}">🚧 進入路から入るナビ${why}<span class="sub">Googleマップだけ（入口を通ってから現場へ）</span></a>`;
+    return `<a class="viaRoute" data-via="1" href="${href.replace(/&/g, "&amp;")}">🚗 この道でナビ開始${why}<span class="sub">Googleマップだけ（入口を通ってから現場へ）</span></a>`;
+  }
+
+  // 版56：ほかの地図で開く（小さい字のリンク）。iPhoneはGoogleマップ、ほかは無し（Googleマップが大きいボタン）
+  function alt(p, label, both) {
+    if (!has(p)) return "";
+    const q = encodeURIComponent(hasPoint(p) ? `${p.lat},${p.lng}` : p.addr);
+    const g = `<a href="https://www.google.com/maps/dir/?api=1&amp;destination=${q}">Googleマップ</a>`;
+    const a = `<a href="https://maps.apple.com/?daddr=${q}">iPhoneのマップ</a>`;
+    // カードでは大きいボタンがiPhoneのマップなので、iPhoneはGoogleマップだけ。進入路の画面（both）は両方
+    if (!both && !isIOS) return "";
+    return `<div class="navAlt">${label || "ほかの地図で開く"}：${isIOS && both ? a + "／" + g : both ? a + "／" + g : g}</div>`;
   }
 
   // 版55：はじめて「進入路から入るナビ」を押したときだけ、アプリの中に案内の枠を出す
@@ -80,5 +91,5 @@ const Nav = (() => {
     document.body.appendChild(box);
   });
 
-  return { isIOS, has, hasPoint, links, parkSearch, go, viaRoute };
+  return { isIOS, has, hasPoint, links, parkSearch, go, viaRoute, alt };
 })();
