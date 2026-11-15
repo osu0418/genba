@@ -344,5 +344,5 @@ const MapPick = (() => {
     searchAddr: true, // 住所を打ち替えたらピンを動かす（版20）
     cancel: true, // 「✕ やめる」で地図を閉じて前に戻す（版21）
   });
-  return { sync: add.sync, openHere: add.openHere, make };
+  return { sync: add.sync, openHere: add.openHere, make, load }; // load：地図の部品を読む（駐車場を見る画面 parkview.js でも使う。版39）
 })();

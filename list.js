@@ -35,10 +35,13 @@ const List = (() => {
       return `${find}<button type="button" class="parkBtn small helperOnly" data-park="${esc(s.id)}">🅿 駐車場を登録（駐車場に着いてから）</button>`;
     }
     const nums = ["①", "②", "③"];
-    const gos = parks.slice(0, 3).map((p, i) => Nav.go(p,
-      i === 0 ? `🅿 ナビ<span class="sub">${esc(p.name || "いつもの駐車場")}</span>`
-              : `満車なら ${nums[i]}<span class="sub">${esc(p.name || "ほかの駐車場")}</span>`,
-      i === 0 ? "parkNavi" : "parkNavi alt")).join("");
+    // 版39：押すといきなりナビではなく、駐車場を見る画面（地図・距離・料金→「ここにする」でナビ）を開く
+    const gos = parks.slice(0, 3).map((p, i) => {
+      const d = typeof ParkView !== "undefined" ? ParkView.distText(s, p).replace("現場まで ", "現場まで") : "";
+      return `<button type="button" class="parkNavi${i ? " alt" : ""}" data-pview="${esc(s.id)}" data-pi="${i}">`
+        + (i === 0 ? `🅿 駐車場 ①` : `満車なら ${nums[i]}`)
+        + `<span class="sub">${esc(p.name || (i ? "ほかの駐車場" : "いつもの駐車場"))}</span>${d ? `<span class="sub">${esc(d.replace(/（.*$/, ""))}</span>` : ""}</button>`;
+    }).join("");
     const line = (label, v) => v ? `<div>${label}：${esc(v)}</div>` : "";
     const items = parks.map((p, i) => `<div class="parkCard">
         <div class="parkName">${i < 3 ? nums[i] : "🅿"} ${esc(p.name || "名前なし")}</div>
@@ -155,6 +158,7 @@ const List = (() => {
     const b = e.target.closest("button");
     if (!b) return;
     if (b.dataset.copy) return copy(b, b.dataset.copy, "コピー");
+    if (b.dataset.pview) return ParkView.show(b.dataset.pview, +b.dataset.pi);
     const site = Store.load().find(s => s.id === (b.dataset.share || b.dataset.del || b.dataset.edit || b.dataset.park));
     if (!site) return;
     if (b.dataset.park) return Park.open(site.id);
