@@ -57,12 +57,15 @@ const Share = (() => {
   const hiddenCount = s => noteLines(s).filter(l => SECRET.test(l)).length;
   // 版45：短くする（見出しは1行、リンクは半分くらい、注意事項は1行ずつ「・」で続ける）
   async function notice(s, park) {
-    const head = park ? `📲 ${s.name}に駐車場を足しました` : `📲 ${s.name}`;
+    // 版51：1行目は【邸名】と更新日だけ（LINEのノートの見出しになる。どれが新しいかすぐ分かるように）
+    //  LINEは字を大きく・太くできないので、【】で囲んで目立たせる
+    const d = new Date();
+    const head = `📲【${s.name}】${d.getMonth() + 1}/${d.getDate()}更新${park ? "（駐車場を足しました）" : ""}`;
     const n = hiddenCount(s);
     const ns = openNotes(s).concat(n ? [`要確認の注意${n > 1 ? n + "つ" : ""}（アプリで）`] : []);
     const notes = (typeof RouteMap !== "undefined" && RouteMap.has(s) ? ["🚧 進入路の地図あり（アプリで）"] : []).concat(ns.length ? ["⚠ " + ns.join("／")] : []);
     if (typeof Receive === "undefined") return [head].concat(notes, [toText(s)]).join("\n");
-    return [head + "（押すとアプリに入ります）", await Receive.link(s)].concat(notes).join("\n");
+    return [head, "▼押すとアプリに入ります", await Receive.link(s)].concat(notes).join("\n");
   }
 
   // 版45：リンクに入れる短い形。見出しの字を外し、決まった順に並べる（うしろの空は落とす）
