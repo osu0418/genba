@@ -67,9 +67,11 @@ const ParkOCR = (() => {
     // 名前：「駐車場」「パーキング」などの行。案内や注意の行は外し、いちばん長い行を使う
     const names = all.filter(l => /駐車場|パーキング|パーク|タイムズ|リパーク/.test(l) && !SENTENCE(l) &&
       !(/チケ|チ$/.test(l) && !/駐車場/.test(l)) && // 「パーキングチケットのご利用方法」の切れ端は外す
-      !/月極|募集|不正|用地|監視|駐輪|責任|内では|ください|禁止|お願い|注意|^前払|^時間貸|^コイン/.test(l))
-      .map(l => l.replace(/^[^一-龠ぁ-んァ-ヶA-Za-z0-9]+/, ""));
-    if (names.length) out.name = names.sort((a, b) => b.length - a.length)[0];
+      !/月極|募集|不正|用地|監視|駐輪|責任|内では|ください|禁止|お願い|注意|^前払|^時間貸|^コイン|危険|車両|支障|管理|積載|故障/.test(l)) // 版53：規約の切れ端も外す
+      .map(l => l.replace(/^[^一-龠ぁ-んァ-ヶA-Za-z]+/, "")); // 頭の記号・番号（看板の駐車場番号など）を外す
+    // 版53：「〇〇駐車場」「タイムズ〇〇」の形を先に、その中で長い方
+    const nameScore = l => (/(駐車場|パーキング|第\d+)$|^タイムズ/.test(l) ? 100 : 0) + l.length;
+    if (names.length) out.name = names.sort((a, b) => nameScore(b) - nameScore(a))[0];
 
     // 料金：「円」がある行（月極や罰金は外す）
     // 「24時間500円」「24時間500n」のように、時間と数が並んでいる所（「円」が読めなくても拾う）
@@ -86,7 +88,8 @@ const ParkOCR = (() => {
     }
 
     const joined = all.join("");
-    const rule = find(/最大|上限|繰り?返|入庫後|夜間|昼間/, /月極|募集/).filter(l => !SENTENCE(l));
+    const rule = find(/最大|上限|繰り?返|入庫後|夜間|昼間/, /月極|募集|休止/).filter(l => !SENTENCE(l));
+    if (/最大料.?休止|最大料金.?なし/.test(joined)) rule.push((/特定日/.test(joined) ? "特定日は" : "") + "最大料金休止（日付は看板で確かめる）"); // 版53
     if (/前払/.test(joined)) rule.unshift("前払い式（止めたらすぐチケットを買う）");
     if (/連日|日数分/.test(joined)) rule.push("続けて止めるときは日数分を先に買う");
     if (rule.length) out.rule = rule.slice(0, 3).join("／");
@@ -97,7 +100,9 @@ const ParkOCR = (() => {
       // 「全幅」は「全極」「全李」などと読まれやすいので、全長・全高以外の「全〇」は全幅とみなす
       const label = { 全長: "全長", 全高: "高さ", 長さ: "全長", 車幅: "全幅", 幅: "全幅", 車高: "高さ", 高さ: "高さ", 重量: "重量", 重さ: "重量" }[m[1]] || "全幅";
       const t = `${label}${m[2]}${m[3]}${m[4] || ""}`;
-      if (!sizes.some(x => x.startsWith(label))) sizes.push(t);
+      const sc = v => (/\.\d/.test(v) ? 2 : 0) + (/以下|まで/.test(v) ? 1 : 0);
+      const j = sizes.findIndex(x => x.startsWith(label));
+      if (j < 0) sizes.push(t); else if (sc(t) > sc(sizes[j])) sizes[j] = t; // 版53：何度も読むので、くわしく読めた方
     }
     if (sizes.length) out.size = sizes.join("・");
 
@@ -115,25 +120,32 @@ const ParkOCR = (() => {
     // ---- 版53：タイムズなどの看板の書き方（「駐車後24時間 500円」「60分200円」「最初の60分無料」）----
     // 字はばらばらに読まれる（「24時間」「500」が別の行、「60分200円」が「60,200」）ので、行をつないだ字から探す
     const flat = all.join(" ");
+    const f2 = flat.replace(/\s/g, "");
     // 料金：「60分200円」「60,200」「60.200」「30ヵ100」など（分のあとに3〜4けたの値段）
     if (!out.price || /確かめる/.test(out.price)) {
-      const m = flat.match(/(?:^|[^\d:：.-])(5|10|15|20|30|40|45|60|90|120)\s?[分ヵカ,，.．・、]\s?(\d{3,4})(?!\d)/);
-      if (m && +m[2] % 10 === 0 && +m[2] <= 3000) out.price = `${m[1]}分${m[2]}円`;
+      const ps = [];
+      for (const m of flat.matchAll(/(?:^|[^\d:：.-])(5|10|12|15|20|25|30|40|45|60|90|120)\s?[分ヵカ,，.．・、]\s?(\d{3,4})(?!\d)/g)) {
+        const t = `${m[1]}分${m[2]}円`;
+        if (+m[2] % 10 === 0 && +m[2] <= 3000 && !ps.includes(t)) ps.push(t);
+      }
+      // 「8:00〜22:00」のような時間帯があれば、時間帯で値段が違う看板（どれがいつかは看板で確かめてもらう）
+      if (ps.length) out.price = ps.slice(0, 3).join("／") + (ps.length > 1 && /\d{1,2}[:：.]?\d{2}\s?[~〜～-]/.test(flat) ? "（時間帯で違う。看板で確かめる）" : "");
     }
     // 最大料金：「駐車後24時間 500円」「24時間最大500円」「最大料金…500円」
-    const mx = flat.match(/(駐車後|入庫後)?\s?(\d{1,2})\s?時間[^\d]{0,8}?(\d{3,4})(?!\d)/);
-    if (mx && +mx[3] % 10 === 0 && +mx[3] <= 5000) out.max = `${mx[1] || ""}${mx[2]}時間 最大${mx[3]}円`;
+    const num = t => +String(t).replace(/[,，.]/g, "");
+    const mx = flat.match(/(駐車後|入庫後)?\s?(\d{1,2})\s?時間[^\d]{0,8}?(\d[,，.]\d{3}|\d{3,4})(?![\d~〜～:：-])/); // 「8:00〜」の「800」のような時刻は外す
+    if (mx && num(mx[3]) % 10 === 0 && num(mx[3]) <= 5000) out.max = `${mx[1] || ""}${mx[2]}時間 最大${num(mx[3]).toLocaleString("ja-JP")}円`;
     else {
-      const m2 = flat.match(/最大[^\d]{0,8}(\d{3,4})(?!\d)/);
-      if (m2 && +m2[1] % 10 === 0) out.max = `最大${m2[1]}円`;
+      const m2 = flat.match(/最大(?!料.?休止)[^\d]{0,8}(\d[,，]\d{3}|\d{3,4})(?![\d~〜～:：-])/);
+      if (m2 && num(m2[1]) % 10 === 0) out.max = `最大${num(m2[1]).toLocaleString("ja-JP")}円`;
     }
+    if (out.max && /最大料.?休止/.test(f2) && /特定日/.test(f2)) out.max += "（特定日は最大料金休止）";
     // 無料の時間
     const free = flat.replace(/\s/g, "").match(/最初の?(\d{1,3})分(?:間)?無料/);
     if (free && out.price) out.price += `（最初の${free[1]}分無料）`;
     else if (free) out.price = `最初の${free[1]}分無料`;
     const memo = [];
     if (/無料追加|無料延長|サービス券|お買[い上]?/.test(flat.replace(/\s/g, ""))) memo.push("買い物などで無料の時間が延びる（看板で確かめる）");
-    const f2 = flat.replace(/\s/g, "");
     const rule2 = [];
     if (/帰り.{0,4}前に?必ず.{0,3}精算/.test(f2)) rule2.push("帰る前に必ず精算");
     if (/(入場|入庫)から(課金|料金)?/.test(f2)) rule2.push("入った時から料金がかかる");
