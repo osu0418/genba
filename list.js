@@ -38,7 +38,9 @@ const List = (() => {
     const gos = parks.slice(0, 3).map((p, i) => {
       const d = ParkView.short(s, p);
       return `<button type="button" class="parkNavi" data-pview="${esc(s.id)}" data-pid="${esc(p.id)}">🅿 駐車場${parks.length > 1 ? " " + nums[i] : ""}`
-        + `<span class="sub">${esc(p.name || "名前なし")}</span>${d ? `<span class="sub">現場まで${d}</span>` : ""}</button>`;
+        + `<span class="sub">${esc(p.name || "名前なし")}</span>${d ? `<span class="sub">現場まで${d}</span>` : ""}`
+        + (() => { const f = ParkView.maxFee(p); return `<span class="maxTag ${f.ok ? "ok" : "ng"}">${f.ok ? esc(f.text) : "最大料金 ？"}</span>`; })()
+        + `</button>`;
     }).join("");
     const line = (label, v) => v ? `<div>${label}：${esc(v)}</div>` : "";
     const items = parks.map((p, i) => `<div class="parkCard">

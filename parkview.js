@@ -33,6 +33,16 @@ const ParkView = (() => {
     return m < 1000 ? `約${Math.round(m / 10) * 10}m` : `約${(m / 1000).toFixed(1)}km`;
   }
 
+  // 最大料金があるか（版41。「最大料金があるかが大事」）：料金と決まりの欄から「最大〇円」を探す
+  // 返り値：{ ok:true, text:"最大500円" } ／ 最大の字はあるが金額が読めない { ok:true, text:"最大料金あり" } ／ 分からない { ok:false }
+  function maxFee(p) {
+    const t = String((p.price || "") + " " + (p.rule || "")).normalize("NFKC");
+    const m = t.match(/最大[^0-9]{0,8}([0-9][0-9,]*)\s*円/);
+    if (m) return { ok: true, text: `最大${m[1]}円` };
+    if (/最大|上限|打ち止め|打止/.test(t)) return { ok: true, text: "最大料金あり" };
+    return { ok: false };
+  }
+
   let box = null, map = null;
   function close() { if (box) box.remove(); box = null; map = null; }
 
@@ -54,6 +64,9 @@ const ParkView = (() => {
       ${tabs}
       <div class="pvKind">🅿 駐車場 ${NUM[idx]}${parks.length > 1 && hasPt(site) ? "（現場から近い順）" : ""}</div>
       <div class="pvName">${esc(p.name || "名前なし")}</div>
+      ${(() => { const f = maxFee(p); return f.ok
+        ? `<div class="pvMax ok">💴 ${esc(f.text)}${p.rule ? `<span>（${esc(p.rule)}）</span>` : ""}</div>`
+        : `<div class="pvMax ng">⚠ 最大料金が分かりません<span>（看板で確かめてください）</span></div>`; })()}
       ${d ? `<div class="pvDist">🚶 ${d}</div>` : `<div class="note0">現場の場所が入っていないので、距離は出せません。</div>`}
       <div class="pvMap" id="pvMap"></div>
       <div class="pvLegend"><span class="pvDotP">P</span> 駐車場　<span class="pvDotS">現</span> 現場（${esc(site.name)}）</div>
@@ -91,5 +104,5 @@ const ParkView = (() => {
     if (pts.length > 1) map.fitBounds(pts, { padding: [40, 40], maxZoom: 18 }); else map.setView(pts[0], 17);
   }
 
-  return { show, distText, sorted, short };
+  return { show, distText, sorted, short, maxFee };
 })();

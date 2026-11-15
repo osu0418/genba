@@ -162,3 +162,9 @@ body:not(.helper) .helperOnly { display:none !important; }
 .pvInfo { width:100%; border-collapse:collapse; font-size:16px; margin:6px 0 4px; } .pvInfo th { text-align:left; color:var(--sub); font-weight:normal; width:38%; padding:6px 4px; border-bottom:1px solid var(--line); vertical-align:top; } .pvInfo td { padding:6px 4px; border-bottom:1px solid var(--line); }
 .pvGo { display:block; text-align:center; text-decoration:none; color:#fff; background:#2e8b3a; border-radius:12px; padding:16px; font-size:20px; font-weight:bold; margin-top:12px; }
 .pvClose { display:block; width:100%; margin-top:10px; font-size:17px; padding:12px; }
+/* 版41：最大料金があるか（カードの札と、駐車場を見る画面の一番上） */
+.maxTag { display:inline-block; margin-top:4px; padding:2px 8px; border-radius:6px; font-size:14px; font-weight:bold; }
+.maxTag.ok { background:#fff; color:#1b7a2b; }
+.maxTag.ng { background:#ffe08a; color:#5a4300; }
+.pvMax { font-size:21px; font-weight:bold; margin:2px 0 4px; } .pvMax span { font-size:14px; font-weight:normal; }
+.pvMax.ok { color:#1b7a2b; } .pvMax.ng { color:#b06000; }
