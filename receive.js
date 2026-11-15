@@ -13,19 +13,36 @@ const Receive = (() => {
   const unb64 = b => Uint8Array.from(atob(b.replace(/-/g, "+").replace(/_/g, "/")), c => c.charCodeAt(0));
   const enc = t => b64(mix(new TextEncoder().encode(t)));
   const dec = (b, mixed) => new TextDecoder().decode(mixed ? mix(unb64(b)) : unb64(b));
-  // アプリに入れるリンク（共有の文に入れる）
-  const link = text => `${location.origin}${location.pathname}#i=${enc(text)}`;
-  // リンクの #i= / #in= を探して中の文を返す。無ければ null
-  function fromLink(text) {
-    const m = String(text || "").match(/#(in?)=([A-Za-z0-9_-]+)/);
+  // 版45：リンクを短くする（#z=）。「LINEに貼ると長くて、ほかの話が流れてしまう」ため
+  //  見出しの字（「入場：」など）を外して詰め（Share.pack）、さらに縮めて（deflate）から混ぜる。前の半分くらいの長さになる
+  //  縮める仕組み（CompressionStream）が無い古い携帯では、前の形（#i=）で作る。#i= / #in= のリンクも今までどおり読める
+  const canZip = typeof CompressionStream === "function" && typeof DecompressionStream === "function";
+  async function pipe(u8, stream) {
+    return new Uint8Array(await new Response(new Blob([u8]).stream().pipeThrough(stream)).arrayBuffer());
+  }
+  // アプリに入れるリンク（共有の文に入れる）。site を渡す
+  async function link(site) {
+    const base = `${location.origin}${location.pathname}`;
+    if (canZip) {
+      try { return `${base}#z=${b64(mix(await pipe(new TextEncoder().encode(JSON.stringify(Share.pack(site))), new CompressionStream("deflate-raw"))))}`; } catch {}
+    }
+    return `${base}#i=${enc(Share.toText(site))}`;
+  }
+  // リンクの #z= / #i= / #in= を探して現場を返す。リンクが無ければ null、読めなければ []
+  async function fromLink(text) {
+    const m = String(text || "").match(/#(z|in?)=([A-Za-z0-9_-]+)/);
     if (!m) return null;
-    try { return dec(m[2], m[1] === "i"); } catch { return ""; }
+    try {
+      if (m[1] !== "z") return Share.parse(dec(m[2], m[1] === "i"));
+      const t = new TextDecoder().decode(await pipe(mix(unb64(m[2])), new DecompressionStream("deflate-raw")));
+      return Share.unpack(JSON.parse(t));
+    } catch { return []; }
   }
 
-  // 文の中から現場を探す。リンクをコピーしたときは、リンクの中の文を読む
-  function sitesFrom(text) {
-    const t = fromLink(text);
-    return Share.parse(t === null ? text : t);
+  // 文の中から現場を探す。リンクをコピーしたときは、リンクの中を読む
+  async function sitesFrom(text) {
+    const r = await fromLink(text);
+    return r === null ? Share.parse(text) : r;
   }
 
   // 「入れますか？」の枠（スマホに元からある確認の窓より文字を大きく、押しやすく）
@@ -58,13 +75,13 @@ const Receive = (() => {
   }
 
   // ① リンクで開いたとき（LINEの中では開き直しが先なので、何もしない）
-  function fromHash() {
+  async function fromHash() {
     if (/\bLine\//i.test(navigator.userAgent)) return;
-    if (!/^#in?=/.test(location.hash)) return;
+    if (!/^#(z|in?)=/.test(location.hash)) return;
     const clear = () => history.replaceState(null, "", location.pathname + location.search.replace(/[?&]openExternalBrowser=1/, "").replace(/^&/, "?"));
     let sites = [];
-    sites = sitesFrom(location.hash);
-    if (!sites.length) { clear(); View.show("list", "リンクから現場を読み取れませんでした。LINEの文をそのままコピーして「📥 仲間から届いた現場を入れる」を押してください。"); return; }
+    sites = await sitesFrom(location.hash);
+    if (!sites.length) { clear(); View.show("list", "リンクから現場を読み取れませんでした（携帯が古いと読めないことがあります）。LINEの文をそのままコピーして「📥 仲間から届いた現場を入れる」を押してください。"); return; }
     ask(sites, clear);
   }
 
@@ -73,7 +90,7 @@ const Receive = (() => {
   btn.addEventListener("click", async () => {
     let text = "";
     try { text = await navigator.clipboard.readText(); } catch {}
-    const sites = sitesFrom(text);
+    const sites = await sitesFrom(text);
     if (!sites.length) {
       View.show("list", "現場の文が見つかりませんでした。LINEで仲間の文を長押しして「コピー」を押してから、もう一度このボタンを押してください。");
       return;

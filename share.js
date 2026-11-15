@@ -53,20 +53,45 @@ const Share = (() => {
   const SECRET = /近隣|近所|トラブル|苦情|クレーム|揉め|もめ|怒|住人|施主|さん|様|氏|ちゃん|君|隣|向かい|裏の|前の家|宅|号室|番地/;
   const openNotes = s => noteLines(s).filter(l => !SECRET.test(l));
   const hiddenCount = s => noteLines(s).filter(l => SECRET.test(l)).length;
-  function notice(s, park) {
-    const head = park ? `📲 ${s.name}に駐車場を足しました` : `📲 ${s.name}の現場の情報`;
+  // 版45：短くする（見出しは1行、リンクは半分くらい、注意事項は1行ずつ「・」で続ける）
+  async function notice(s, park) {
+    const head = park ? `📲 ${s.name}に駐車場を足しました` : `📲 ${s.name}`;
     const n = hiddenCount(s);
-    const notes = openNotes(s).map(l => "⚠ " + l)
-      .concat(n ? [`⚠ 近隣・周りのことで要確認の注意が${n > 1 ? n + "つ" : ""}あります（くわしくはリンクからアプリで）`] : []);
+    const ns = openNotes(s).concat(n ? [`要確認の注意${n > 1 ? n + "つ" : ""}（アプリで）`] : []);
+    const notes = ns.length ? ["⚠ " + ns.join("／")] : [];
     if (typeof Receive === "undefined") return [head].concat(notes, [toText(s)]).join("\n");
-    return [head + "（押すとアプリに入ります）", Receive.link(toText(s))].concat(notes.length ? [""].concat(notes) : []).join("\n");
+    return [head + "（押すとアプリに入ります）", await Receive.link(s)].concat(notes).join("\n");
+  }
+
+  // 版45：リンクに入れる短い形。見出しの字を外し、決まった順に並べる（うしろの空は落とす）
+  const SK = ["name", "code", "inTel", "outTel", "kyUrl", "addr", "lat", "lng", "notes", "notesChecked"];
+  const PK = ["name", "addr", "price", "max", "rule", "size", "kind", "reserve", "tel", "memo", "lat", "lng", "checked"];
+  const trim = a => { while (a.length && (a[a.length - 1] === "" || a[a.length - 1] == null)) a.pop(); return a; };
+  const row = (o, keys) => trim(keys.map(k => o[k] == null ? "" : o[k]));
+  function pack(s) {
+    return [1, row(s, SK), (s.parks || []).map(p => row(p, PK))]; // 1：形の番号（あとで形を変えたときに見分ける）
+  }
+  function unpack(a) {
+    if (!Array.isArray(a) || a[0] !== 1) return [];
+    const obj = (r, keys) => Object.fromEntries(keys.map((k, i) => [k, r && r[i] != null ? r[i] : ""]));
+    const s = obj(a[1], SK);
+    s.parks = (a[2] || []).map(r => obj(r, PK));
+    return s.name && s.inTel && s.outTel ? [s] : [];
   }
 
   // 文をコピーする（それぞれが邸名ごとのLINEのトークに貼る）。うまくいけば true
+  // 版45：文はリンクを縮めてから出来るので、出来上がりを待ってから写すと、iPhoneが「押してすぐ」と見なさず写せないことがある
+  //  なので「これから出来る文」をそのまま渡して写す（ClipboardItem）。使えない携帯では、待ってから写す
   async function copy(text) {
-    try { await navigator.clipboard.writeText(text); return true; }
+    try {
+      if (text && typeof text.then === "function" && typeof ClipboardItem === "function" && navigator.clipboard.write) {
+        await navigator.clipboard.write([new ClipboardItem({ "text/plain": text.then(t => new Blob([t], { type: "text/plain" })) })]);
+        return true;
+      }
+    } catch {}
+    try { await navigator.clipboard.writeText(await text); return true; }
     catch { return false; }
   }
 
-  return { toText, parse, notice, copy, openNotes };
+  return { toText, parse, notice, copy, openNotes, pack, unpack };
 })();
