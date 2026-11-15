@@ -25,28 +25,31 @@ const List = (() => {
     return `<div class="addr">${where}${Nav.hasPoint(s) ? "　📍地図の場所あり" : ""}</div>${Nav.links(s)}`;
   }
 
-  // 駐車場（版27）：着いたら1回で動けるように、カードを開かなくても大きなボタンを出す
-  //  登録あり：「🅿 ナビ（1つ目の駐車場）」と「🔍 満車なら近くを探す」を並べる。料金・ほかの駐車場・登録は下にたたむ
-  //  登録なし：「🔍 近くの駐車場を探す」を大きく。登録は小さく（駐車場に着いてから📍でする）
+  // 駐車場（版34）：携帯が苦手な人は「押すだけ」。登録してある駐車場へのナビだけを大きく出す
+  //  1番目＝いつもの駐車場「🅿 ナビ」、2・3番目＝「満車なら②・③」（満車のときの駐車場は、登録する人が先に入れておく）
+  //  「🔍 近くを探す」「駐車場を登録」は登録する人の表示（🔧）のときだけ
   function parkRow(s) {
     const parks = s.parks || [];
-    const find = Nav.parkSearch(s, parks.length ? "🔍 満車なら<br>近くを探す" : "🔍 近くの駐車場を探す");
+    const find = Nav.parkSearch(s, parks.length ? "🔍 満車なら近くを探す" : "🔍 近くの駐車場を探す", "parkFind helperOnly");
     if (!parks.length) {
-      return `${find ? `<div class="parkGo one">${find}</div>` : ""}
-        <button type="button" class="parkBtn small helperOnly" data-park="${esc(s.id)}">🅿 駐車場を登録（駐車場に着いてから）</button>`;
+      return `${find}<button type="button" class="parkBtn small helperOnly" data-park="${esc(s.id)}">🅿 駐車場を登録（駐車場に着いてから）</button>`;
     }
-    const first = parks[0];
-    const go = Nav.go(first, `🅿 ナビ<span class="sub">${esc(first.name || "登録の駐車場")}</span>`, "parkNavi");
+    const nums = ["①", "②", "③"];
+    const gos = parks.slice(0, 3).map((p, i) => Nav.go(p,
+      i === 0 ? `🅿 ナビ<span class="sub">${esc(p.name || "いつもの駐車場")}</span>`
+              : `満車なら ${nums[i]}<span class="sub">${esc(p.name || "ほかの駐車場")}</span>`,
+      i === 0 ? "parkNavi" : "parkNavi alt")).join("");
     const line = (label, v) => v ? `<div>${label}：${esc(v)}</div>` : "";
-    const items = parks.map(p => `<div class="parkCard">
-        <div class="parkName">🅿 ${esc(p.name || "名前なし")}</div>
+    const items = parks.map((p, i) => `<div class="parkCard">
+        <div class="parkName">${i < 3 ? nums[i] : "🅿"} ${esc(p.name || "名前なし")}</div>
         ${line("料金", p.price)}${line("最大料金の決まり", p.rule)}${line("車の大きさ", p.size)}
         ${line("形", p.kind)}${line("予約制", p.reserve)}${line("連絡先", p.tel)}${line("メモ", p.memo)}
         <div class="note0">確認日：${esc(p.checked)}</div>
         ${Nav.links(p)}
       </div>`).join("");
     const btn = `<button type="button" class="parkBtn small helperOnly" data-park="${esc(s.id)}">🅿 駐車場を足す・直す</button>`;
-    return `<div class="parkGo">${go}${find}</div>
+    const first = parks[0];
+    return `<div class="parkGo${parks.length > 1 ? " many" : ""}">${gos}</div>${find}
       <details class="parks"><summary>料金・ほかの駐車場（${parks.length}か所${first.price ? "　" + esc(first.price) : ""}）</summary>${items}${btn}</details>`;
   }
 

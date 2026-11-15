@@ -126,5 +126,15 @@ const Store = (() => {
     save(sites);
   }
 
-  return { load, upsert, remove, cleanTel, savePark, removePark, today };
+  // 駐車場の順番を変える（版34）：1番目が「いつもの駐車場」、2番目からが「満車のとき」
+  function moveParkTop(siteId, parkId) {
+    const sites = load();
+    const site = sites.find(s => s.id === siteId);
+    if (!site) return;
+    const ps = cleanParks(site.parks);
+    const j = ps.findIndex(p => p.id === parkId);
+    if (j > 0) { ps.unshift(ps.splice(j, 1)[0]); site.parks = ps; save(sites); }
+  }
+
+  return { load, upsert, remove, cleanTel, savePark, removePark, moveParkTop, today };
 })();
