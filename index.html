@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-title" content="現場入場">
 <title>現場入場アプリ</title>
 <link rel="stylesheet" href="style.css?v=29">
-<script src="line-escape.js?v=42"></script>
+<script src="line-escape.js?v=43"></script>
 </head>
 <body>
 <div id="listScreen">
@@ -184,7 +184,7 @@
     <label>Claudeの【駐車場】の文を貼る（看板の写真をClaudeに送ると出ます）<textarea id="parkPaste" rows="3" placeholder="【駐車場】から始まる文をここに貼ると、下の欄に入ります"></textarea></label>
     <label>名前<input name="name" placeholder="例：稲葉町チケット式24時間駐車場"></label>
     <label>料金<input name="price" placeholder="例：30分100円"></label>
-    <label class="maxLabel">💴 最大料金（大事。分からなければ空、無い駐車場は「なし」）<input name="max" placeholder="例：24時間 最大500円／なし"></label>
+    <label class="maxLabel">💴 最大料金（大事。分からなければ空、無い駐車場は「なし」。土日だけ無いなどは書き足す）<input name="max" placeholder="例：24時間 最大500円（土日・特別日は上限なし）／なし"></label>
     <label>最大料金の決まり<input name="rule" placeholder="例：24時間ごとに繰り返し／1回限り"></label>
     <label>車の大きさ<input name="size" placeholder="例：高さ2.1mまで"></label>
     <label>形<input name="kind" placeholder="例：平置き／機械式"></label>
@@ -206,8 +206,8 @@
 <script src="parktext.js?v=11"></script>
 <script src="share.js?v=12"></script>
 <script src="nav.js?v=9"></script>
-<script src="parkview.js?v=4"></script>
-<script src="list.js?v=19"></script>
+<script src="parkview.js?v=5"></script>
+<script src="list.js?v=20"></script>
 <script src="view.js?v=6"></script>
 <script src="add.js?v=7"></script>
 <script src="mappick.js?v=16"></script>

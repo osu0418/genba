@@ -35,16 +35,41 @@ const ParkView = (() => {
 
   // 最大料金があるか（版41。「最大料金があるかが大事」）：料金と決まりの欄から「最大〇円」を探す
   // 返り値：{ ok:true, text:"最大500円" } ／ 最大の字はあるが金額が読めない { ok:true, text:"最大料金あり" } ／ 分からない { ok:false }
+  // 版43：「土日上限なし」「特別日は最大料金なし」のような、日によって最大料金が無い駐車場にも対応
+  //  返り値に except（最大料金が無い日：「土日」「特別日」など）と todayNone（今日がその日＝今日は最大料金なし）を足す
+  const NONE = /(上限|最大(料金)?|打ち?止め?)\s*(は|が)?\s*(なし|無し|無|ない|適用外|対象外|適用されません|ありません)/;
+  const DAYS = ["土日祝", "土日", "土曜", "日曜", "祝日", "祝", "休日", "特別日", "イベント日", "イベント", "年末年始", "お盆", "GW", "ゴールデンウィーク", "夜間", "平日"];
   function maxFee(p) {
     const mx = String(p.max || "").normalize("NFKC").trim();
     if (/^(なし|無し|無|ない|×)$/.test(mx)) return { ok: false, none: true, text: "最大料金なし" };
     const t = (mx + " " + String((p.price || "") + " " + (p.rule || "")).normalize("NFKC"));
-    const m = t.match(/最大[^0-9]{0,8}([0-9][0-9,]*)\s*円/);
-    if (m) return { ok: true, text: `最大${m[1]}円` };
-    if (mx) { const n = mx.match(/([0-9][0-9,]*)\s*円/); return { ok: true, text: n ? `最大${n[1]}円` : mx }; }
-    if (/最大|上限|打ち止め|打止/.test(t)) return { ok: true, text: "最大料金あり" };
-    return { ok: false };
+    // 「〇〇は上限なし」の〇〇（日）を集める
+    const segs = t.split(/[／\/、,。\n()（）]/);
+    const ex = [];
+    let noneAll = false;
+    for (const sg of segs) {
+      if (!NONE.test(sg)) continue;
+      const ds = DAYS.filter(d => sg.includes(d));
+      if (ds.length) ds.forEach(d => { if (!ex.some(e => e.includes(d) || d.includes(e))) ex.push(d); });
+      else noneAll = true;
+    }
+    // 「土日・祝日は上限なし」の部分だけを除いて、金額（最大〇円）を探す
+    const cleaned = t.replace(new RegExp("(?:(?:" + DAYS.join("|") + ")[・と\\s]*)*(?:は|が)?\\s*" + NONE.source, "g"), " ");
+    const m = cleaned.match(/最大[^0-9]{0,8}([0-9][0-9,]*)\s*円/) || (mx && !NONE.test(mx) ? mx.match(/([0-9][0-9,]*)\s*円/) : null);
+    if (!m) {
+      if (noneAll || ex.length) return { ok: false, none: true, text: "最大料金なし" + (ex.length ? `（${ex.join("・")}）` : "") };
+      if (/最大|上限|打ち止め|打止/.test(cleaned)) return { ok: true, text: "最大料金あり" };
+      return { ok: false };
+    }
+    const r = { ok: true, text: `最大${m[1]}円` };
+    if (ex.length) {
+      r.except = ex.join("・");
+      const d = new Date().getDay();
+      r.todayNone = (d === 0 || d === 6) && ex.some(e => /土|日曜|休日/.test(e)); // 祝日・特別日は見分けられない（看板で確かめる）
+    }
+    return r;
   }
+
 
   let box = null, map = null;
   function close() { if (box) box.remove(); box = null; map = null; }
@@ -69,6 +94,7 @@ const ParkView = (() => {
       <div class="pvName">${esc(p.name || "名前なし")}</div>
       ${(() => { const f = maxFee(p); return f.ok
         ? `<div class="pvMax ok">💴 ${esc(f.text)}${p.rule ? `<span>（${esc(p.rule)}）</span>` : ""}</div>`
+          + (f.except ? `<div class="pvMax ng">⚠ ${f.todayNone ? `今日は最大料金なし<span>（${esc(f.except)}は上限なし。長く止めると高くなります）</span>` : `${esc(f.except)}は最大料金なし<span>（長く止めると高くなります）</span>`}</div>` : "")
         : f.none ? `<div class="pvMax ng">⚠ 最大料金なし<span>（長く止めると高くなります）</span></div>`
         : `<div class="pvMax ng">⚠ 最大料金が分かりません<span>（看板で確かめてください）</span></div>`; })()}
       ${d ? `<div class="pvDist">🚶 ${d}</div>` : `<div class="note0">現場の場所が入っていないので、距離は出せません。</div>`}
