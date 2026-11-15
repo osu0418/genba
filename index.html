@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-title" content="現場入場">
 <title>現場入場アプリ</title>
 <link rel="stylesheet" href="style.css?v=30">
-<script src="line-escape.js?v=46"></script>
+<script src="line-escape.js?v=48"></script>
 </head>
 <body>
 <div id="listScreen">
@@ -111,11 +111,12 @@
         <button type="button" data-note="路上駐車禁止">路上駐車禁止</button>
         <button type="button" data-note="騒音に注意（〇時まで）">騒音に注意</button>
         <button type="button" data-note="車は〇台まで">車は〇台まで</button>
-        <!-- 版46：進入路の規制（「3t規制や時間規制があることが多い」「進入路の規制ですね」「進入路の指定もあります」） -->
+        <!-- 版46：進入路の規制（「3t規制や時間規制があることが多い」「進入路の規制ですね」「進入路の指定もあります」。版48：「通行許可書の申請がいるところもあります」） -->
         <button type="button" data-note="進入路の指定（〇から入る）">進入路の指定</button>
         <button type="button" data-note="進入路 〇t規制（それより重い車は入れない）">進入路 〇t規制</button>
         <button type="button" data-note="進入路 時間規制（〇時〜〇時は車が通れない）">進入路 時間規制</button>
         <button type="button" data-note="進入路 通学路（〇時〜〇時は車が通れない）">進入路 通学路</button>
+        <button type="button" data-note="進入路 通行許可証が要る（申請：〇）">通行許可証が要る</button>
       </div>
       <textarea name="notes" id="notesText" rows="3" placeholder="押すと上の言葉が入ります。〇は数字に直してください。1行に1つ"></textarea>
       <div class="note0">「入場は8時以降」と書くと、8時より前に入場の電話を押したときに知らせます。人の名前は書かないでください。<br>LINEの文には注意事項が全部出ます。ただし、近隣トラブル・人の名前・どの家か分かりそうな行は「近隣・周りのことで要確認の注意があります」とだけ出て、中身はリンクからアプリに入った人だけが見られます。</div>
@@ -214,7 +215,7 @@
 <script src="parkview.js?v=6"></script>
 <script src="list.js?v=22"></script>
 <script src="view.js?v=6"></script>
-<script src="add.js?v=7"></script>
+<script src="add.js?v=8"></script>
 <script src="mappick.js?v=17"></script>
 <script src="home.js?v=10"></script>
 <script src="parkocr.js?v=14"></script>

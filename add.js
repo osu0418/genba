@@ -20,9 +20,31 @@
     notesText.value = (cur ? cur + "\n" : "") + b.dataset.note;
     notesText.focus();
     const j = b.dataset.note.indexOf("〇");
-    if (j >= 0) notesText.setSelectionRange(start + j, start + j + 1);
+    if (j >= 0) { notesText.setSelectionRange(start + j, start + j + 1); waitNum = start + j; }
     else notesText.setSelectionRange(notesText.value.length, notesText.value.length);
   });
+
+  // 版48：〇が2つある言葉（「時間規制（〇時〜〇時は…）」など）で、1つ目の数字を打ったら、自動で2つ目の〇を選ぶ
+  //  数字を打ち終えたと見なすのは：2けた打った／3〜9の1けた（時刻は10より上が無いので）／1・2のあと少し（1.5秒）手が止まった
+  //  数字以外を打ったら（「南の大通り」など）自動では動かない
+  let waitNum = -1, waitTimer = 0;
+  function nextMaru() {
+    clearTimeout(waitTimer);
+    if (waitNum < 0) return;
+    const v = notesText.value, pos = notesText.selectionStart;
+    const typed = v.slice(waitNum, pos);
+    if (!/^[0-9０-９]+$/.test(typed)) { waitNum = -1; return; }
+    const lineEnd = v.indexOf("\n", pos) < 0 ? v.length : v.indexOf("\n", pos);
+    const k = v.indexOf("〇", pos);
+    if (k < 0 || k > lineEnd) { waitNum = -1; return; } // この行に次の〇が無い
+    const n = typed.normalize("NFKC");
+    const done = () => { notesText.setSelectionRange(k, k + 1); waitNum = k; };
+    if (n.length >= 2 || +n[0] >= 3) done();
+    else waitTimer = setTimeout(() => { if (notesText.selectionStart === pos && waitNum >= 0) done(); }, 1500);
+  }
+  notesText.addEventListener("input", e => { if (!e.isComposing) nextMaru(); });
+  notesText.addEventListener("compositionend", () => setTimeout(nextMaru, 0)); // 日本語の入力で数字を打ったとき
+  notesText.addEventListener("blur", () => { waitNum = -1; clearTimeout(waitTimer); });
 
   // 直す：選んだ現場の内容を入力欄に入れて、「直して保存」にする
   function setMode(editing) {
@@ -75,9 +97,10 @@
     View.show("list", `「${f.name}」を${r}しました。`);
   });
 
-  function addFromPaste() {
+  async function addFromPaste() {
+    // 版48：リンクを読むのは待つ形（版45でリンクを縮めたため。待たないと入らなかった）
     // 版29：貼った文にアプリのリンク（#in=…）があれば、リンクの中の現場を読む
-    const sites = typeof Receive !== "undefined" ? Receive.sitesFrom(pasteBox.value) : Share.parse(pasteBox.value);
+    const sites = typeof Receive !== "undefined" ? await Receive.sitesFrom(pasteBox.value) : Share.parse(pasteBox.value);
     if (!sites.length) {
       if (pasteBox.value.trim()) pasteMsg.textContent = "現場を読み取れませんでした。【現場】から始まる文か確かめてください。";
       return;
