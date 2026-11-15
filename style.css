@@ -144,3 +144,6 @@ body:not(.helper) .helperOnly { display:none !important; }
 .homeAsk { margin-top:10px; font-size:16px; }
 .homeAsk .mapTools { margin-top:8px; }
 .homeAsk .main { margin-top:10px; }
+/* 版38：押した「倉庫へ」「自宅へ」に色を付ける。下に出る「〇〇へのナビ」も大きく */
+.homeRow button.on { background:var(--blue); color:#fff; border-color:var(--blue); }
+.homeTo { font-size:17px; font-weight:bold; color:var(--blue); margin:10px 0 2px; }

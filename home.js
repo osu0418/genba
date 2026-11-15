@@ -87,6 +87,7 @@ const Home = (() => {
       <button type="button" class="main" data-here="${k}">はい、ここを${label}にする</button>
       <div class="mapTools"><button type="button" data-manual="${k}">住所・地図で入れる</button><button type="button" data-hcancel>やめる</button></div>
       <div class="msg" data-hmsg></div></div>`;
+    mark(k);
   }
   function saveHere(k) {
     const label = KINDS.find(x => x[0] === k)[1];
@@ -130,9 +131,14 @@ const Home = (() => {
     render();
   });
 
+  // 押したボタン（倉庫へ・自宅へ）に色を付ける（版38。下に出た字だけでは、年配の人にはどちらを押したか見にくいため）
+  function mark(k) {
+    bar.querySelectorAll("[data-go]").forEach(b => b.classList.toggle("on", b.dataset.go === k));
+  }
   function render() {
     const h = open && load()[open];
-    navEl.innerHTML = h && Nav.has(h) ? `<div class="addr">${KINDS.find(x => x[0] === open)[1]}へ</div>${Nav.links(h)}` : "";
+    navEl.innerHTML = h && Nav.has(h) ? `<div class="homeTo">${KINDS.find(x => x[0] === open)[1]}へのナビ</div>${Nav.links(h)}` : "";
+    mark(h && Nav.has(h) ? open : "");
   }
 
   return { render };
