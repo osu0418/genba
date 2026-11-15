@@ -70,18 +70,56 @@ const Home = (() => {
     View.show("list", Nav.has(data[k]) ? `${label}の住所を保存しました。「${label}へ」でナビが出ます。` : `${label}の住所を空にしました。`);
   });
 
-  bar.addEventListener("click", e => {
-    const b = e.target.closest("[data-go]");
-    if (!b) return;
-    const k = b.dataset.go, label = KINDS.find(x => x[0] === k)[1];
-    const h = load()[k];
-    if (!Nav.has(h)) { // まだ住所がない：入力の画面を開いて案内する
+  // 住所・地図で入れる画面を開く（前からある入れ方）
+  function openForm(k) {
+    const label = KINDS.find(x => x[0] === k)[1];
+    open = "";
+    render();
+    View.show("home");
+    forms.querySelector(`[data-kind="${k}"] [data-m="saved"]`).textContent = `${label}の住所か地図の場所を入れて「保存」を押してください。`;
+  }
+  // 版35：まだ入れていないときは「今、〇〇にいますか？」→「はい」で今いる場所を入れる（その場所で押すだけ）
+  // 住所や地図で入れたい人は「住所・地図で入れる」で、前からの入力の画面へ
+  function askHere(k) {
+    const label = KINDS.find(x => x[0] === k)[1];
+    open = "";
+    navEl.innerHTML = `<div class="askBox homeAsk">📍 <b>${label}</b>の場所がまだ入っていません。<br>今、${label}にいますか？
+      <button type="button" class="main" data-here="${k}">はい、ここを${label}にする</button>
+      <div class="mapTools"><button type="button" data-manual="${k}">住所・地図で入れる</button><button type="button" data-hcancel>やめる</button></div>
+      <div class="msg" data-hmsg></div></div>`;
+  }
+  function saveHere(k) {
+    const label = KINDS.find(x => x[0] === k)[1];
+    const m = navEl.querySelector("[data-hmsg]");
+    if (!navigator.geolocation) { m.textContent = "この携帯では今いる場所を使えません。「住所・地図で入れる」で入れてください。"; return; }
+    m.textContent = "今いる場所を調べています…";
+    navigator.geolocation.getCurrentPosition(pos => {
+      const data = load();
+      data[k] = { addr: (data[k] && data[k].addr) || "", lat: +pos.coords.latitude.toFixed(6), lng: +pos.coords.longitude.toFixed(6) };
+      if (!save(data)) { m.textContent = "保存できませんでした。"; return; }
+      // 入力の画面の欄と地図も合わせる（あとで「直す」とき、今の場所から始まるように）
+      const box = forms.querySelector(`[data-kind="${k}"]`);
+      box.querySelector('[data-f="lat"]').value = data[k].lat;
+      box.querySelector('[data-f="lng"]').value = data[k].lng;
+      pickers[k].sync();
       open = "";
       render();
-      View.show("home");
-      forms.querySelector(`[data-kind="${k}"] [data-m="saved"]`).textContent = `${label}の住所がまだ入っていません。ここで入れて「保存」を押してください。`;
-      return;
-    }
+      const acc = Math.round(pos.coords.accuracy || 0);
+      View.show("list", `${label}の場所を入れました。これからは「${label}へ」でナビが出ます。` + (acc > 100 ? `（ずれ 約${acc}m。ずれていたら「倉庫・自宅の住所を入れる・直す」で直せます）` : ""));
+    }, () => {
+      m.textContent = "今いる場所を使えませんでした。位置情報の許可を確かめるか、「住所・地図で入れる」で入れてください。";
+    }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 });
+  }
+
+  bar.addEventListener("click", e => {
+    if (e.target.closest("[data-here]")) return saveHere(e.target.closest("[data-here]").dataset.here);
+    if (e.target.closest("[data-manual]")) return openForm(e.target.closest("[data-manual]").dataset.manual);
+    if (e.target.closest("[data-hcancel]")) { open = ""; return render(); }
+    const b = e.target.closest("[data-go]");
+    if (!b) return;
+    const k = b.dataset.go;
+    const h = load()[k];
+    if (!Nav.has(h)) return askHere(k); // まだ場所がない：その場所で押すだけで入れられるように聞く
     if (!Nav.isIOS) { // Androidなど：ボタンが1つなので、すぐGoogleマップを開く
       const a = document.createElement("div");
       a.innerHTML = Nav.links(h);

@@ -140,3 +140,7 @@ body:not(.helper) .helperOnly { display:none !important; }
 .parkGo.many .parkNavi:first-child { flex-basis:100%; }
 .parkGo .parkNavi.alt { background:#e8730c; }
 .card > .parkFind { margin-top:8px; }
+/* 版35：倉庫・自宅がまだのときの「今、〇〇にいますか？」 */
+.homeAsk { margin-top:10px; font-size:16px; }
+.homeAsk .mapTools { margin-top:8px; }
+.homeAsk .main { margin-top:10px; }
