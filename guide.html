@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title>現場入場アプリ 使い方</title>
-<!-- 図つきの説明書（版33・版34で登録する人向けを guide-reg.html に分けた）：苦手な人が読むのは「1 ホーム画面に置く」「2 LINEで届いた現場を入れる」の2つだけ。
+<!-- 図つきの説明書（版37で、ホーム画面への置き方を携帯・ブラウザごとに分けた。版33・版34で登録する人向けを guide-reg.html に分けた）：苦手な人が読むのは「1 ホーム画面に置く」「2 LINEで届いた現場を入れる」の2つだけ。
      毎朝の電話・KY・駐車場は「見たら分かる」ので書かない。登録する人向けはたたんでおく。写真は作り物の現場で撮影 -->
 <style>
 body{margin:0;font-family:-apple-system,"Hiragino Sans",sans-serif;background:#f4f6f8;color:#1a1a1a;font-size:17px;line-height:1.6}
@@ -20,7 +20,7 @@ img{display:block;margin:6px auto;border:1px solid #ccc;border-radius:8px;max-wi
 .box{border:2px solid #e3001b;border-radius:10px;padding:10px;background:#fff5f5;font-size:16px;margin:10px 0}
 .tip{border:1px solid #1f5fa8;border-radius:10px;padding:10px;background:#f0f6ff;font-size:15px;margin:10px 0}
 .chat{background:#dfe6ee;border-radius:10px;padding:12px} .bub{background:#fff;color:#1a1a1a;border-radius:14px;padding:10px 12px;font-size:14px;word-break:break-all} .bub u{color:#1a5fd0}
-.small{font-size:13px;color:#888}
+.dev h3{margin-top:4px} #devOthers{margin-top:12px} #devOthers summary{font-weight:bold;color:#555;font-size:15px} .small{font-size:13px;color:#888}
 </style>
 </head>
 <body>
@@ -28,13 +28,50 @@ img{display:block;margin:6px auto;border:1px solid #ccc;border-radius:8px;max-wi
 <h1>📖 使い方</h1>
 <p class="small" style="margin:0 14px">読むのはこの2つだけ。ほかはアプリを見れば分かります。写真は作り物の現場（山田邸など）です。</p>
 <section id="g1"><h2>1　ホーム画面に置く（最初に1回だけ）</h2>
-<div class="box">⚠ <b>iPhoneの人は「Webアプリとして開く」を必ず切ってください。</b>切らないと、LINEで届いた現場がアプリに入りません。</div>
-<h3>iPhone</h3>
+<p id="devNow" class="small"></p>
+<div id="devMine"></div>
+<details id="devOthers"><summary>ほかの携帯・ブラウザの人</summary>
+<div class="dev" data-dev="ios-safari"><h3>iPhone（Safari）</h3>
+<div class="box">⚠ <b>「Webアプリとして開く」を必ず切ってください。</b>切らないと、LINEで届いた現場がアプリに入りません。</div>
 <div class="step"><div class="st"><span class="no">1</span>Safariでアプリを開く</div><p>LINEのお知らせのURLを押すと、Safariで開きます。</p></div>
 <div class="step"><div class="st"><span class="no">2</span>共有ボタン →「ホーム画面に追加」</div><p>画面の下の共有ボタン（四角から上に矢印のマーク）を押して、「ホーム画面に追加」。<span class='small'>見つからないときは右下の「…」の中にあります。</span></p></div>
 <div class="step"><div class="st"><span class="no">3</span>「Webアプリとして開く」を切る →「追加」</div><p>右のスイッチが<b>灰色（切れている）</b>か見る。緑なら押して灰色に（①）。それから右上の「追加」（②）。</p><img src="guide/5_toggle.jpg" loading="lazy" style="width:100%" alt=""></div>
-<div class="tip">これからは、ホーム画面の「現」のアイコンから開いてください。Safariの「履歴とWebサイトデータを消去」はしないでください（入れた現場が消えます）。</div>
-<h3>Android</h3><p>Chromeの右上の「︙」→「ホーム画面に追加」→「追加」。</p></section>
+<div class="tip">これからは、ホーム画面の「現」のアイコンから開いてください。Safariの「履歴とWebサイトデータを消去」はしないでください（入れた現場が消えます）。</div></div>
+<div class="dev" data-dev="ios-other"><h3>iPhone（ChromeやEdgeで開いている人）</h3>
+<div class="box">⚠ <b>iPhoneは、Safariで置いてください。</b>LINEのリンクはSafariで開くので、ChromeやEdgeで置いたアプリには、届いた現場が入りません。</div>
+<div class="step"><div class="st"><span class="no">1</span>Safariを開く</div><p>ホーム画面の「Safari」（青い方位磁石のマーク）を開き、上か下の入力欄に <b>nyujo.genba-benri.com</b> と打って開きます。</p></div>
+<div class="step"><div class="st"><span class="no">2</span>あとは「iPhone（Safari）」と同じ</div><p>共有ボタン →「ホーム画面に追加」→「Webアプリとして開く」を切る →「追加」。下の「ほかの携帯・ブラウザの人」の中の「iPhone（Safari）」を見てください。</p></div></div>
+<div class="dev" data-dev="android-chrome"><h3>Android（Chrome）</h3>
+<div class="step"><div class="st"><span class="no">1</span>Chromeでアプリを開く</div><p>LINEのお知らせのURLを押すと開きます。</p></div>
+<div class="step"><div class="st"><span class="no">2</span>右上の「︙」（点が3つ縦に並んだボタン）を押す</div><p>メニューが出ます。</p></div>
+<div class="step"><div class="st"><span class="no">3</span>「ホーム画面に追加」→「追加」</div><p>名前は「現場入場」のままでよいです。「自動で追加」と出たら、それを押します。<span class='small'>「アプリをインストール」と出る携帯は、そちらを押してもよいです。</span></p></div>
+<div class="tip">これからは、ホーム画面のアイコンから開いてください。Chromeの「閲覧データを削除」で「Cookieとサイトデータ」を消すと、入れた現場が消えます。</div></div>
+<div class="dev" data-dev="android-edge"><h3>Android（Edge）</h3>
+<div class="step"><div class="st"><span class="no">1</span>Edgeでアプリを開く</div><p>LINEのお知らせのURLを押すと開きます。</p></div>
+<div class="step"><div class="st"><span class="no">2</span>下の「…」か「≡」（メニュー）を押す</div><p>メニューが出ます。</p></div>
+<div class="step"><div class="st"><span class="no">3</span>「電話に追加」か「ホーム画面に追加」→「追加」</div><p>名前は「現場入場」のままでよいです。<span class='small'>Edgeは版によって名前と場所が違います（未確認）。見つからないときは、登録する人に見てもらってください。</span></p></div>
+<div class="tip">LINEのリンクを押したときに開くブラウザ（いつも使うブラウザ）と、置いたブラウザが同じでないと、届いた現場がアプリに入りません。</div></div>
+</details>
+<script>
+// 版37：開いた携帯とブラウザを見分けて、その人の置き方だけを上に出す（ほかはたたむ）
+(() => {
+  const ua = navigator.userAgent;
+  const ios = /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+  let k = "", name = "";
+  if (ios) { if (/CriOS|EdgiOS|FxiOS/.test(ua)) { k = "ios-other"; name = /EdgiOS/.test(ua) ? "iPhone（Edge）" : /CriOS/.test(ua) ? "iPhone（Chrome）" : "iPhone（Safari以外）"; } else { k = "ios-safari"; name = "iPhone（Safari）"; } }
+  else if (/Android/.test(ua)) { if (/EdgA/.test(ua)) { k = "android-edge"; name = "Android（Edge）"; } else { k = "android-chrome"; name = /SamsungBrowser/.test(ua) ? "Android（Samsung Internet）" : "Android（Chrome）"; } }
+  const box = k && document.querySelector('[data-dev="' + k + '"]');
+  const now = document.getElementById("devNow");
+  if (box) {
+    document.getElementById("devMine").appendChild(box);
+    now.textContent = "あなたの携帯：" + name + "。この置き方だけ見てください。";
+    if (/SamsungBrowser/.test(ua)) now.textContent += "（Samsung Internetの人は、Chromeで開いて置くと確かです）";
+  } else {
+    now.textContent = "携帯の種類が分かりませんでした。下の「ほかの携帯・ブラウザの人」から選んでください。";
+    document.getElementById("devOthers").open = true;
+  }
+})();
+</script></section>
 <section id="g2"><h2>2　LINEで届いた現場を入れる</h2>
 <div class="step"><div class="st"><span class="no">1</span>LINEの青い字のリンクを押す</div><p>邸名のトークに、仲間からこういう文が届きます。</p><div class="chat"><div class="bub">📲 山田邸の現場の情報（押すとアプリに入ります）<br><u>https://nyujo.genba-benri.com/#i=hPrA2JII…</u><br><br>⚠ 入場は8時以降</div></div></div>
 <div class="step"><div class="st"><span class="no">2</span>「はい、アプリに入れる」を押す</div><p>Safariでアプリが開き、この枠が出ます。押せば終わりです。</p><img src="guide/3_ask.jpg" loading="lazy" style="width:100%" alt=""></div>
