@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="apple-mobile-web-app-title" content="ダンプ記録">
+<title>ダンプ記録</title>
+<!-- 版1：第1章（記録画面）。記録はこの携帯の中だけに保存 -->
+<link rel="stylesheet" href="style.css?v=1">
+</head>
+<body>
+<header>
+  <h1>🚚 ダンプ記録</h1>
+  <div id="now" class="now"></div>
+</header>
+
+<section class="panel">
+  <h2>現場（邸名）</h2>
+  <div class="row">
+    <input id="site" type="text" placeholder="例：森田（あべの）" autocomplete="off">
+    <button type="button" id="sameSite">前と同じ</button>
+  </div>
+  <div id="siteChips" class="chips"></div>
+</section>
+
+<section class="panel">
+  <h2>ダンプ</h2>
+  <div id="dumpChips" class="chips"></div>
+  <div class="row addRow">
+    <input id="newDump" type="text" placeholder="ダンプを追加（例：赤、田中さん）" autocomplete="off">
+    <button type="button" id="addDump">追加</button>
+  </div>
+</section>
+
+<section class="panel">
+  <h2>材料</h2>
+  <div id="matChips" class="chips big"></div>
+  <h2 class="mt">量 <span id="unit" class="sub"></span></h2>
+  <div id="amtChips" class="chips big"></div>
+  <input id="amt" type="number" inputmode="decimal" placeholder="ほかの量は数字で" min="0" step="0.1">
+</section>
+
+<button type="button" id="save" class="save">記録する</button>
+<div id="msg" class="msg" hidden></div>
+
+<section class="panel">
+  <h2>今日の記録 <span id="todayCount" class="sub"></span></h2>
+  <div id="todayList"></div>
+  <button type="button" id="undo" class="del" hidden>最後の1件を取り消す</button>
+</section>
+
+<script src="storage.js?v=1"></script>
+<script src="record.js?v=1"></script>
+</body>
+</html>
