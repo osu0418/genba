@@ -1,4 +1,5 @@
 // 版60：iPhoneで「Webアプリとして開く」を入れたままホーム画面に置いたアイコンから開いたときだけ、上に黄色の注意を出す。
+// 版61：直し方の図を、新しいアイコンの写真（ユーザーが撮り直した物）に差し替えた
 // 理由：そのアイコンはSafariと保存場所が別になり、LINEのリンク（Safariで開く）で入れた現場がアイコンからは見えない＝「消えた」に見える。
 // 見分け方：iPhone・iPadは、そのアイコンから開くと navigator.standalone が true になる（正しく置いたアイコン・Safari・Androidでは true にならない）。実機は未確認。
 (() => {
@@ -15,7 +16,7 @@
       "<li><b>Safari</b>で <b>nyujo.genba-benri.com</b> を開く</li>" +
       "<li>共有ボタン（四角から上に矢印）→「ホーム画面に追加」</li>" +
       "<li><b>「Webアプリとして開く」を灰色にする</b>（①）→「追加」（②）" +
-      "<img src=\"guide/5_toggle.jpg\" alt=\"「Webアプリとして開く」のスイッチを灰色にして、追加を押す\"></li>" +
+      "<img src=\"guide/5_toggle.jpg?v=2\" alt=\"「Webアプリとして開く」のスイッチを灰色にして、追加を押す\"></li>" +
       "</ol>" +
       "<span class=\"webAppTipSub\">※このアイコンの中で入れた現場は、置き直すと消えます。</span>";
     const header = document.querySelector("header");
