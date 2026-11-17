@@ -57,7 +57,7 @@ const Receive = (() => {
     box.innerHTML = `<div class="receiveCard">
         <div class="receiveTitle">📥 仲間から届いた現場</div>
         <div class="receiveNames">${names}</div>
-        <div class="note0">${parks ? `駐車場 ${parks}か所もいっしょに入ります。` : ""}同じ現場が入っていれば、新しい方に直します。</div>
+        <div class="note0">${parks ? `駐車場 ${parks}か所もいっしょに入ります。` : ""}同じ現場が入っていれば、注意事項と駐車場を足し合わせます（送った人が消した物は消えます）。</div>
         <button type="button" class="main" data-r="yes">はい、アプリに入れる</button>
         <button type="button" class="receiveNo" data-r="no">いいえ</button>
       </div>`;

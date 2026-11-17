@@ -74,13 +74,14 @@ const Share = (() => {
 
   // 版45：リンクに入れる短い形。見出しの字を外し、決まった順に並べる（うしろの空は落とす）
   const SK = ["name", "code", "inTel", "outTel", "kyUrl", "addr", "lat", "lng", "notes", "notesChecked", "routeLine", "routeWhy"]; // routeLine：版49、routeWhy：版55で後ろに足した
-  const PK = ["name", "addr", "price", "max", "rule", "size", "kind", "reserve", "tel", "memo", "lat", "lng", "checked"];
+  const PK = ["name", "addr", "price", "max", "rule", "size", "kind", "reserve", "tel", "memo", "lat", "lng", "checked", "id"]; // id：版62で後ろに足した（訂正・削除が同じ駐車場に届くように）
   const trim = a => { while (a.length && (a[a.length - 1] === "" || a[a.length - 1] == null)) a.pop(); return a; };
   const row = (o, keys) => trim(keys.map(k => o[k] == null ? "" : o[k]));
   function pack(s) {
     const r = row(s, SK);
     while (r.length < SK.length) r.push(""); // 進入路の線の場所まで必ず入れる（消したことも伝わるように。版49）
-    return [1, r, (s.parks || []).map(p => row(p, PK))]; // 1：形の番号（あとで形を変えたときに見分ける）
+    const g = s.gone && ((s.gone.n || []).length || (s.gone.p || []).length) ? [s.gone] : []; // 版62：消した印（4つ目。前の版のアプリは読まずに無視する）
+    return [1, r, (s.parks || []).map(p => row(p, PK))].concat(g); // 1：形の番号（あとで形を変えたときに見分ける）
   }
   function unpack(a) {
     if (!Array.isArray(a) || a[0] !== 1) return [];
@@ -89,6 +90,7 @@ const Share = (() => {
     if (!(a[1] && a[1].length > SK.indexOf("routeLine"))) s.routeLine = undefined; // 線の欄が無い前のリンクでは、前の線を消さない
     if (!(a[1] && a[1].length > SK.indexOf("routeWhy"))) s.routeWhy = undefined; // 版55：理由の欄が無いリンクでは前の理由を残す
     s.parks = (a[2] || []).map(r => obj(r, PK));
+    if (a[3] && typeof a[3] === "object") s.gone = a[3]; // 版62
     return s.name && s.inTel && s.outTel ? [s] : [];
   }
 

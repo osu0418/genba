@@ -51,17 +51,46 @@ const Store = (() => {
   const cleanParks = list => (Array.isArray(list) ? list : []).map(cleanPark).filter(Boolean);
 
   // 駐車場の足し合わせ：前からある駐車場は残し、入ってきた駐車場を足す
-  // 同じ名前で、ほぼ同じ場所（約50m以内）なら同じ駐車場とみなし、確認日が同じか新しいときだけ入れ替える
-  function mergeParks(oldList, newList) {
+  // 同じ駐車場か：版62から共有のidが付いてくるので、まずidで見る。idが合わなければ、同じ名前でほぼ同じ場所（約50m以内）
+  // 同じなら、確認日が同じか新しいときだけ入れ替える（idは送ってきた人の物にそろえる。次の訂正がidで届くように）
+  // gone（版62）：消した駐車場の印。入ってきた駐車場のうち、自分が消した物（同じid）は足さない（古いリンクで戻らないように）
+  const nearSame = (o, p) => o.name === p.name && Math.abs(o.lat - p.lat) < 0.0005 && Math.abs(o.lng - p.lng) < 0.0005;
+  function mergeParks(oldList, newList, gone) {
     const out = cleanParks(oldList);
-    for (const p of cleanParks(newList)) {
-      const j = out.findIndex(o => o.name === p.name &&
-        Math.abs(o.lat - p.lat) < 0.0005 && Math.abs(o.lng - p.lng) < 0.0005);
+    const g = cleanGone({ p: gone }).p;
+    for (const raw of Array.isArray(newList) ? newList : []) {
+      const p = cleanPark(raw);
+      if (!p) continue;
+      // idの無い駐車場（版61までのリンク）は、名前と場所で消した印と比べる
+      if (g.some(a => a[0] === p.id || (!str(raw.id) && nearSame(p, { name: a[1], lat: a[2], lng: a[3] })))) continue;
+      let j = out.findIndex(o => o.id === p.id);
+      if (j < 0) j = out.findIndex(o => nearSame(o, p));
       if (j < 0) out.push(p);
-      else if (p.checked >= out[j].checked) { p.id = out[j].id; out[j] = p; }
+      else if (p.checked >= out[j].checked) out[j] = p;
     }
     return out;
   }
+
+  // 版62：消した印（gone）。{ n: [消した注意事項の行], p: [[駐車場のid, 名前, 緯度, 経度]] }
+  // 足し合わせると、消した物が仲間の携帯に残るので、消した印もリンクに入れて送り、受け取った人の携帯でも消す
+  // 印は新しい方から30ずつまで（リンクが長くなりすぎないように）
+  const GONE_MAX = 30;
+  function cleanGone(g) {
+    const n = Array.isArray(g && g.n) ? g.n.map(str).filter(Boolean) : [];
+    const pk = Array.isArray(g && g.p) ? g.p.filter(a => Array.isArray(a) && a[0]).map(a => [str(a[0]), str(a[1]), num(a[2], 90), num(a[3], 180)]) : [];
+    return { n: [...new Set(n)].slice(-GONE_MAX), p: pk.filter((a, i) => pk.findIndex(b => b[0] === a[0]) === i).slice(-GONE_MAX) };
+  }
+  function joinGone(a, b) {
+    const x = cleanGone(a), y = cleanGone(b);
+    return cleanGone({ n: x.n.concat(y.n), p: x.p.concat(y.p) });
+  }
+  // 入ってきた「消した印」で、自分の携帯の駐車場を消す（idが合う物。前の版で受け取ってidが違う物は、名前と場所で見る）
+  function dropGoneParks(list, gone, keepIds) {
+    const g = cleanGone(gone).p;
+    return cleanParks(list).filter(o => !g.some(a => a[0] === o.id ||
+      (!keepIds.has(o.id) && nearSame(o, { name: a[1], lat: a[2], lng: a[3] }))));
+  }
+  const lines = v => cleanNotes(v).split("\n").filter(Boolean);
 
   // 「直す」から来たら同じ現場を上書き。そうでなければ、同じ入場番号の現場があれば上書き、なければ追加
   // 駐車場：入ってきた方に駐車場があればそれを使い、なければ前の駐車場を残す（直しても消えないように）
@@ -89,7 +118,12 @@ const Store = (() => {
     const replaced = i >= 0 && !same ? sites[i].name : "";
     // 現場の場所（📍）：入ってきた方に場所がなければ、前の場所を残す（版44。場所の無いリンクで消えないように。「直す」から来たときは、人が消したのかもしれないので残さない）
     if (!site.id && same && s.lat === "" && s.lng === "" && sites[i].lat !== "" && sites[i].lat != null) { s.lat = sites[i].lat; s.lng = sites[i].lng; if (!s.addrPt && sites[i].addrPt) s.addrPt = 1; }
-    s.parks = mergeParks(same ? sites[i].parks : [], site.parks);
+    // 版62：消した印。「直す」から来たときは前の印のまま（注意事項の差は下で印にする）、受け取ったときは足し合わせる
+    const inGone = cleanGone(site.gone);
+    s.gone = same ? joinGone(sites[i].gone, site.id ? {} : inGone) : inGone;
+    const inIds = new Set((Array.isArray(site.parks) ? site.parks : []).map(p => str(p && p.id)).filter(Boolean));
+    const kept = same ? dropGoneParks(sites[i].parks, site.id ? {} : inGone, inIds) : [];
+    s.parks = mergeParks(kept, site.parks, same ? s.gone.p : []);
     // 注意事項：入ってきた方に注意事項の欄がなければ（古い共有の文など）、前の注意事項を残す
     // 中身が変わったら確認日を今日にする（貼った文に確認日があればそれを使う）
     const old = same ? sites[i] : {};
@@ -98,10 +132,21 @@ const Store = (() => {
     // 版55：この道を使う理由。入ってきた方に欄がなければ前の理由を残す。線が無ければ理由も持たない
     s.routeWhy = !s.routeLine ? "" : site.routeWhy === undefined ? (old.routeWhy || "") : str(site.routeWhy).slice(0, 60);
     if (site.notes === undefined) { s.notes = old.notes || ""; s.notesChecked = old.notesChecked || ""; }
-    else {
+    else if (site.id) {
+      // 「直す」：書いたとおりにする。消した行は印に入れ、書き直した（また入れた）行は印から外す
       s.notes = cleanNotes(site.notes);
+      const now = lines(s.notes), was = lines(old.notes);
+      s.gone.n = s.gone.n.filter(l => !now.includes(l)).concat(was.filter(l => !now.includes(l)));
+      s.gone = cleanGone(s.gone);
       s.notesChecked = !s.notes ? "" : str(site.notesChecked) || (s.notes === old.notes && old.notesChecked) || today();
+    } else {
+      // 版62：受け取ったとき：前の注意事項に、届いた行を足す（同じ行は1つ）。消した印の行は、どちらからも外す
+      const goneN = new Set(s.gone.n);
+      const merged = [...new Set(lines(old.notes).concat(lines(site.notes)))].filter(l => !goneN.has(l));
+      s.notes = merged.join("\n");
+      s.notesChecked = !s.notes ? "" : (s.notes === (old.notes || "") ? old.notesChecked || "" : "") || str(site.notesChecked) || today();
     }
+    if (!s.gone.n.length && !s.gone.p.length) delete s.gone;
     if (i >= 0) { s.id = sites[i].id; sites[i] = s; } else { sites.push(s); }
     save(sites);
     if (replaced) return `上書き（入場の番号が同じ「${replaced}」と入れ替え）`;
@@ -128,7 +173,10 @@ const Store = (() => {
     const sites = load();
     const site = sites.find(s => s.id === siteId);
     if (!site) return;
-    site.parks = cleanParks(site.parks).filter(p => p.id !== parkId);
+    const p = cleanParks(site.parks).find(x => x.id === parkId);
+    site.parks = cleanParks(site.parks).filter(x => x.id !== parkId);
+    // 版62：消した印を付ける（共有したとき、受け取った人の携帯からも消えるように）
+    if (p) site.gone = joinGone(site.gone, { p: [[p.id, p.name, p.lat, p.lng]] });
     save(sites);
   }
 
