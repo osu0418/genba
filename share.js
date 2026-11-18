@@ -69,7 +69,7 @@ const Share = (() => {
     const why = s.routeWhy && !SECRET.test(s.routeWhy) ? s.routeWhy : "";
     const notes = (typeof RouteMap !== "undefined" && RouteMap.has(s) ? [why ? `🚧 進入路あり：${why}（アプリのナビで）` : "🚧 進入路の地図あり（アプリで）"] : []).concat(ns.length ? ["⚠ " + ns.join("／")] : []);
     if (typeof Receive === "undefined") return [head].concat(notes, [toText(s)]).join("\n");
-    return [head, "▼押すとアプリに入ります", await Receive.link(s)].concat(notes).join("\n");
+    return [head, "▼押すとアプリに入ります（お試し期間中・次からも使えます）", await Receive.link(s)].concat(notes).join("\n");
   }
 
   // 版45：リンクに入れる短い形。見出しの字を外し、決まった順に並べる（うしろの空は落とす）
