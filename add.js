@@ -74,7 +74,7 @@
     cancelBtn.hidden = !editing;
   }
   window.Editor = {
-    start(site) {
+    start(site, focus) {
       for (const k of ["id", "name", "code", "inTel", "outTel", "kyUrl", "addr", "lat", "lng", "notes", "routeLine", "routeWhy"]) form.elements[k].value = site[k] ?? "";
       routeMsgSet();
       notesBox.open = !!site.notes; // 注意事項があるときだけ開いておく
@@ -82,6 +82,9 @@
       setMode(true);
       addMsg.textContent = `「${site.name}」を直しています。`;
       View.show("add");
+      // 版67：制作する人の「⚠ 注意事項」「🚧 進入路を決める」から来たときは、その所を開いて見せる
+      if (focus === "notes") { notesBox.open = true; setTimeout(() => notesBox.scrollIntoView({ block: "start" }), 50); }
+      if (focus === "route") setTimeout(() => document.getElementById("routeDraw").scrollIntoView({ block: "center" }), 50);
     },
   };
   // 隠れた欄（id）は reset で消えないので、手で消す

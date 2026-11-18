@@ -35,12 +35,12 @@ const List = (() => {
 
   // 駐車場（版34・39・40）：携帯が苦手な人は「押すだけ」。登録してある駐車場を、現場から近い順に①②③で出す
   //  押すと駐車場を見る画面（地図・距離・料金）→「ここにする」でナビ（parkview.js）
-  //  「🔍 近くを探す」「駐車場を登録」「駐車場を追加」は登録する人の表示（🔧）のときだけ
+  //  「🔍 近くを探す」は制作する人（🔧）のときだけ。版67：駐車場の追加・手直し・貼る文は、みんなに出す（「個人個人で直せるように」）
   function parkRow(s) {
     const parks = ParkView.sorted(s);
     const find = Nav.parkSearch(s, parks.length ? "🔍 近くのほかの駐車場を探す" : "🔍 近くの駐車場を探す", "parkFind helperOnly");
     if (!parks.length) {
-      return `${find}<button type="button" class="parkBtn small helperOnly parkAddInline" data-park="${esc(s.id)}">🅿 駐車場を登録（駐車場に着いてから）</button>`;
+      return `${find}<button type="button" class="parkBtn small parkAddInline" data-park="${esc(s.id)}">🅿 駐車場を登録（駐車場に着いてから）</button>`;
     }
     const nums = ["①", "②", "③"];
     const gos = parks.slice(0, 3).map((p, i) => {
@@ -58,10 +58,10 @@ const List = (() => {
         <div class="note0">確認日：${esc(p.checked)}</div>
         ${Nav.links(p)}
       </div>`).join("");
-    const btn = `<button type="button" class="parkBtn small helperOnly" data-park="${esc(s.id)}">🅿 駐車場を足す・直す</button>`;
+    const btn = `<button type="button" class="parkBtn small" data-park="${esc(s.id)}">🅿 駐車場を足す・直す</button>`;
     // 版66：「近くのほかの駐車場を探す」の代わりに「駐車場を追加」（探すのは追加の画面の中にある）
     //  その現場だけの画面のときは、右下に浮かせた「＋ 駐車場を追加」を使うので、この欄は隠す（parkAddInline）
-    const add = `<button type="button" class="parkBtn small helperOnly parkAddInline" data-park="${esc(s.id)}">🅿 駐車場を追加</button>`;
+    const add = `<button type="button" class="parkBtn small parkAddInline" data-park="${esc(s.id)}">🅿 駐車場を追加</button>`;
     return `<div class="parkGo${parks.length > 1 ? " many" : ""}">${gos}</div>${add}
       <details class="parks"><summary>料金・ほかの駐車場（${parks.length}か所${parks[0].price ? "　" + esc(parks[0].price) : ""}）</summary>${items}${btn}</details>`;
   }
@@ -114,9 +114,14 @@ const List = (() => {
           ${/^https:\/\//.test(s.kyUrl) ? `<a class="ky" href="${esc(s.kyUrl)}" target="_blank" rel="noopener">KYを開く</a>` : ""}
           ${parkRow(s)}
           <div class="tools">
-            <button class="helperOnly" data-share="${esc(s.id)}">📋 貼る文をコピー</button>
-            <button class="helperOnly" data-edit="${esc(s.id)}">手直し</button>
+            <button data-share="${esc(s.id)}">📋 貼る文をコピー</button>
+            <button data-edit="${esc(s.id)}">手直し</button>
+
             <button class="del" data-del="${esc(s.id)}">削除</button>
+          </div>
+          <div class="tools helperOnly">
+            <button data-edit="${esc(s.id)}" data-focus="notes">⚠ 注意事項</button>
+            <button data-edit="${esc(s.id)}" data-focus="route">🚧 進入路を決める</button>
           </div>
         </div>
       </section>`).join("");
@@ -234,7 +239,7 @@ const List = (() => {
     const site = Store.load().find(s => s.id === (b.dataset.share || b.dataset.del || b.dataset.edit || b.dataset.park));
     if (!site) return;
     if (b.dataset.park) return Park.open(site.id);
-    if (b.dataset.edit) return Editor.start(site);
+    if (b.dataset.edit) return Editor.start(site, b.dataset.focus); // 版67：注意事項・進入路は制作する人だけ（focus でその所を開く）
     if (b.dataset.share) return shareSite(b, site);
     if (b.dataset.del && confirm(`「${site.name}」を削除しますか？\n元に戻せません。`)) {
       Store.remove(site.id);

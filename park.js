@@ -93,8 +93,9 @@ const Park = (() => {
     if (!s) return;
     title.textContent = `${s.name} の駐車場`;
     // 登録した駐車場の下に、控えの「🔍 いっぱいのとき：近くの駐車場を地図で探す」（版26。ふだんは登録した駐車場を使い、登録は駐車場に行って📍でする）
-    document.getElementById("parkFind").innerHTML = Nav.parkSearch(s, (s.parks || []).length ? "🔍 近くのほかの駐車場を探す" : "🔍 近くの駐車場を探す")
-      || `<p class="note0">🔍 近くの駐車場を地図で探すには、現場の「直す」で住所か地図の場所を入れてください。</p>`;
+    // 版67：「近くを探す」は制作する人（🔧）のときだけ
+    document.getElementById("parkFind").innerHTML = Nav.parkSearch(s, (s.parks || []).length ? "🔍 Googleマップでも見る" : "🔍 Googleマップでも見る", "parkFind helperOnly")
+      || `<p class="note0 helperOnly">🔍 近くの駐車場を地図で探すには、現場の「直す」で住所か地図の場所を入れてください。</p>`;
     const parks = s.parks || [];
     listEl.innerHTML = parks.length
       // 版40：カードには現場から近い順に①②③で出る（「いつもの」「満車なら」はやめた）
@@ -110,6 +111,7 @@ const Park = (() => {
 
   function open(id) {
     siteId = id;
+    if (typeof ParkMap !== "undefined") ParkMap.close();
     if (!site()) return;
     clearForm();
     msg.textContent = "";
@@ -399,5 +401,22 @@ const Park = (() => {
     clearForm();
   });
 
-  return { open, edit };
+  // 版67：周りの地図（parkmap.js）で駐車場の印を押したとき：場所・会社（分かれば）を入れ、住所を調べ、ピンの確認を出す
+  function fromMap(p) {
+    hideNotify();
+    openForm();
+    form.elements.lat.value = p.lat.toFixed(6);
+    form.elements.lng.value = p.lng.toFixed(6);
+    if (p.co) form.elements.name.value = p.co;
+    else if (p.name && !form.elements.name.value.trim()) form.elements.name.value = p.name;
+    markCo();
+    more.open = !!(form.elements.name.value.trim() && !COS.includes(form.elements.name.value.trim()));
+    form.elements.addr.value = "";
+    picker.fillAddr(p.lat, p.lng);
+    if (document.getElementById("parkMapBox").hidden) mapOpen.click(); else picker.sync();
+    askPlace();
+    msg.textContent = "地図の駐車場を入れました。ピンを確かめて「はい」、料金は看板の写真か手で入れてください。";
+  }
+
+  return { open, edit, fromMap, site };
 })();

@@ -7,7 +7,8 @@
   const get = () => { try { return localStorage.getItem(KEY) === "1"; } catch { return false; } };
   function apply(on) {
     document.body.classList.toggle("helper", on);
-    btn.textContent = on ? "🔧 登録する人の表示：オン（押すとかんたん表示に戻る）" : "🔧 登録する人の表示：オフ（直す・貼る文・駐車場の登録を出す）";
+    // 版67：一覧の左下に浮かせた「🔧 制作」。オンの人だけ、注意事項・進入路・周りの地図から駐車場を探す、が出る
+    btn.textContent = on ? "🔧 制作：オン" : "🔧 制作：オフ";
   }
   btn.addEventListener("click", () => {
     const on = !get();
