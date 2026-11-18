@@ -68,6 +68,7 @@ const List = (() => {
 
   // 版56：カードをたたむ（「10件ぐらい現場が重なる」「これだけ長いと探しにくい」）
   //  たたんだ形：版66から邸名だけ（「どの道開いて、朝の電話とKYを同時にするので、邸名だけで分かった方がいい」）。邸名を押すと開く（開くのは1件ずつ）
+  //  版68：邸名の下に住所を小さく1行（「店名が出てこずに住所で覚えている人がいます」）。開いた現場は下に住所があるので出さない
   //  今日入場の電話をした現場は一番上に出す（版66から、開くのは押したときだけ）
   //  版66：開くと、その現場だけの画面にする（倉庫・自宅の帯なども隠す。退場がまだの赤い字だけは残す）。「← ほかの現場も見る」か「とじる」で戻る
   let chosen = null; // 人が開いた・閉じた現場（null：まだ選んでいない → 今日の現場を開く。"" ：全部閉じた）
@@ -103,7 +104,7 @@ const List = (() => {
     listEl.innerHTML = (solo ? `<button type="button" class="back soloBack" data-toggle="">← ほかの現場も見る（${sites.length - 1}件）</button>` : "") + sites.map(s => `
       <section class="card${isOpen(s) ? " open" : ""}${seen[s.id] ? " today" : ""}">
         <button type="button" class="cardHead" data-toggle="${esc(s.id)}">
-          <span class="name">${esc(s.name)}</span>${seen[s.id] ? `<span class="todayTag">今日</span>` : ""}
+          <span class="name">${esc(s.name)}${!isOpen(s) && s.addr ? `<span class="headAddr">${esc(s.addr)}</span>` : ""}</span>${seen[s.id] ? `<span class="todayTag">今日</span>` : ""}
           <span class="arrow">${isOpen(s) ? "▲ とじる" : "▼ 開く"}</span>
         </button>
         ${NoteChips.html(s)}
