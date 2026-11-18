@@ -35,7 +35,7 @@ const Home = (() => {
 
   // 入力の画面：場所ごとに名前・住所・地図・保存・削除。いちばん下に「＋ 場所を足す」
   const pickers = {};
-  function formHtml(p) {
+  function formHtml(p, fresh) {
     return `
     <div class="homeForm" data-kind="${esc(p.id)}">
       <label>名前（ボタンに出ます。例：倉庫・自宅・資材屋）<input data-f="name" maxlength="12" autocomplete="off" value="${esc(p.name)}"></label>
@@ -49,7 +49,7 @@ const Home = (() => {
       <div class="mapBox" hidden></div>
       <div class="msg" data-m="msg"></div>
       <button type="button" class="main" data-save>保存</button>
-      <button type="button" class="del homeDel" data-hdel>この場所を削除</button>
+      <button type="button" class="del homeDel" data-hdel>${fresh ? "やめる" : "この場所を削除"}</button>
       <div class="msg" data-m="saved"></div>
     </div>`;
   }
@@ -63,31 +63,47 @@ const Home = (() => {
     pk.sync();
     pickers[box.dataset.kind] = pk;
   }
-  function renderForms() {
-    forms.innerHTML = load().map(formHtml).join("") +
-      `<button type="button" class="homeAdd" data-hadd>＋ 場所を足す</button>`;
-    forms.querySelectorAll(".homeForm").forEach(attach);
+  // 版66：入れ済みの場所は「名前　［直す］」の1行だけ並べ、押した1つだけ入力欄を開く（全部開くと入れ直すように見えて長いため）
+  // 足すのは、一覧のすぐ下・右寄せのオレンジの「＋ 場所を足す」（現場の追加と同じ色。下の隅だと遠かった）
+  let editing = "";
+  function rowHtml(p) {
+    return `<div class="homeLine" data-kind="${esc(p.id)}"><span class="homeName">${esc(label(p))}</span><button type="button" data-hedit="${esc(p.id)}">手直し</button></div>`;
   }
+  function renderForms() {
+    const list = load();
+    const isNew = editing && !list.some(p => p.id === editing);
+    forms.innerHTML = (list.length || isNew ? "" : `<p class="note0">まだ入っていません。下の「＋ 場所を足す」で入れてください。</p>`) +
+      list.map(p => p.id === editing ? formHtml(p) : rowHtml(p)).join("") +
+      (isNew ? formHtml({ id: editing, name: "", addr: "", lat: "", lng: "" }, true) : "");
+    forms.querySelectorAll(".homeForm").forEach(attach);
+    document.getElementById("homeAddFab").hidden = !!editing; // 入力中は出さない（保存かやめるで戻る）
+  }
+  function edit(id) {
+    editing = id;
+    renderForms();
+    const box = forms.querySelector(`.homeForm[data-kind="${id}"]`);
+    if (box) box.scrollIntoView({ block: "start" });
+    return box;
+  }
+  document.getElementById("homeAddFab").addEventListener("click", () => {
+    const box = edit(newId()); // 保存を押すまでは入らない
+    if (box) box.querySelector('[data-f="name"]').focus();
+  });
 
   forms.addEventListener("click", e => {
-    if (e.target.closest("[data-hadd]")) { // 新しい空の欄を足す（保存を押すまでは入らない）
-      const p = { id: newId(), name: "", addr: "", lat: "", lng: "" };
-      e.target.closest("[data-hadd]").insertAdjacentHTML("beforebegin", formHtml(p));
-      const box = forms.querySelector(`[data-kind="${p.id}"]`);
-      attach(box);
-      box.querySelector('[data-f="name"]').focus();
-      return;
-    }
+    const ed = e.target.closest("[data-hedit]");
+    if (ed) { edit(ed.dataset.hedit); return; }
     const box = e.target.closest(".homeForm");
     if (!box) return;
     const id = box.dataset.kind;
     const v = f => box.querySelector(`[data-f="${f}"]`).value;
     const say = t => { box.querySelector('[data-m="saved"]').textContent = t; };
     if (e.target.closest("[data-hdel]")) {
+      if (!find(id)) { editing = ""; renderForms(); return; } // まだ保存していない新しい欄は、閉じるだけ
       const name = v("name").trim() || "この場所";
       if (!confirm(`「${name}」を削除しますか？`)) return;
       save(load().filter(p => p.id !== id));
-      open = "";
+      open = ""; editing = "";
       renderRow(); render();
       View.show("list", `「${name}」を削除しました。`);
       return;
@@ -102,7 +118,7 @@ const Home = (() => {
     if (i >= 0) list[i] = p; else list.push(p);
     // 保存できなかったときだけ、この画面に残って知らせる
     if (!save(list)) { say("保存できませんでした。"); return; }
-    open = "";
+    open = ""; editing = "";
     renderRow(); render();
     View.show("list", Nav.has(p) ? `「${name}」を保存しました。「${name}へ」でナビが出ます。` : `「${name}」を保存しました。住所か場所を入れるとナビが出ます。`);
   });
@@ -111,9 +127,8 @@ const Home = (() => {
   function openForm(id) {
     open = "";
     render();
-    renderForms();
     View.show("home");
-    const box = forms.querySelector(`[data-kind="${id}"]`);
+    const box = edit(id);
     if (box) {
       box.querySelector('[data-m="saved"]').textContent = `${label(find(id) || {})}の住所か地図の場所を入れて「保存」を押してください。`;
       box.scrollIntoView({ block: "start" });
@@ -169,7 +184,7 @@ const Home = (() => {
   });
 
   // 「場所を足す・直す」を押したら、入力の画面を今の中身で作り直す
-  document.getElementById("openHome").addEventListener("click", () => { open = ""; render(); renderForms(); });
+  document.getElementById("openHome").addEventListener("click", () => { open = ""; editing = ""; render(); renderForms(); });
 
   // 押したボタンに色を付ける（版38。下に出た字だけでは、年配の人にはどれを押したか見にくいため）
   function mark(id) {

@@ -42,7 +42,7 @@ const ParkView = (() => {
   function maxFee(p) {
     const mx = String(p.max || "").normalize("NFKC").trim();
     if (/^(なし|無し|無|ない|×)$/.test(mx)) return { ok: false, none: true, text: "最大料金なし" };
-    const t = (mx + " " + String((p.price || "") + " " + (p.rule || "")).normalize("NFKC"));
+    const t = (mx + " " + String((p.price || "") + " " + (p.rule || "") + " " + (p.memo || "")).normalize("NFKC")); // 版66：メモの「土日祝は最大料金なし」も見る
     // 「〇〇は上限なし」の〇〇（日）を集める
     const segs = t.split(/[／\/、,。\n()（）]/);
     const ex = [];
@@ -91,7 +91,7 @@ const ParkView = (() => {
     box.innerHTML = `<div class="pvCard">
       ${tabs}
       <div class="pvKind">🅿 駐車場 ${NUM[idx]}${parks.length > 1 && hasPt(site) ? "（現場から近い順）" : ""}</div>
-      <div class="pvName">${esc(p.name || "名前なし")}</div>
+      <div class="pvName">${esc(label(p))}</div>
       ${(() => { const f = maxFee(p); return f.ok
         ? `<div class="pvMax ok">💴 ${esc(f.text)}${p.rule ? `<span>（${esc(p.rule)}）</span>` : ""}</div>`
           + (f.except ? `<div class="pvMax ng">⚠ ${f.todayNone ? `今日は最大料金なし<span>（${esc(f.except)}は上限なし。長く止めると高くなります）</span>` : `${esc(f.except)}は最大料金なし<span>（長く止めると高くなります）</span>`}</div>` : "")
@@ -104,14 +104,14 @@ const ParkView = (() => {
       <div class="pvLegend"><span class="pvDotP">P</span> 駐車場　<span class="pvDotS">現</span> 現場（${esc(site.name)}）</div>
       <table class="pvInfo">${line("料金", p.price)}${line("決まり", p.rule)}${line("車の大きさ", p.size)}${line("形", p.kind)}${line("予約制", p.reserve)}${line("連絡先", p.tel)}${line("メモ", p.memo)}${line("確認日", p.checked)}</table>
       ${Nav.go(p, "🚗 ここにする（ナビ開始）", "pvGo") || `<div class="note0">この駐車場は場所が入っていないので、ナビを出せません。</div>`}
-      <button type="button" class="pvEdit helperOnly" data-pvedit="${esc(p.id)}">✏ この駐車場を直す（料金・最大料金など）</button>
+      <button type="button" class="pvEdit helperOnly" data-pvedit="${esc(p.id)}">✏ この駐車場を手直し（料金・メモ）</button>
       <button type="button" class="pvClose" data-pvclose>やめる</button>
     </div>`;
     box.addEventListener("click", e => {
       if (e.target === box || e.target.closest("[data-pvclose]")) return close();
       if (e.target.closest("[data-pvsite]")) { close(); return Editor.start(site); }
       const ed = e.target.closest("[data-pvedit]");
-      if (ed) { close(); return Park.edit(siteId, ed.dataset.pvedit, maxFee(p).ok ? "" : "max"); }
+      if (ed) { close(); return Park.edit(siteId, ed.dataset.pvedit, maxFee(p).ok ? "" : "price"); }
       const t = e.target.closest("[data-pv]");
       if (t) show(siteId, t.dataset.pv);
       if (e.target.closest(".pvGo")) setTimeout(close, 300); // ナビを開いたら、この画面は閉じる
@@ -140,5 +140,7 @@ const ParkView = (() => {
     if (pts.length > 1) map.fitBounds(pts, { padding: [40, 40], maxZoom: 18 }); else map.setView(pts[0], 17);
   }
 
-  return { show, distText, sorted, short, maxFee };
+  // 版66：名前は書かなくてよくなったので、無ければ料金を名前の代わりに出す
+  function label(p) { return p.name || p.price || "名前なし"; }
+  return { show, distText, sorted, short, maxFee, label };
 })();

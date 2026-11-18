@@ -35,37 +35,41 @@ const List = (() => {
 
   // 駐車場（版34・39・40）：携帯が苦手な人は「押すだけ」。登録してある駐車場を、現場から近い順に①②③で出す
   //  押すと駐車場を見る画面（地図・距離・料金）→「ここにする」でナビ（parkview.js）
-  //  「🔍 近くを探す」「駐車場を登録」は登録する人の表示（🔧）のときだけ
+  //  「🔍 近くを探す」「駐車場を登録」「駐車場を追加」は登録する人の表示（🔧）のときだけ
   function parkRow(s) {
     const parks = ParkView.sorted(s);
     const find = Nav.parkSearch(s, parks.length ? "🔍 近くのほかの駐車場を探す" : "🔍 近くの駐車場を探す", "parkFind helperOnly");
     if (!parks.length) {
-      return `${find}<button type="button" class="parkBtn small helperOnly" data-park="${esc(s.id)}">🅿 駐車場を登録（駐車場に着いてから）</button>`;
+      return `${find}<button type="button" class="parkBtn small helperOnly parkAddInline" data-park="${esc(s.id)}">🅿 駐車場を登録（駐車場に着いてから）</button>`;
     }
     const nums = ["①", "②", "③"];
     const gos = parks.slice(0, 3).map((p, i) => {
       const d = ParkView.short(s, p);
       return `<button type="button" class="parkNavi" data-pview="${esc(s.id)}" data-pid="${esc(p.id)}">🅿 駐車場${parks.length > 1 ? " " + nums[i] : ""}`
-        + `<span class="sub">${esc(p.name || "名前なし")}</span>${d ? `<span class="sub">現場まで${d}</span>` : ""}`
+        + `<span class="sub">${esc(ParkView.label(p))}</span>${d ? `<span class="sub">現場まで${d}</span>` : ""}`
         + (() => { const f = ParkView.maxFee(p); return `<span class="maxTag ${f.ok && !f.todayNone ? "ok" : "ng"}">${f.ok ? esc(f.text) + (f.except ? (f.todayNone ? "（今日はなし）" : `（${esc(f.except)}なし）`) : "") : f.none ? esc(f.text) : "最大料金 ？"}</span>`; })()
         + `</button>`;
     }).join("");
     const line = (label, v) => v ? `<div>${label}：${esc(v)}</div>` : "";
     const items = parks.map((p, i) => `<div class="parkCard">
-        <div class="parkName">${i < 3 ? nums[i] : "🅿"} ${esc(p.name || "名前なし")}</div>
+        <div class="parkName">${i < 3 ? nums[i] : "🅿"} ${esc(ParkView.label(p))}</div>
         ${line("料金", p.price)}${line("決まり", p.rule)}${line("車の大きさ", p.size)}
         ${line("形", p.kind)}${line("予約制", p.reserve)}${line("連絡先", p.tel)}${line("メモ", p.memo)}
         <div class="note0">確認日：${esc(p.checked)}</div>
         ${Nav.links(p)}
       </div>`).join("");
     const btn = `<button type="button" class="parkBtn small helperOnly" data-park="${esc(s.id)}">🅿 駐車場を足す・直す</button>`;
-    return `<div class="parkGo${parks.length > 1 ? " many" : ""}">${gos}</div>${find}
+    // 版66：「近くのほかの駐車場を探す」の代わりに「駐車場を追加」（探すのは追加の画面の中にある）
+    //  その現場だけの画面のときは、右下に浮かせた「＋ 駐車場を追加」を使うので、この欄は隠す（parkAddInline）
+    const add = `<button type="button" class="parkBtn small helperOnly parkAddInline" data-park="${esc(s.id)}">🅿 駐車場を追加</button>`;
+    return `<div class="parkGo${parks.length > 1 ? " many" : ""}">${gos}</div>${add}
       <details class="parks"><summary>料金・ほかの駐車場（${parks.length}か所${parks[0].price ? "　" + esc(parks[0].price) : ""}）</summary>${items}${btn}</details>`;
   }
 
   // 版56：カードをたたむ（「10件ぐらい現場が重なる」「これだけ長いと探しにくい」）
-  //  たたんだ形：邸名・注意の札・入場と退場の電話だけ。邸名を押すと開く（開くのは1件ずつ）
-  //  今日入場の電話をした現場は一番上に、開いた形で出す
+  //  たたんだ形：版66から邸名だけ（「どの道開いて、朝の電話とKYを同時にするので、邸名だけで分かった方がいい」）。邸名を押すと開く（開くのは1件ずつ）
+  //  今日入場の電話をした現場は一番上に出す（版66から、開くのは押したときだけ）
+  //  版66：開くと、その現場だけの画面にする（倉庫・自宅の帯なども隠す。退場がまだの赤い字だけは残す）。「← ほかの現場も見る」か「とじる」で戻る
   let chosen = null; // 人が開いた・閉じた現場（null：まだ選んでいない → 今日の現場を開く。"" ：全部閉じた）
   let lastCount = -1;
   function render(openNow) {
@@ -78,7 +82,8 @@ const List = (() => {
     const sites = all.filter(s => !q || norm(s.name).includes(q) || norm(s.code).includes(q))
       .sort((a, b) => noTel(a) - noTel(b) || (seen[b.id] || 0) - (seen[a.id] || 0) || a.name.localeCompare(b.name, "ja"));
     // 開く現場：人が選んだもの → 今日の現場 → 1件だけならそれ
-    const openId = chosen !== null ? chosen : (sites.find(s => seen[s.id]) || (sites.length === 1 ? sites[0] : {})).id || "";
+    // 版66：今日の現場も自動では開かない（退場がまだなら上の赤い字に電話番号が出るため）
+    const openId = chosen !== null ? chosen : (sites.length === 1 ? sites[0].id : "");
     const isOpen = s => s.id === openId || (sites.length === 1 && chosen === null);
     // 現場が入ったら「使い方」を閉じる（入れた現場が下に押しやられないように）
     if (lastCount === 0 && all.length) { const h = document.getElementById("help"); if (h) h.open = false; }
@@ -88,7 +93,14 @@ const List = (() => {
     else if (!sites.length) statusEl.textContent = `「${searchEl.value}」に合う現場がありません。`;
     else statusEl.textContent = q ? `${sites.length}件見つかりました` : `現場 ${all.length}件`;
 
-    listEl.innerHTML = sites.map(s => `
+    const solo = sites.some(isOpen) && sites.length > 1; // 1件だけのときは、前のまま全部出す
+    listEl.classList.toggle("solo", solo);
+    document.getElementById("listScreen").classList.toggle("solo", solo);
+    // 版66：その現場だけの画面では、右下の「＋ 現場を追加」の代わりに「＋ 駐車場を追加」を浮かせる（登録する人の表示のときだけ）
+    const pf = document.getElementById("parkAddFab");
+    pf.hidden = !solo;
+    pf.dataset.park = solo ? (sites.find(isOpen) || {}).id || "" : "";
+    listEl.innerHTML = (solo ? `<button type="button" class="back soloBack" data-toggle="">← ほかの現場も見る（${sites.length - 1}件）</button>` : "") + sites.map(s => `
       <section class="card${isOpen(s) ? " open" : ""}${seen[s.id] ? " today" : ""}">
         <button type="button" class="cardHead" data-toggle="${esc(s.id)}">
           <span class="name">${esc(s.name)}</span>${seen[s.id] ? `<span class="todayTag">今日</span>` : ""}
@@ -103,7 +115,7 @@ const List = (() => {
           ${parkRow(s)}
           <div class="tools">
             <button class="helperOnly" data-share="${esc(s.id)}">📋 貼る文をコピー</button>
-            <button class="helperOnly" data-edit="${esc(s.id)}">直す</button>
+            <button class="helperOnly" data-edit="${esc(s.id)}">手直し</button>
             <button class="del" data-del="${esc(s.id)}">削除</button>
           </div>
         </div>
@@ -161,6 +173,11 @@ const List = (() => {
   // スマホに元からある確認の窓（confirm）を使うと、OKのあとの電話をiPhoneが「サイトが勝手にかけた」と見なして
   // 「通話の自動開始がブロックされています」を出す。なので、アプリの中の枠を出し、その中の電話ボタンを指で押してもらう
   // この見張りは status.js（入場の記録）より先に動く（list.js の方が先に読み込まれるため）
+  document.getElementById("parkAddFab").addEventListener("click", e => {
+    const id = e.currentTarget.dataset.park;
+    if (id && Store.load().some(s => s.id === id)) Park.open(id);
+  });
+
   listEl.addEventListener("click", e => {
     const a = e.target.closest('a[data-kind="in"]');
     if (!a) return;
@@ -203,9 +220,12 @@ const List = (() => {
     if (!b) return;
     if (b.dataset.toggle !== undefined) { // 版56：邸名を押すと開く・閉じる
       const card = b.closest(".card");
-      render(card.classList.contains("open") ? "" : b.dataset.toggle);
-      const c2 = [...listEl.querySelectorAll("[data-toggle]")].find(x => x.dataset.toggle === b.dataset.toggle);
-      if (c2) c2.scrollIntoView({ block: "nearest" });
+      const closing = !card || card.classList.contains("open");
+      render(closing ? "" : b.dataset.toggle);
+      // 版66：開くとその現場だけの画面になるので上から見せる。閉じたら、閉じた現場の所へ
+      if (!closing) { window.scrollTo(0, 0); return; }
+      const c2 = card && [...listEl.querySelectorAll("[data-toggle]")].find(x => x.dataset.toggle === b.dataset.toggle);
+      if (c2) c2.scrollIntoView({ block: "center" }); else window.scrollTo(0, 0);
       return;
     }
     if (b.dataset.copy) return copy(b, b.dataset.copy, "コピー");

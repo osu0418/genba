@@ -82,7 +82,11 @@ label input { margin-top:4px; }
 /* 駐車場の画面：登録ずみの駐車場の並び */
 .parkItem { padding: 10px 0; border-bottom: 1px solid #ccc8; }
 .parkItem .tools { margin-top: 6px; }
-#parkHere { width: 100%; margin-bottom: 6px; }
+/* 版66：住所の欄と「📍 現在地」を横に並べる */
+.addrRow { display:flex; gap:8px; align-items:stretch; margin:4px 0 6px; }
+.addrRow input { flex:1; min-width:0; }
+#parkHere { flex:none; white-space:nowrap; padding:0 12px; font-weight:bold; }
+#parkConfirm .main { display:block; width:100%; margin:8px 0 4px; }
 /* 現場のカードの駐車場：たたんだ形。押すと開く */
 .parks { margin-top: 10px; border: 1px solid #ccc8; border-radius: 10px; padding: 8px 10px; }
 .parks summary { font-weight: bold; font-size: 17px; padding: 4px 0; }
@@ -246,4 +250,29 @@ body:not(.helper) .calls .call .num { font-size:17px; letter-spacing:0; white-sp
 /* 版65：よく行く場所を足す・消す */
 .homeForm label { display:block; margin:6px 0; }
 .homeDel { margin-top:8px; }
-.homeAdd { display:block; width:100%; margin-top:14px; padding:12px; font-size:17px; font-weight:bold; border:2px dashed var(--blue); color:var(--blue); background:#fff; border-radius:10px; }
+
+/* 版66：よく行く場所は名前と「直す」だけ並べる */
+.homeLine { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:12px 2px; border-top:1px solid var(--line); }
+.homeLine .homeName { font-size:18px; font-weight:bold; }
+.homeLine button { padding:10px 22px; font-size:17px; }
+/* 足すボタンは一覧のすぐ下・右寄せ（下の隅に浮かせると、場所の名前から遠かったため） */
+.homeAddBtn { display:block; margin:14px 0 4px auto; border:none; border-radius:28px; padding:14px 22px; background:#e07b00; color:#fff; font-size:18px; font-weight:bold; box-shadow:0 3px 10px rgba(0,0,0,.25); }
+
+/* 版66：現場を開いたら、その現場だけの画面（退場がまだの赤い字は残す） */
+#listScreen.solo > :not(header):not(#list):not(#flash):not(#parkAddFab), #listScreen.solo .parkAddInline, #listScreen.solo header > :not(#exitBanner) { display:none !important; }
+.soloBack { display:block; margin:8px 12px 10px; }
+#listScreen.solo #list { padding-bottom:90px; }
+#list.solo .card:not(.open) { display:none; }
+/* 版66：一覧（閉じた形）は邸名だけ。注意事項の札・電話は開いた中に出す */
+.card:not(.open) .nchips, .card:not(.open) .nfull, .card:not(.open) .calls { display:none; }
+/* 版66：駐車場のメモ（書きたい人だけ）。押すと言葉が入る */
+.parkMore { margin:10px 0; border:1px solid var(--line); border-radius:10px; padding:8px 10px; }
+.parkMore summary { font-weight:bold; font-size:17px; padding:4px 0; }
+.memoChips { display:flex; flex-wrap:wrap; gap:8px; margin:8px 0; }
+.memoChips button { padding:8px 12px; font-size:15px; border-radius:18px; }
+/* 版66：会社のボタン（押した物に色） */
+.coRow { margin:10px 0 4px; }
+.coTitle { font-weight:bold; font-size:15px; }
+#coChips button.on, .memoChips button.on { background:#1f5fa8; color:#fff; border-color:#1f5fa8; }
+/* 地図を閉じているときは、地図の知らせ（上の「場所は入っています」と同じ中身）を出さない */
+#parkMapBox[hidden] ~ #parkMapMsg { display:none; }
