@@ -80,7 +80,7 @@ const List = (() => {
     const seen = window.Status && Status.todayIn ? Status.todayIn() : {};
     // 版65：電話の無い物（資材置き場など）は、現場の下にまとめる（朝の現場の一覧が長くならないように）
     const noTel = s => !s.inTel && !s.outTel;
-    const sites = all.filter(s => !q || norm(s.name).includes(q) || norm(s.code).includes(q))
+    const sites = all.filter(s => !q || norm(s.name).includes(q) || norm(s.code).includes(q) || norm(s.addr).includes(q)) // 版68：住所でも探せる
       .sort((a, b) => noTel(a) - noTel(b) || (seen[b.id] || 0) - (seen[a.id] || 0) || a.name.localeCompare(b.name, "ja"));
     // 開く現場：人が選んだもの → 今日の現場 → 1件だけならそれ
     // 版66：今日の現場も自動では開かない（退場がまだなら上の赤い字に電話番号が出るため）
