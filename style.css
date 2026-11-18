@@ -62,9 +62,9 @@ label input { margin-top:4px; }
 .need input { border:2px solid var(--red); }
 .needNote { display:block; color:var(--red); font-size:15px; font-weight:bold; margin-top:2px; }
 .homebar { padding:10px 12px; }
-.homeRow { display:flex; align-items:center; gap:8px; }
+.homeRow { display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin-top:6px; }
 .homeTitle { font-weight:bold; font-size:16px; white-space:nowrap; }
-.homeRow button { flex:1; padding:10px 6px; font-size:16px; font-weight:bold; }
+.homeRow button { flex:1 1 30%; min-width:0; padding:10px 6px; font-size:16px; font-weight:bold; }
 .homeForm { border-top:1px solid var(--line); margin-top:10px; padding-top:6px; }
 .homeForm h3 { font-size:16px; margin:6px 0; }
 .note0 { color:var(--sub); font-size:13px; margin:6px 0; }
@@ -242,3 +242,8 @@ body:not(.helper) .calls .call .num { font-size:17px; letter-spacing:0; white-sp
 #webAppTip .webAppTipSteps{margin:4px 0 0;padding-left:1.4em;font-size:17px}
 #webAppTip .webAppTipSteps li{margin:4px 0}
 #webAppTip .webAppTipSteps img{display:block;width:100%;margin:6px 0 0;border:1px solid #ccc;border-radius:8px}
+
+/* 版65：よく行く場所を足す・消す */
+.homeForm label { display:block; margin:6px 0; }
+.homeDel { margin-top:8px; }
+.homeAdd { display:block; width:100%; margin-top:14px; padding:12px; font-size:17px; font-weight:bold; border:2px dashed var(--blue); color:var(--blue); background:#fff; border-radius:10px; }

@@ -47,7 +47,7 @@ const Share = (() => {
       notesChecked: pick(b, "注意の確認日"),
       routeLine: /^\s*進入路の線\s*[：:]/m.test(b) ? pick(b, "進入路の線") : undefined, // 版49。無い古い文は undefined（前の線を消さない）
       routeWhy: /^\s*進入路の線\s*[：:]/m.test(b) ? pick(b, "進入路の理由") : undefined, // 版55
-    })).filter(s => s.name && s.inTel && s.outTel);
+    })).filter(s => s.name && ((s.inTel && s.outTel) || s.addr || s.lat)); // 版65：電話が無くても住所・場所があれば読む
   }
 
   // LINEに送る文（版30）：見える字は邸名だけ。電話番号・KY・住所・駐車場・注意事項は、すべてリンクの中に入れる（情報がもれないように）
@@ -91,7 +91,7 @@ const Share = (() => {
     if (!(a[1] && a[1].length > SK.indexOf("routeWhy"))) s.routeWhy = undefined; // 版55：理由の欄が無いリンクでは前の理由を残す
     s.parks = (a[2] || []).map(r => obj(r, PK));
     if (a[3] && typeof a[3] === "object") s.gone = a[3]; // 版62
-    return s.name && s.inTel && s.outTel ? [s] : [];
+    return s.name && ((s.inTel && s.outTel) || s.inTel || s.outTel || s.addr || s.lat !== "") ? [s] : []; // 版65：電話が無くてもよい
   }
 
   // 文をコピーする（それぞれが邸名ごとのLINEのトークに貼る）。うまくいけば true

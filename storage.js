@@ -111,7 +111,9 @@ const Store = (() => {
     // ③入場の番号が同じ（ただし、両方に現場番号があって違うときは別の現場。番号は使い回されることがあるため）
     let i = site.id ? sites.findIndex(x => x.id === site.id) : -1;
     if (i < 0 && s.code) i = sites.findIndex(x => normCode(x.code) === normCode(s.code));
-    if (i < 0) i = sites.findIndex(x => x.inTel === s.inTel && !(s.code && x.code && normCode(x.code) !== normCode(s.code)));
+    if (i < 0 && s.inTel) i = sites.findIndex(x => x.inTel === s.inTel && !(s.code && x.code && normCode(x.code) !== normCode(s.code)));
+    // 版65：入場の電話が無い物（資材置き場など）は、同じ名前で電話の無い物を同じとみなす
+    if (i < 0 && !s.inTel) i = sites.findIndex(x => !x.inTel && normName(x.name) === normName(s.name));
     // 同じ現場か：id・現場番号・邸名（空白や「邸」の有る無しは見ない）のどれかが合う
     // 合わなければ、入場の番号だけが同じ別の現場（使い回し）。前の駐車場・注意事項は引き継がない
     const same = i >= 0 && (!!site.id || (s.code && normCode(sites[i].code) === normCode(s.code)) || normName(sites[i].name) === normName(s.name));

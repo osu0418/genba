@@ -102,8 +102,9 @@
     const f = Object.fromEntries(new FormData(form));
     f.name = (f.name || "").trim() || (f.code || "").trim();
     if (!f.name) { addMsg.textContent = "邸名か現場番号を入れてください。"; return; }
-    if (!Store.cleanTel(f.inTel) || !Store.cleanTel(f.outTel)) {
-      addMsg.textContent = "入場と退場の電話番号を入れてください。"; return;
+    // 版65：電話番号はなくてもよい（資材置き場など）。ただし電話も住所・場所も無いと使えないので、どれかは入れてもらう
+    if (!Store.cleanTel(f.inTel) && !Store.cleanTel(f.outTel) && !(f.addr || "").trim() && !f.lat) {
+      addMsg.textContent = "電話番号か、住所（地図の場所）のどちらかを入れてください。"; return;
     }
     if (/〇/.test(f.notes || "")) {
       notesBox.open = true;

@@ -10,8 +10,8 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png?v=2">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=2">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=2">
-<link rel="stylesheet" href="style.css?v=38">
-<script src="line-escape.js?v=63"></script>
+<link rel="stylesheet" href="style.css?v=40">
+<script src="line-escape.js?v=65"></script>
 <script src="webapptip.js?v=2"></script>
 </head>
 <body>
@@ -23,13 +23,10 @@
 </header>
 
 <section class="panel homebar" id="homeBar">
-  <div class="homeRow">
-    <span class="homeTitle">🏠 帰る</span>
-    <button type="button" data-go="souko">倉庫へ</button>
-    <button type="button" data-go="jitaku">自宅へ</button>
-  </div>
+  <div class="homeTitle">🏠 帰る・よく行く場所</div>
+  <div class="homeRow" id="homeRow"></div>
   <div id="homeNav"></div>
-  <button type="button" class="linkbtn" id="openHome">倉庫・自宅の住所を入れる・直す</button>
+  <button type="button" class="linkbtn" id="openHome">場所を足す・直す（倉庫・自宅・資材屋など）</button>
 </section>
 
 <details class="panel help" id="help">
@@ -105,10 +102,10 @@
   </div>
   <form id="addForm">
     <input type="hidden" name="id">
-    <label>邸名（空なら現場番号を名前にします）<input name="name" placeholder="邸名がまだ入っていません"></label>
+    <label>邸名・名前（空なら現場番号を名前にします。資材置き場などは名前だけでもよい）<input name="name" placeholder="邸名がまだ入っていません"></label>
     <label>現場番号（なくてもよい）<input name="code" placeholder="例：AB12345"></label>
-    <label>入場の電話番号<input name="inTel" required inputmode="tel" placeholder="例：0766-00-0000"></label>
-    <label>退場の電話番号<input name="outTel" required inputmode="tel" placeholder="例：0766-00-0000"></label>
+    <label>入場の電話番号（なくてもよい）<input name="inTel" inputmode="tel" placeholder="例：0766-00-0000"></label>
+    <label>退場の電話番号（なくてもよい）<input name="outTel" inputmode="tel" placeholder="例：0766-00-0000"></label>
     <label>KYのページ<input name="kyUrl" placeholder="https://..."></label>
     <details class="notesBox" id="notesBox">
       <summary>⚠ 注意事項（入場の時刻・近隣のことなど。なくてもよい）</summary>
@@ -170,8 +167,8 @@
 <div id="homeScreen" hidden>
 <button type="button" class="back" data-back>← 一覧に戻る</button>
 <section class="panel">
-  <h2>倉庫・自宅の住所</h2>
-  <p class="note0">この携帯の中にだけ保存します。共有の文には入りません。</p>
+  <h2>帰る・よく行く場所</h2>
+  <p class="note0">名前を自分で決めて、何か所でも入れられます。この携帯の中にだけ保存します（共有の文には入りません）。</p>
   <div id="homeForms"></div>
 </section>
 </div>
@@ -231,19 +228,19 @@
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/libphonenumber-js@1.13.16/bundle/libphonenumber-min.js"></script>
-<script src="storage.js?v=14"></script>
+<script src="storage.js?v=15"></script>
 <script src="parktext.js?v=12"></script>
-<script src="share.js?v=17"></script>
+<script src="share.js?v=18"></script>
 <script src="nav.js?v=12"></script>
 <script src="parkview.js?v=8"></script>
 <script src="routemap.js?v=3"></script>
 <script src="notechips.js?v=2"></script>
 <script src="notepaste.js?v=1"></script>
-<script src="list.js?v=27"></script>
+<script src="list.js?v=28"></script>
 <script src="view.js?v=6"></script>
-<script src="add.js?v=10"></script>
+<script src="add.js?v=11"></script>
 <script src="mappick.js?v=17"></script>
-<script src="home.js?v=10"></script>
+<script src="home.js?v=11"></script>
 <script src="parkocr.js?v=15"></script>
 <script src="park.js?v=29"></script>
 <script src="qr.js?v=2"></script>

@@ -29,7 +29,8 @@ const List = (() => {
     if (RouteMap.has(s)) {
       return `<button type="button" class="goSite" data-route="${esc(s.id)}">🚗 現場へナビ<span class="sub">🚧 進入路あり：先に通る道を見る</span>${s.routeWhy ? `<span class="why">${esc(s.routeWhy)}</span>` : ""}</button>${addr}`;
     }
-    return Nav.go(s, `🚗 現場へナビ<span class="sub">${Nav.isIOS ? "iPhoneのマップ" : "Googleマップ"}で道案内</span>`, "goSite") + addr + Nav.alt(s);
+    const to = s.inTel || s.outTel ? "現場" : esc(s.name); // 版65：電話の無い物（資材置き場など）は名前で
+    return Nav.go(s, `🚗 ${to}へナビ<span class="sub">${Nav.isIOS ? "iPhoneのマップ" : "Googleマップ"}で道案内</span>`, "goSite") + addr + Nav.alt(s);
   }
 
   // 駐車場（版34・39・40）：携帯が苦手な人は「押すだけ」。登録してある駐車場を、現場から近い順に①②③で出す
@@ -72,8 +73,10 @@ const List = (() => {
     const all = Store.load();
     const q = norm(searchEl.value);
     const seen = window.Status && Status.todayIn ? Status.todayIn() : {};
+    // 版65：電話の無い物（資材置き場など）は、現場の下にまとめる（朝の現場の一覧が長くならないように）
+    const noTel = s => !s.inTel && !s.outTel;
     const sites = all.filter(s => !q || norm(s.name).includes(q) || norm(s.code).includes(q))
-      .sort((a, b) => (seen[b.id] || 0) - (seen[a.id] || 0) || a.name.localeCompare(b.name, "ja"));
+      .sort((a, b) => noTel(a) - noTel(b) || (seen[b.id] || 0) - (seen[a.id] || 0) || a.name.localeCompare(b.name, "ja"));
     // 開く現場：人が選んだもの → 今日の現場 → 1件だけならそれ
     const openId = chosen !== null ? chosen : (sites.find(s => seen[s.id]) || (sites.length === 1 ? sites[0] : {})).id || "";
     const isOpen = s => s.id === openId || (sites.length === 1 && chosen === null);
@@ -92,7 +95,7 @@ const List = (() => {
           <span class="arrow">${isOpen(s) ? "▲ とじる" : "▼ 開く"}</span>
         </button>
         ${NoteChips.html(s)}
-        <div class="calls">${callRow("入場", s.inTel, "in", s.id)}${callRow("退場", s.outTel, "out", s.id)}</div>
+        ${s.inTel || s.outTel ? `<div class="calls">${s.inTel ? callRow("入場", s.inTel, "in", s.id) : ""}${s.outTel ? callRow("退場", s.outTel, "out", s.id) : ""}</div>` : ""}
         <div class="cardMore">
           ${s.code ? `<div class="code">現場番号：${esc(s.code)}</div>` : ""}
           ${navRow(s)}
