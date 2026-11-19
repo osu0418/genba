@@ -130,8 +130,6 @@ body:not(.helper) .helperOnly { display:none !important; }
 .modeBtn { display:block; margin:16px; width:calc(100% - 32px); font-size:14px; padding:10px; color:var(--sub); }
 .helper .modeBtn { color:var(--blue); border-color:var(--blue); }
 /* 版28：仲間から届いた現場を入れる */
-.receiveBtn { display:block; margin:8px 16px 4px; width:calc(100% - 32px); background:var(--green); color:#fff; border:none; font-size:17px; font-weight:bold; padding:12px; }
-.receiveBtn .sub { display:block; font-size:12px; font-weight:normal; opacity:.9; }
 .receiveAsk { position:fixed; inset:0; z-index:20; background:rgba(0,0,0,.45); display:flex; align-items:center; justify-content:center; padding:16px; }
 .receiveCard { background:var(--card); color:var(--text); border-radius:14px; padding:20px 16px; width:100%; max-width:420px; text-align:center; }
 .receiveTitle { font-size:16px; color:var(--sub); }
@@ -218,8 +216,6 @@ body:not(.helper) .helperOnly { display:none !important; }
 .navAlt a { color:var(--blue); }
 .card .addr { margin-top:4px; font-size:13px; }
 .tools .del { flex:0 0 auto; font-size:13px; padding:6px 12px; margin-left:auto; }
-.receiveBtn { font-size:14px; padding:8px; background:transparent; color:var(--green); border:1px solid var(--green); }
-.receiveBtn .sub { opacity:1; }
 /* 版56：入場・退場を横に並べる（10件でも短く）。登録する人の表示（コピーあり）は縦のまま */
 body:not(.helper) .calls { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
 body:not(.helper) .calls .row { margin-top:8px; }

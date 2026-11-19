@@ -2,7 +2,7 @@
 // ① LINEに貼られた「📲 押すとアプリに入ります」のリンクを押す → アプリが開いて「入れますか？」→「はい」
 //    リンクの #i= のうしろに現場の文が入っている（# のうしろは公開の置き場に送られない）
 //    iPhoneは「Webアプリとして開く」を切ってホーム画面に置くと、Safariと同じ保存場所になるので、リンクで入れた現場がアイコンからも見える（実機は未確認）
-// ② 「📥 仲間から届いた現場を入れる」：LINEで文を長押し→コピーしてから押す → 「入れますか？」→「はい」
+// ② うまくいかないとき：「＋ 現場を追加」→「LINEで届いた文を貼る」（add.js。版72で📥のボタンは消した）
 const Receive = (() => {
   // 版30：リンクの中身は、ぱっと見て読めないよう混ぜてから入れる（#i=）。鍵はアプリの中にあるので、
   // アプリを持っていない人がLINEで見ても電話番号などは分からない（ただし、詳しい人が調べれば読める。鍵のかかった金庫ほど強くはない）
@@ -85,18 +85,6 @@ const Receive = (() => {
     ask(sites, clear);
   }
 
-  // ② ボタン：コピーした文を読む（iPhoneは「ペースト」の吹き出しが出るので、それを押す）
-  const btn = document.getElementById("receiveBtn"); // 版72：ボタンは消した（無ければ何もしない）
-  if (btn) btn.addEventListener("click", async () => {
-    let text = "";
-    try { text = await navigator.clipboard.readText(); } catch {}
-    const sites = await sitesFrom(text);
-    if (!sites.length) {
-      View.show("list", "現場の文が見つかりませんでした。LINEで仲間の文を長押しして「コピー」を押してから、もう一度このボタンを押してください。");
-      return;
-    }
-    ask(sites);
-  });
 
   fromHash();
   return { link, sitesFrom };
