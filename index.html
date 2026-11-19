@@ -11,7 +11,7 @@
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=2">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=2">
 <link rel="stylesheet" href="style.css?v=46">
-<script src="line-escape.js?v=71"></script>
+<script src="line-escape.js?v=72"></script>
 <script src="webapptip.js?v=2"></script>
 </head>
 <body>
@@ -29,6 +29,13 @@
   <button type="button" class="linkbtn" id="openHome">場所を足す・直す（倉庫・自宅・資材屋など）</button>
 </section>
 
+
+<button type="button" class="fab" id="openAdd">＋ 現場を追加</button>
+<button type="button" class="fab" id="parkAddFab" hidden>＋ 駐車場を追加</button>
+<div id="flash" class="flash" hidden></div>
+<div id="status"></div>
+<main id="list"></main>
+<!-- 版72：使い方は現場の一覧の下に（毎朝使う現場を上に）。「📥 仲間から届いた現場を入れる」のボタンは消した（＋現場を追加の「LINEで届いた文を貼る」と同じため） -->
 <details class="panel help" id="help">
   <summary>📖 使い方（はじめての人はここを読んでください）</summary>
   <a class="guideBtn" href="guide.html">📖 図つきの説明書（最初に読むのは2つだけ）</a>
@@ -43,7 +50,7 @@
     <li>手で打つ</li>
   </ul>
   <p><b>現場のカード</b>：ふだんは邸名だけ。<b>「開く」を押すと、その現場だけの画面</b>になり、入場・退場の電話、注意事項、ナビ・KY・駐車場が出ます。「← ほかの現場も見る」か「とじる」で一覧に戻ります。今日入場の電話をした現場は一番上に出ます。注意事項の札を押すと全文が出ます。</p>
-  <p><b>仲間から届いた現場は、もっとかんたん</b>：LINEの「📲 押すとアプリに入ります」のリンクを押す →「はい、アプリに入れる」。うまくいかないときは、LINEで文を長押し→「コピー」→ アプリの「📥 仲間から届いた現場を入れる」→「はい」。</p>
+  <p><b>仲間から届いた現場は、もっとかんたん</b>：LINEの「📲 押すとアプリに入ります」のリンクを押す →「はい、アプリに入れる」。うまくいかないときは、LINEで文を長押し→「コピー」→ アプリの「＋ 現場を追加」→「LINEで届いた文を貼る」の欄に貼る。</p>
   <p class="warn">⚠ 写真のあとは、看板と番号を見比べてください。</p>
   <p>住所を入れるか、「地図で場所を選ぶ」でピンを立てると（住所も自動で入ります）、地図アプリで道案内（ナビ）を始めるボタンが出ます。</p>
 
@@ -79,13 +86,6 @@
   <h3>🏠 帰るとき</h3>
   <p>上の「倉庫へ」「自宅へ」でナビが出ます。最初の1回は、倉庫（自宅）にいるときに「倉庫へ」（「自宅へ」）を押して「はい、ここを倉庫にする」を押すだけで入ります。住所や地図で入れたいときは「住所・地図で入れる」か、「倉庫・自宅の住所を入れる・直す」から。</p>
 </details>
-
-<button type="button" class="receiveBtn" id="receiveBtn">📥 仲間から届いた現場を入れる<span class="sub">LINEで文を長押し→コピーしてから押す</span></button>
-<button type="button" class="fab" id="openAdd">＋ 現場を追加</button>
-<button type="button" class="fab" id="parkAddFab" hidden>＋ 駐車場を追加</button>
-<div id="flash" class="flash" hidden></div>
-<div id="status"></div>
-<main id="list"></main>
 <p class="note">入れた現場は、このスマホの中にだけ保存されます。LINEのお知らせのURLから開いてください（LINEの中ではなくSafariなどで開きます）。</p>
 <p class="note" style="text-align:center;"><a href="#" id="oshLink">ⓘ ご利用について（お試し期間・免責）</a></p>
 <button type="button" class="modeBtn fabLeft" id="modeBtn">🔧 制作</button>
@@ -327,7 +327,7 @@
 <script src="help.js"></script>
 <script src="status.js?v=7"></script>
 <script src="calltip.js?v=1"></script>
-<script src="receive.js?v=5"></script>
+<script src="receive.js?v=6"></script>
 <script src="mode.js?v=2"></script>
 <!-- 開いた人数を数える（GoatCounter）。現場の情報は送らない。止まってもアプリは動く -->
 <script data-goatcounter="https://osu0418.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>

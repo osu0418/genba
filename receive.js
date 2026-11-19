@@ -81,13 +81,13 @@ const Receive = (() => {
     const clear = () => history.replaceState(null, "", location.pathname + location.search.replace(/[?&]openExternalBrowser=1/, "").replace(/^&/, "?"));
     let sites = [];
     sites = await sitesFrom(location.hash);
-    if (!sites.length) { clear(); View.show("list", "リンクから現場を読み取れませんでした（携帯が古いと読めないことがあります）。LINEの文をそのままコピーして「📥 仲間から届いた現場を入れる」を押してください。"); return; }
+    if (!sites.length) { clear(); View.show("list", "リンクから現場を読み取れませんでした（携帯が古いと読めないことがあります）。LINEの文をそのままコピーして、「＋ 現場を追加」→「LINEで届いた文を貼る」の欄に貼ってください。"); return; }
     ask(sites, clear);
   }
 
   // ② ボタン：コピーした文を読む（iPhoneは「ペースト」の吹き出しが出るので、それを押す）
-  const btn = document.getElementById("receiveBtn");
-  btn.addEventListener("click", async () => {
+  const btn = document.getElementById("receiveBtn"); // 版72：ボタンは消した（無ければ何もしない）
+  if (btn) btn.addEventListener("click", async () => {
     let text = "";
     try { text = await navigator.clipboard.readText(); } catch {}
     const sites = await sitesFrom(text);
