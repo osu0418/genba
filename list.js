@@ -1,5 +1,6 @@
 // 一覧：現場の表示、邸名で探す、電話・KY・共有・削除のボタン
 const List = (() => {
+  const SHARE_LABEL = "📋 <span class=\"nb\">貼る文を</span><span class=\"nb\">コピー</span>"; // 版70：「コピ／ー」と途中で切れないように、切れ目を「貼る文を｜コピー」だけにする
   const listEl = document.getElementById("list");
   const statusEl = document.getElementById("status");
   const searchEl = document.getElementById("search");
@@ -115,7 +116,7 @@ const List = (() => {
           ${/^https:\/\//.test(s.kyUrl) ? `<a class="ky" href="${esc(s.kyUrl)}" target="_blank" rel="noopener">KYを開く</a>` : ""}
           ${parkRow(s)}
           <div class="tools">
-            <button data-share="${esc(s.id)}">📋 貼る文をコピー</button>
+            <button data-share="${esc(s.id)}">${SHARE_LABEL}</button>
             <button data-edit="${esc(s.id)}">手直し</button>
 
             <button class="del" data-del="${esc(s.id)}">削除</button>
@@ -156,7 +157,7 @@ const List = (() => {
   // 貼る文をコピー：邸名ごとのLINEのトークに貼ってもらう
   async function shareSite(btn, site) {
     btn.textContent = await Share.copy(Share.notice(site)) ? "コピーしました。トークに貼ってください" : "コピーできません。もう一度押してください";
-    setTimeout(() => btn.textContent = "📋 貼る文をコピー", 2500);
+    setTimeout(() => btn.innerHTML = SHARE_LABEL, 2500);
   }
 
   // 注意事項から入場の時刻を読む：「入場」と書いた行の「8時以降」「7:30以降」「8時半から」など。なければ null

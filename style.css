@@ -307,3 +307,4 @@ body:not(.helper) .calls .call .num { font-size:17px; letter-spacing:0; white-sp
 /* 版67：制作のオン・オフは、一覧の左下に浮かせる（右下の「＋ 現場を追加」の反対） */
 .modeBtn.fabLeft { position:fixed; left:16px; right:auto; bottom:calc(20px + env(safe-area-inset-bottom)); z-index:5; width:auto; margin:0; border-radius:28px; padding:12px 16px; font-size:16px; font-weight:bold; background:#fff; color:#555; border:2px solid #999; box-shadow:0 3px 10px rgba(0,0,0,.2); }
 .helper .modeBtn.fabLeft { background:#555; color:#fff; border-color:#555; }
+.nb { display:inline-block; } /* 版70：この中では行を切らない */
