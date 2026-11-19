@@ -20,6 +20,25 @@ const ParkMap = (() => {
     return "";
   }
 
+  // 版69：Pのふきだしに、地図（OpenStreetMap）に載っている分だけ詳しく出す（イ）。英語の書き方は日本語に直す
+  function facts(t) {
+    const a = [];
+    if (t.fee === "yes") a.push("有料"); else if (t.fee === "no") a.push("無料");
+    const kind = { "multi-storey": "立体", underground: "地下", surface: "平面", rooftop: "屋上" }[t.parking];
+    if (kind) a.push(kind);
+    if (/^\d+$/.test(t.capacity || "")) a.push(t.capacity + "台");
+    if (t.opening_hours === "24/7") a.push("24時間");
+    if (t.maxheight && /^[\d.]+/.test(t.maxheight)) a.push("高さ" + parseFloat(t.maxheight) + "mまで");
+    const charge = String(t.charge || "").replace(/JPY|yen/gi, "円").replace(/minutes?|min/gi, "分").replace(/hours?|hr/gi, "時間").replace(/day/gi, "日").replace(/\//g, "／").replace(/;/g, "、").replace(/\s*([円分時日／])\s*/g, "$1").trim();
+    const line1 = a.length ? `<div class="pmFacts">${esc(a.join("・"))}</div>` : "";
+    const line2 = charge && !/[a-z]{3,}/i.test(charge) ? `<div class="pmFacts">料金：${esc(charge)}</div>` : "";
+    return line1 + line2 || `<div class="pmFacts muted">地図に詳しい情報は載っていません</div>`;
+  }
+  // 版69：Googleマップをその駐車場の場所で開く（ア）。名前があれば名前で、無ければ「駐車場」で探した形
+  function gUrl(p, name) {
+    return `https://www.google.com/maps/search/${encodeURIComponent(name || "駐車場")}/@${p.lat},${p.lng},19z`;
+  }
+
   async function search(site) {
     const my = ++no;
     const s = { lat: parseFloat(site.lat), lng: parseFloat(site.lng) };
@@ -29,6 +48,7 @@ const ParkMap = (() => {
     if (my !== no) return;
     if (!map) {
       map = L.map(mapEl, { maxZoom: 19 });
+      map.on("popupopen", () => mapEl.classList.add("popOpen")).on("popupclose", () => mapEl.classList.remove("popOpen"));
       L.tileLayer("https://cyberjapandata.gsi.go.jp/xyz/pale/{z}/{x}/{y}.png", { maxZoom: 19, maxNativeZoom: 18,
         attribution: '<a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank" rel="noopener">地理院タイル</a>・<a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>' }).addTo(map);
     }
@@ -56,9 +76,10 @@ const ParkMap = (() => {
     for (const p of list) {
       const co = company((p.t.operator || "") + " " + (p.t.name || "") + " " + (p.t.brand || ""));
       const name = p.t.name || p.t.operator || "";
-      const label = co || name || (p.t.fee === "yes" ? "有料の駐車場" : "駐車場");
+      const label = name || co ||  // 版69：名前があれば名前（「タイムズ東京駅前」）
+        (p.t.fee === "yes" ? "有料の駐車場" : "駐車場");
       L.marker([p.lat, p.lng], { icon: icon("pvDotP big", "P") }).addTo(layer)
-        .bindPopup(`<b>${esc(label)}</b><br><button type="button" class="main pmPick">ここを登録する</button>`)
+        .bindPopup(`<b>${esc(label)}</b>${facts(p.t)}<a class="pmGoogle" href="${esc(gUrl(p, name))}" target="_blank" rel="noopener">Googleマップで見る（名前・料金）</a><button type="button" class="main pmPick">ここを登録する</button>`, { autoPanPaddingTopLeft: [10, 20] })
         .on("popupopen", ev => {
           const b = ev.popup.getElement().querySelector(".pmPick");
           b.onclick = () => { map.closePopup(); box.hidden = true; Park.fromMap({ lat: p.lat, lng: p.lng, co, name }); };
