@@ -6,7 +6,7 @@
 // ・見本の現場には、毎日押す所に番号の札（①朝 ②KY ③帰り 🅿）を付ける
 // ・見本の電話・KYは押してもかけない・開かない（「見本です」と出す）。入場を押すと、本物と同じく退場まだの赤い字が出る
 // ・上の帯：「これ1つで、現場の朝と帰りが完了」＋「見本です。使うには現場の登録が必要」と［見本を消して始める］（見本を全部消す）
-// ・招待（LINEのリンク）で初めて来た人：見本は入れず、届いた本物の現場に同じ番号の札と帯（［分かった］で消える。電話は本物）
+// ・版75：招待（LINEのリンク）で来た人・今使っている人には何も出さない。届いた現場が入るだけ（2026-11-26「情報がごちゃごちゃになって使いにくい。招待した人が使い方を教えてくれるはず」）
 (() => {
   const KEY = "genba-sample-v1";
   const isSample = s => /^RS0000\d$/.test(String(s.code || ""));
@@ -25,42 +25,27 @@
   let seen = false;
   try { seen = !!localStorage.getItem(KEY); } catch { return; }
   const fromLink = /^#(z|in?)=/.test(location.hash);
-  // 招待（LINEのリンク）で初めて来た人：見本は入れず、届いた本物の現場に番号の札を付ける（［分かった］まで）
-  const TOUR = "genba-tour-v1";
-  let tour = false;
-  try { tour = localStorage.getItem(TOUR) === "on"; } catch {}
-  // 今使っている人（現場がもう入っている人）にも1回だけ、同じ案内（帯と番号の札）を出す（2026-11-24「今現在使っている人も一回これが出るように」）
+  // 版74で招待の人・今の人に出していた案内の残りを片付ける（版75でやめた）
+  try { localStorage.removeItem("genba-tour-v1"); } catch {}
   if (!seen) {
     try { localStorage.setItem(KEY, "1"); } catch {}
-    if (fromLink || Store.load().length) { tour = true; try { localStorage.setItem(TOUR, "on"); } catch {} }
-    else { DATA.forEach(d => { const s = Share.unpack(d)[0]; if (s) Store.upsert(s); }); List.render(); }
+    if (!fromLink && !Store.load().length) { DATA.forEach(d => { const s = Share.unpack(d)[0]; if (s) Store.upsert(s); }); List.render(); }
   }
 
   const list = document.getElementById("list");
   const samples = () => Store.load().filter(isSample);
 
-  // 上の帯（見本があるとき／招待で来た人の案内中だけ）
-  const esc = v => String(v ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  // 上の帯（見本があるときだけ）
   const HEAD = `<div class="sampleHead">これ<b>1つ</b>で、<br>現場の朝と帰りが<b>完了</b></div>`;
   const band = document.createElement("div");
   band.className = "sampleBand";
   list.parentNode.insertBefore(band, list);
-  function bandHtml(hasSample, one) {
-    return hasSample
-      ? `${HEAD}👀 <b>見本です</b>（電話はつながりません）。押して試せます。<br>使うには<b>現場の登録</b>が必要（自分で入れる／仲間からLINEで届く）<button type="button" data-b="clear">見本を消して始める</button>`
-      : `${HEAD}①朝 入場の電話 → ②KY → ③帰り 退場の電話。<br>退場を押し忘れると、上に<b>赤い字</b>で知らせます（この現場の電話は本物です）
-        ${one ? `<div class="miniCap">📋 届いた現場・自分で入れた現場は、こう並んでいきます</div>
-        <div class="miniList"><div class="miniRow now">${esc((Store.load()[0] || {}).name || "届いた現場")}<span>いま届いた現場</span></div><div class="miniRow">〇〇邸</div><div class="miniRow">△△ビル</div></div>` : ""}
-        <button type="button" data-b="ok">分かった</button>`;
-  }
+  band.innerHTML = `${HEAD}👀 <b>見本です</b>（電話はつながりません）。押して試せます。<br>使うには<b>現場の登録</b>が必要（自分で入れる／仲間からLINEで届く）<button type="button" data-b="clear">見本を消して始める</button>`;
   band.addEventListener("click", e => {
-    const b = e.target.closest("button[data-b]");
-    if (!b) return;
-    if (b.dataset.b === "clear") samples().forEach(s => Store.remove(s.id));
-    tour = false;
-    try { localStorage.removeItem(TOUR); } catch {}
+    if (!e.target.closest("button[data-b=clear]")) return;
+    samples().forEach(s => Store.remove(s.id));
     list.querySelectorAll(".mihonTag").forEach(x => x.remove());
-    List.render(b.dataset.b === "clear" ? "" : undefined);
+    List.render("");
     update();
   });
 
@@ -72,22 +57,16 @@
   };
   function update() {
     const ss = samples();
-    // 案内する現場：見本があれば見本、招待の案内中なら届いた現場（最初の1件）
-    const all = Store.load();
-    const topId = (list.querySelector(".cardHead[data-toggle]:not([data-toggle=''])") || {}).dataset?.toggle;
-    const top = all.find(s => s.id === topId) || all[0];
-    const targets = ss.length ? ss : (tour && top ? [top] : []);
-    const mode = ss.length ? "sample" : targets.length ? (all.length === 1 ? "tour1" : "tour") : "";
+    const mode = ss.length > 0;
     band.hidden = !mode;
     // 最初の案内の間は、上の見出し「現場入場アプリ」と「帰る・よく行く場所」の帯を隠し、その分を上に詰める（「最初の時は消えてもいい」）
-    document.getElementById("listScreen").classList.toggle("firstTour", !!mode);
-    if (mode && band.dataset.mode !== mode) { band.innerHTML = bandHtml(mode === "sample", mode === "tour1"); band.dataset.mode = mode; }
-    targets.forEach((s, i) => {
+    document.getElementById("listScreen").classList.toggle("firstTour", mode);
+    ss.forEach(s => {
       const id = CSS.escape(s.id);
       const head = list.querySelector(`.cardHead[data-toggle="${id}"]`);
       if (!head) return;
       const card = head.closest(".card");
-      if (!card.classList.contains("open")) { if (s.code === "RS00001" || mode !== "sample") tag(head.querySelector(".arrow"), "👆 ここ"); return; }
+      if (!card.classList.contains("open")) { if (s.code === "RS00001") tag(head.querySelector(".arrow"), "👆 ここ"); return; }
       tag(card.querySelector(`a.call[data-kind="in"]`), "① 朝");
       tag(card.querySelector("a.ky"), "② 入場のあと");
       tag(card.querySelector(`a.call[data-kind="out"]`), "③ 帰り");
